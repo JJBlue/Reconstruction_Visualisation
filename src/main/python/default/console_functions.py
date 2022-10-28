@@ -1,4 +1,4 @@
-def confirm_dialog(message, default_value = True):
+def confirm_dialog(message: str, default_value: bool = True) -> bool:
     default_string = "[" + ("Y/n" if default_value == True else "y/N") + "]"
     result = input(message + ": " + default_string)
     
