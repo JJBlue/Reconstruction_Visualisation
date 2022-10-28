@@ -26,7 +26,12 @@ class Window:
         self.widget.setGeometry(50, 50, self.width, self.height)
         self.widget.setWindowTitle(self.title)
         self.widget.setWindowIcon(QIcon(self.icon))
-        
+    
     def show(self):
         self.widget.show()
-        sys.exit(self.app.exec())
+    
+    def getApp(self) -> QApplication:
+        return self.app
+    
+    def getWidget(self) -> QWidget:
+        return self.widget
