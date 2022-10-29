@@ -1,1 +1,0 @@
-from .setup.py import *

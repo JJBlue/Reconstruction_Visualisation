@@ -1,15 +1,14 @@
-import sys
-
-from ba_trees import Window
-
-def main():
-    print("Running Application")
+def startup_main():
+    from ba_trees import premain
+    premain()
     
-    window = Window()
-    window.show()
-    
-    sys.exit(window.getApp().exec())
+    from ba_trees import main
+    main()
+
+    from ba_trees import postmain
+    postmain()
+
 
 
 if __name__ == "__main__":
-    main()
+    startup_main()
