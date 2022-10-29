@@ -1,12 +1,32 @@
-# BA_Trees
+# Visualization of Cherry Trees
+
+## Beschreibung
+
+Das Programm dient zur Darstellung 3-Dimensionaler Punktwolken.
+<br>
 
 ## Installation
 
-Um die benötigten Dependencies zu installieren, führen sie folgendes Python Programm aus
+### Vorraussetzung
 
-`setup/setup.py`
+Folgende Programme müssen installiert sein:
+- Python
 
+### Abhängigkeiten
 
-Alternative, manuell installieren:
+Abhängigkeiten werden automatisch gesucht und gegebenfalls mit einer Bestätigung des Benutzer heruntergeladen und installiert.
+Dazu muss das Programm einfach gestartet werden. Siehe Kapitel "**Ausführen**"
 
-`pip install PyQt6`
+Benötigte Abhängigkeit:
+- PyQt6
+
+Um die benötigten Abhängigkeiten manuell zu installieren, führen sie folgendes Python Befehle aus:
+
+- `pip install PyQt6`
+
+<br>
+## Ausführen
+
+Um das Programm zu starten führen sie folgenden Befehl aus:
+
+`python src/main/python/main.py`
