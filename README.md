@@ -25,6 +25,7 @@ Um die benötigten Abhängigkeiten manuell zu installieren, führen sie folgende
 - `pip install PyQt6`
 
 <br>
+
 ## Ausführen
 
 Um das Programm zu starten führen sie folgenden Befehl aus:
