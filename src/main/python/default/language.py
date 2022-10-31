@@ -1,7 +1,7 @@
 import locale
 
 from configparser import ConfigParser, ExtendedInterpolation
-
+from default import Directories
 
 class Language:
     name: str = None
@@ -31,7 +31,14 @@ class Language:
 
 class Languages:
     
+    directories: Directories = None
     languages: dict = {}
+    
+    def __init__(self):
+        
+        
+        
+        pass
     
     def getLanguages(self) -> list:
         pass # TODO

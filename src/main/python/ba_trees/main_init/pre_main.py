@@ -1,4 +1,5 @@
 import sys
+import os.path
 
 from default import check_installation
 
@@ -10,4 +11,12 @@ def premain():
     if not check_installation(packages) :
         print("Installation failed")
         sys.exit(1)
+    
+def loadLanguage():
+    ### Language
+    file = ""
+    if not os.path.isfile(file):
+        return
+    
+    
     
