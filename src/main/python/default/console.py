@@ -1,5 +1,7 @@
 import re
 
+from __future__ import annotations
+
 # Override print Method
 xprint = print
 
@@ -18,7 +20,7 @@ class Console:
         xprint(*args, **kwargs)
     
     @staticmethod
-    def getConsole():
+    def getConsole() -> Console:
         if Console.static_console == None:
             Console.static_console = Console()
         return Console.static_console

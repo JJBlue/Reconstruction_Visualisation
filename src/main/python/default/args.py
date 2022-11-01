@@ -1,6 +1,7 @@
 import sys
 
 from enum import StrEnum
+from __future__ import annotations
 
 class ArgsEnum(StrEnum):
     Working_Directory = "workdir"
@@ -67,3 +68,7 @@ class Args:
         if Args.Systemargs == None:
             Args.Systemargs = Args(sys.argv)
         return Args.Systemargs
+    
+    @staticmethod
+    def loadArgs(args: Args):
+        return None

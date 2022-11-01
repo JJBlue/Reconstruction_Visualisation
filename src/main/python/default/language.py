@@ -3,14 +3,12 @@ import locale
 from configparser import ConfigParser, ExtendedInterpolation
 from default import Directories
 
+# Langs
 class Language:
-    name: str = None
-    code: str = None
-    alias: list = None
-    
     def __init__(self, name: str, code: str):
-        self.name = name
-        self.code = code
+        self.name: str = name
+        self.code: str = code
+        self.alias: list = []
     
     def getCode(self):
         return self.code
@@ -27,21 +25,17 @@ class Language:
 
     def removeAlias(self, alias: str):
         self.alias.remove(alias)
-        raise Exception("Method not implemented")
+        # TODO remove from Languages
 
 class Languages:
-    
-    directories: Directories = None
-    languages: dict = {}
+    static_default_languages = None
     
     def __init__(self):
-        
-        
-        
-        pass
+        self.languages: dict = {}
+        self.directories: Directories = None
     
     def getLanguages(self) -> list:
-        pass # TODO
+        return self.languages.keys()
     
     def getLanguage(self, code: str) -> Language:
         return self.languages.get(code.lower())
@@ -63,11 +57,19 @@ class Languages:
         
         for code in lang.alias :
             self.languages.remove(code.lower())
-        
+    
+    @staticmethod
+    def getDefaultLanguages():
+        if Languages.static_default_languages == None:
+            Languages.static_default_languages = Languages()
+        return Languages.static_default_languages
 
 
-
+# Language Config
 class NodeDictionary:
+    def __init__(self, directory: Directories = Directories.getDefaultDirectories()):
+        self.directories = directory
+    
     def get(self, key: str) -> bool:
         raise Exception("Method not implemented")
     
@@ -78,11 +80,11 @@ class NodeDictionary:
         raise Exception("Method not implemented")
 
 class LanguageDictionary(NodeDictionary):
-    
-    languages: dict = {} # <Language, Node>
+    def __init__(self):
+        self.languages: dict = {} # <Language, Node>
     
     def getLanguages(self) -> list:
-        pass
+        return self.languages.keys()
     
     def addLanguage(self) -> bool:
         pass
@@ -92,8 +94,8 @@ class LanguageDictionary(NodeDictionary):
 
 
 class Node(NodeDictionary):
-    
-    dictionary: dict = {}
+    def __init__(self):
+        self.dictionary: dict = {}
     
     def getDefinitions(self) -> dict:
         pass
