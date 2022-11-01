@@ -1,11 +1,25 @@
+import os
+
 class Directories:
-    workdirectory = ""
-    config_folger = ""
+    working_directory = ""
+    config_folder = ""
     
-    def getWorkDirectory(self):
-        return self.workdirectory
+    static_default_directories = None
+    
+    def __init__(self, working_dir: str):
+        self.working_directory = working_dir
+        self.config_folder = self.working_directory + "/config"
+    
+    def getWorkingDirectory(self):
+        return self.working_directory
     
     def getConfigFolder(self):
-        pass
+        return self.config_folder
     
-    
+    @staticmethod
+    def getDefaultDirectories():
+        if(Directories.static_default_directories == None):
+            work_dir: str = os.getcwd()
+            Directories.static_default_directories = Directories(work_dir)
+        return Directories.static_default_directories
+        
