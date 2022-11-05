@@ -4,6 +4,8 @@ import os.path
 from default import print
 from default import check_installation
 from default import Args
+from default import LanguageFileIni
+
 
 def premain():
     print("Pre Initalisation started")
@@ -11,45 +13,50 @@ def premain():
     print("Read Args")
     Args.getSystemArgs()
     
+
+    
+    
+    
+    
+    ### Dependencies
+    print("%premain.check_dependencies%")
+    
+    packages = ["PyQt6", "configparser"] # PyQt6-Qt6, PyQt6-sip, PyQt6
+    if not check_installation(packages) :
+        print("%installation.failed%")
+        sys.exit(1)
+    
+def loadLanguage():
     print("Load Languages")
     from default import Directories
     lang_folder = os.path.join(Directories.getDefaultDirectories().getWorkingDirectory(), "lang")
     if not os.path.exists(lang_folder):
         os.mkdir(lang_folder)
     
-    print(lang_folder)
+    # Store default settings
+    lang_def = os.path.join(lang_folder, "lang.ini")
+    if not os.path.exists(lang_def):
+        with open(lang_def, 'a') as out:
+            out.write(
+"""[DEFAULT]
+language = en
+"""
+            )
     
+    # Store English settings
     lang_en = os.path.join(lang_folder, "en.ini")
     if not os.path.exists(lang_en):
         with open(lang_en, 'a') as out:
             out.write(
-            """
-            [DEFAULT]
-            language = en
-            
-            
-            [en]
-            
-            
-            """
+"""[en]
+installation.failed=Installation failed
+premain.check_dependencies=Check Dependencies
+"""
             )
     
-    
-    
-    
-    ### Dependencies
-    print("Show Dependencies")
-    
-    packages = ["PyQt6", "configparser"] # PyQt6-Qt6, PyQt6-sip, PyQt6
-    if not check_installation(packages) :
-        print("Installation failed")
-        sys.exit(1)
-    
-def loadLanguage():
-    ### Language
-    file = ""
-    if not os.path.isfile(file):
-        return
+    # Load Langauge
+    lang_file = LanguageFileIni(lang_def)
+    lang_file.load()
     
     
     

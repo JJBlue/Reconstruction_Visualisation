@@ -1,7 +1,8 @@
 import locale
 
-from configparser import ConfigParser, ExtendedInterpolation
+from configparser import ConfigParser
 from default import Directories
+from pathlib import Path
 
 # Langs
 class Language:
@@ -87,10 +88,10 @@ class LanguageDictionary(NodeDictionary):
         return self.languages.keys()
     
     def addLanguage(self) -> bool:
-        pass
+        raise Exception("Method not implemented")
     
     def removeLanguage(self) -> bool:
-        pass
+        raise Exception("Method not implemented")
 
 
 class Node(NodeDictionary):
@@ -98,8 +99,40 @@ class Node(NodeDictionary):
         self.dictionary: dict = {}
     
     def getDefinitions(self) -> dict:
-        pass
+        raise Exception("Method not implemented")
     
     def getNodes(self) -> list:
-        pass
+        raise Exception("Method not implemented")
     
+# Lang Files
+class LanguageFile:
+    def __init__(self, file: str):
+        self.file = file
+    
+    def load(self):
+        raise Exception("Method not implemented")
+    
+    def save(self):
+        raise Exception("Method not implemented")
+    
+    def getFile(self) -> str:
+        return self.file
+
+class LanguageFileIni(LanguageFile):
+    def __init__(self, file: str):
+        super().__init__(file)
+        self.config = None
+    
+    def load(self):
+        self.config = ConfigParser()
+        self.config.read(self.file)
+        
+    def save(self):
+        raise Exception("Method not implemented")
+    
+        myfile = Path(self.file)
+        config = ConfigParser()
+        config.read(myfile)
+        # config.set(..., ..., ...)
+        config.write(myfile.open("w"))
+        

@@ -1,7 +1,7 @@
+from __future__ import annotations
 import os
 
-from __future__ import annotations
-
+from default import Args, ArgsEnum
 
 class Directories:
     static_default_directories = None
@@ -19,7 +19,15 @@ class Directories:
     @staticmethod
     def getDefaultDirectories() -> Directories:
         if(Directories.static_default_directories == None):
-            work_dir: str = os.getcwd()
+            args: Args = Args.getSystemArgs()
+            
+            work_dir: str = None
+            if(args.hasArg(ArgsEnum.Working_Directory)):
+                work_dir = args.getArg(ArgsEnum.Working_Directory)
+            else:
+                work_dir = os.getcwd()
+            
             Directories.static_default_directories = Directories(work_dir)
+        
         return Directories.static_default_directories
         

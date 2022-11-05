@@ -1,7 +1,7 @@
+from __future__ import annotations
 import sys
 
 from enum import StrEnum
-from __future__ import annotations
 
 class ArgsEnum(StrEnum):
     Working_Directory = "workdir"
