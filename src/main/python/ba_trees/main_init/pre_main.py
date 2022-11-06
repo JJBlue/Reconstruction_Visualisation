@@ -5,18 +5,18 @@ from default import print
 from default import check_installation
 from default import Args
 from default import LanguageFileIni
+from default.language import LanguageDictionary
 
 
 def premain():
     print("Pre Initalisation started")
     
+    ### Args
     print("Read Args")
     Args.getSystemArgs()
     
-
-    
-    
-    
+    ### Languages
+    loadLanguage()
     
     ### Dependencies
     print("%premain.check_dependencies%")
@@ -38,8 +38,8 @@ def loadLanguage():
     if not os.path.exists(lang_def):
         with open(lang_def, 'a') as out:
             out.write(
-"""[DEFAULT]
-language = en
+"""[main]
+language=en
 """
             )
     
@@ -49,14 +49,19 @@ language = en
         with open(lang_en, 'a') as out:
             out.write(
 """[en]
-installation.failed=Installation failed
-premain.check_dependencies=Check Dependencies
+installation.failed = Installation failed
+premain.check_dependencies = Check Dependencies
 """
             )
     
     # Load Langauge
+    ld: LanguageDictionary = LanguageDictionary.getDefaultLanguageDictionary()
+    
     lang_file = LanguageFileIni(lang_def)
-    lang_file.load()
+    lang_file.loadIntoDictionary(ld)
+    
+    lang_file = LanguageFileIni(lang_en)
+    lang_file.loadIntoDictionary(ld)
     
     
     

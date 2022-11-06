@@ -1,6 +1,8 @@
-import locale
+from __future__ import annotations
+#import locale
 
 from configparser import ConfigParser
+from default import Configuration, ConfigurationSection
 from default import Directories
 from pathlib import Path
 
@@ -22,14 +24,21 @@ class Language:
     
     def addAlias(self, alias: str):
         self.alias.add(alias)
-        # TODO add to Languages
+        
+        # Not efficent
+        Languages.getDefaultLanguages().removeLanguage(self)
+        Languages.getDefaultLanguages().addLanguage(self)
 
     def removeAlias(self, alias: str):
         self.alias.remove(alias)
-        # TODO remove from Languages
+        
+        # Not efficent
+        Languages.getDefaultLanguages().removeLanguage(self)
+        Languages.getDefaultLanguages().addLanguage(self)
 
 class Languages:
     static_default_languages = None
+    static_default_language = None
     
     def __init__(self):
         self.languages: dict = {}
@@ -39,13 +48,23 @@ class Languages:
         return self.languages.keys()
     
     def getLanguage(self, code: str) -> Language:
-        return self.languages.get(code.lower())
+        return self.languages[code.lower()]
+    
+    def createOrGetLanguage(self, code: str) -> Language:
+        lang: Language = self.getLanguage(code)
+        
+        if lang != None:
+            return lang
+        
+        lang = Language(code, code)
+        self.addLanguage(lang)
+        return lang
     
     def addLanguage(self, lang: Language) -> bool:
-        self.languages.add(lang.code.lower(), lang)
+        self.languages[lang.code.lower()] = lang
         
         for code in lang.alias :
-            self.languages.add(code.lower(), lang)
+            self.languages[code.lower()] = lang
             
         return True
     
@@ -60,59 +79,120 @@ class Languages:
             self.languages.remove(code.lower())
     
     @staticmethod
-    def getDefaultLanguages():
+    def getDefaultLanguages() -> Languages:
         if Languages.static_default_languages == None:
             Languages.static_default_languages = Languages()
+            langs: Languages = Languages.static_default_languages
+            
+            lang: Language = Language("English", "en")
+            langs.addLanguage(lang)
+            Languages.static_default_language = lang
+            
+            lang: Language = Language("Deutsch", "de")
+            langs.addLanguage(lang)
+            
         return Languages.static_default_languages
+    
+    @staticmethod
+    def getDefaultLanguage() -> Language:
+        if Languages.static_default_language == None:
+            Languages.getDefaultLanguages()
+        return Languages.static_default_language
 
 
 # Language Config
-class NodeDictionary:
-    def __init__(self, directory: Directories = Directories.getDefaultDirectories()):
-        self.directories = directory
+class LanguageDictionary:
+    static_default_language_dictionary = None
     
-    def get(self, key: str) -> bool:
-        raise Exception("Method not implemented")
-    
-    def set(self, key: str, value: str) -> bool:
-        raise Exception("Method not implemented")
-    
-    def remove(self, key: str) -> bool:
-        raise Exception("Method not implemented")
-
-class LanguageDictionary(NodeDictionary):
     def __init__(self):
-        self.languages: dict = {} # <Language, Node>
+        self._main = Configuration()
+        self._languages: dict = {} # <Language, Configuration>
+    
+    ### Languages
     
     def getLanguages(self) -> list:
-        return self.languages.keys()
+        return self._languages.keys()
     
-    def addLanguage(self) -> bool:
-        raise Exception("Method not implemented")
+    def getLanguage(self, lang: Language) -> Configuration:
+        if not (lang in self._languages):
+            return None
+        
+        return self._languages[lang]
     
-    def removeLanguage(self) -> bool:
-        raise Exception("Method not implemented")
-
-
-class Node(NodeDictionary):
-    def __init__(self):
-        self.dictionary: dict = {}
+    def addLanguage(self, lang: Language) -> bool:
+        if lang in self._languages:
+            return False
     
-    def getDefinitions(self) -> dict:
-        raise Exception("Method not implemented")
+        self._languages[lang] = Configuration()
+        
+        return True
     
-    def getNodes(self) -> list:
-        raise Exception("Method not implemented")
+    def removeLanguage(self, lang: Language) -> bool:
+        if not (lang in self._languages):
+            return False
+        
+        del self._languages[lang]
+        return True
+    
+    ### Configuration
+    def isSet(self, lang: Language, path: str) -> bool:
+        config: ConfigurationSection = self.getConfigurationSection(lang)
+        
+        if config == None:
+            return False
+        
+        return config.isSet(path)
+    
+    def set(self, lang: Language, path: str, value: object) -> bool:
+        config: ConfigurationSection = self.getConfigurationSection(lang)
+        
+        if config == None:
+            return None
+        
+        return config.set(path, value)
+    
+    def get(self, lang: Language, path: str) -> object:
+        config: ConfigurationSection = self.getConfigurationSection(lang)
+        
+        if config == None:
+            return None
+        
+        return config.get(path)
+    
+    def getConfigurationSection(self, lang: Language, path: str = None):
+        config: ConfigurationSection = self.getLanguage(lang)
+        
+        if config == None:
+            return None
+        
+        if path != None:
+            return config.getConfigurationSection(path)
+        
+        return config
+    
+    ### Getter und Setter
+    
+    def getMain(self) -> ConfigurationSection:
+        return self._main
+    
+    @staticmethod
+    def getDefaultLanguageDictionary() -> LanguageDictionary:
+        if LanguageDictionary.static_default_language_dictionary == None:
+            LanguageDictionary.static_default_language_dictionary = LanguageDictionary()
+        return LanguageDictionary.static_default_language_dictionary
     
 # Lang Files
 class LanguageFile:
     def __init__(self, file: str):
         self.file = file
     
-    def load(self):
+    def load(self) -> bool:
         raise Exception("Method not implemented")
     
-    def save(self):
+    def loadIntoDictionary(self, ld: LanguageDictionary) -> bool:
+        raise Exception("Method not implemented")
+    
+    def save(self) -> bool:
         raise Exception("Method not implemented")
     
     def getFile(self) -> str:
@@ -123,10 +203,31 @@ class LanguageFileIni(LanguageFile):
         super().__init__(file)
         self.config = None
     
-    def load(self):
+    def load(self) -> bool:
         self.config = ConfigParser()
         self.config.read(self.file)
         
+        return True
+    
+    def loadIntoDictionary(self, ld: LanguageDictionary) -> bool:
+        self.load()
+        
+        for section in self.config.sections():
+            name: str = section.title().lower()
+            config: ConfigurationSection
+            
+            if name == "main":
+                config = ld.getMain()
+            else:
+                lang: Language = Languages.getDefaultLanguages().createOrGetLanguage(name)
+                ld.addLanguage(lang)
+                config = ld.getLanguage(lang)
+            
+            for key, value in self.config.items(section):
+                config.set(key, value)
+        
+        return True
+    
     def save(self):
         raise Exception("Method not implemented")
     
@@ -135,4 +236,6 @@ class LanguageFileIni(LanguageFile):
         config.read(myfile)
         # config.set(..., ..., ...)
         config.write(myfile.open("w"))
+        
+        return False
         
