@@ -6,6 +6,7 @@ import importlib.util
 import os
 import subprocess
 import sys
+import pkg_resources
 
 from default import confirm_dialog
 
@@ -15,6 +16,7 @@ from default import confirm_dialog
 #################
 def check_installation(packages: list) -> bool:
     not_installed_packages = []
+    piplist = pip_list()
 
     ### Check for packages
     print("Überprüfe, ob alle Module vorhanden sind.")
@@ -23,6 +25,8 @@ def check_installation(packages: list) -> bool:
             print(f"{pkg} already in sys.modules")
         elif (spec := importlib.util.find_spec(pkg)) is not None:
             print(f"Module \"{pkg}\" already installed")
+        elif pkg in piplist:
+            print(f"Module \"{pkg}\" already in pip list")
         else:
             print(f"Can't find the {pkg} module")
             not_installed_packages.append(pkg)
@@ -95,6 +99,9 @@ def remove_packages(packages: list) -> bool:
         print(f"Module uninstalled: {pkg}")
 
     return True
+
+def pip_list():
+    return [p.project_name for p in pkg_resources.working_set]
 
 def restart_program():
     python = sys.executable

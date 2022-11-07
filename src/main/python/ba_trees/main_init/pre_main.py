@@ -12,20 +12,26 @@ def premain():
     print("Pre Initalisation started")
     
     ### Args
-    print("Read Args")
-    Args.getSystemArgs()
+    loadArgs()
+    
+    ### Dependencies
+    loadDependencies()
     
     ### Languages
     loadLanguage()
+
+def loadArgs():
+    print("Read Args")
+    Args.getSystemArgs()
+
+def loadDependencies():
+    print("Check Dependencies")
     
-    ### Dependencies
-    print("%premain.check_dependencies%")
-    
-    packages = ["PyQt6", "configparser"] # PyQt6-Qt6, PyQt6-sip, PyQt6
+    packages = ["PyQt6", "configparser", "PyOpenGL", "numpy"] # PyQt6-Qt6, PyQt6-sip, PyQt6
     if not check_installation(packages) :
         print("%installation.failed%")
         sys.exit(1)
-    
+
 def loadLanguage():
     print("Load Languages")
     from default import Directories
