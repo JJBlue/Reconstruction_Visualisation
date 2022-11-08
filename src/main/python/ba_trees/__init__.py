@@ -5,6 +5,7 @@ from ba_trees.main_init.pre_main import premain
 
 try:
     from ba_trees.gui.gui import *
+    from ba_trees.gui.RenderWidget import *
 except ImportError:
     pass
 

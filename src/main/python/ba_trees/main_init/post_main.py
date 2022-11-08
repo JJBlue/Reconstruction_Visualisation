@@ -3,10 +3,10 @@ import sys
 def postmain():
     print("Main initialisation started")
     
-    from ba_trees import Window
-    
     ### Window
-    window = Window()
-    window.show()
+    from ba_trees.gui.gui import Application
     
-    sys.exit(window.getApp().exec())
+    app = Application()
+    app.window.show()
+    
+    sys.exit(app.getApp().exec())
