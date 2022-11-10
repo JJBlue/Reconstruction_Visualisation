@@ -1,24 +1,65 @@
-from ba_trees.gui.render import Location, Position, Entity
+import glm
+
+from ba_trees.gui.render import Location, Entity
+from OpenGL.GL.VERSION.GL_1_0 import glGetIntegerv
+from OpenGL.raw.GL.ARB.viewport_array import GL_VIEWPORT
 
 class Camera(Entity):
     def __init__(self):
-        self.position = Location(0, 0, 3)
-        self.target = Position(0, 0, 0)
-        self.direction = Position()
+        # Camera Variables
+        self.near: float = 0.01
+        self.far: float = 1000
+        self.left: float = -100
+        self.right: float = 100
+        self.bottom: float = -100
+        self.top: float = 100
         
-        self.right_up = Position(0.0, 1.0, 0.0)
-        self.right = Position()
+        self.fov: float = 70 # in degree
         
-        self.up = Position()
+        self.perspective = True
         
+        self.view: glm.mat4x4 = None
+        self.view_normal: glm.mat4x4 = None
+        self.projection: glm.mat4x4 = None
+        
+        # Camera Vec
+        
+        self.position = Location(-3, 0, 0)
+        self.direction: glm.vec3 = glm.fvec3(1, 0, 0)
+        self.up: glm.vec3 = glm.fvec3(0, 1, 0)
+        
+        # Update
         self.update()
     
     def update(self):
-        # self.direction = glm::normalize(self.position - self.target)
-        # self.right = glm::normalize(glm::cross(self.right_up, self.direction))
-        # self.up = glm::cross(self.direction, self.right)
+        self.direction = glm.normalize(self.direction)
+        self.up = glm.normalize(self.up)
         
-        pass
+        pos: glm.vec3 = self.position.getPosition()
+        self.view = glm.lookAt(pos, pos + self.direction, self.up)
+        self.view_normal = glm.transpose(glm.inverse(self.view))
+        
+        if self.perspective:
+            self.projection = glm.perspective(self.fov * (glm.pi() / 180), self.getAspectRatio(), self.near, self.far)
+        else:
+            self.projection = glm.ortho(self.left, self.right, self.bottom, self.top, self.near, self.far)
     
-    def getPosition(self):
+    def getAspectRatio(self):
+        viewport: list = glGetIntegerv(GL_VIEWPORT) # x y width height
+        
+        width: float = viewport[2]
+        height: float = viewport[3]
+        
+        return width / height
+    
+    def getPosition(self) -> Location:
         return self.position
+    
+    def getView(self) -> glm.mat4x4:
+        return self.view
+    
+    def getViewNormal(self) -> glm.mat4x4:
+        return self.view_normal
+    
+    def getProjection(self) -> glm.mat4x4:
+        return self.projection

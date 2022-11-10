@@ -1,26 +1,29 @@
+import glm
+
 class Position:
     def __init__(self, x = 0, y = 0, z = 0):
-        self.x: float = x
-        self.y: float = y
-        self.z: float = z
+        self.position = glm.fvec3(x, y, z)
     
     def getX(self) -> float:
-        return self.x
+        return self.position.x
     
     def setX(self, x: float):
-        self.x = x
+        self.position.x = x
     
     def getY(self) -> float:
-        return self.y
+        return self.position.y
     
     def setY(self, y: float):
-        self.y = y
+        self.position.y = y
     
     def getZ(self) -> float:
-        return self.z
+        return self.position.z
     
     def setZ(self, z: float):
-        self.z = z
+        self.position.z = z
+    
+    def getPosition(self) -> glm.vec3:
+        return self.position
 
 class Location(Position):
     def __init__(self, x = 0, y = 0, z = 0, pitch = 0, yaw = 0, roll = 0):
@@ -47,7 +50,3 @@ class Location(Position):
     
     def setRoll(self, roll: float):
         self.roll = roll
-    
-    def getPosition(self):
-        #return glm::vec3(x, y, z)
-        pass
