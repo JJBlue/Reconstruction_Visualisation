@@ -1,11 +1,10 @@
-#version 330 core
+#version 430
 
-layout (location=0) in vec2 vertexPos;
-layout (location=1) in vec2 vertexTexCoord;
+layout (location=0) in vec3 pos;
 
-out vec2 fragmentTexCoord;
+uniform mat4 view;
+uniform mat4 proj;
 
 void main() {
-	gl_Position = vec4(vertexPos, 0.0, 1.0);
-	fragmentTexCoord = vertexTexCoord;
+	gl_Position = proj * view * vec4(pos, 1.0);
 }
