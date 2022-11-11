@@ -56,13 +56,12 @@ class ShaderFile(ShaderSource):
 class Shader:
     def __init__(self):
         self.program: GLuint = 0
-        self.id = 0
         
         self.shader_sources: list = []
     
     def __del__(self):
-        if glIsProgram(self.id):
-            glDeleteProgram(self.id)
+        if glIsProgram(self.program):
+            glDeleteProgram(self.program)
         
         self.id = 0
     

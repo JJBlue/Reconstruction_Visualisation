@@ -19,7 +19,7 @@ class RenderWidget(QOpenGLWidget):
         #self.fmt.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
         
         # OpenGL
-        #self.camera: Camera = Camera()
+        self.camera: Camera = Camera()
         self.shader: Shader = Shader()
         
         shader_vertex: ShaderSource = ShaderFile(GL_VERTEX_SHADER, "J:\D\Schule Informatik\git\BA_Trees\src\main\python\ba_trees\gui\render\shader\default.vert")
