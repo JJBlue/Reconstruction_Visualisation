@@ -1,4 +1,4 @@
-from ba_trees.gui.render.Location import Location
+from ba_trees.gui.render import Location
 
 class Entity:
     def __init__(self):

@@ -1,9 +1,11 @@
 import sys
 
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (QApplication, QHBoxLayout, QPushButton, QMainWindow,
     QWidget)
-from PyQt6.QtGui import QIcon
+
 from ba_trees.gui.RenderWidget import RenderWidget
+
 
 class Application:
     title: str = "Visualisation Software"

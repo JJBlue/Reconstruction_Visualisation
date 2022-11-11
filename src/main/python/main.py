@@ -1,3 +1,5 @@
+import ba_trees
+
 def startup_main():
     from ba_trees import premain
     premain()

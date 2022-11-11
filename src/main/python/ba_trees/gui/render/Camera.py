@@ -1,11 +1,13 @@
 import glm
 
+from OpenGL.GL import *
 from ba_trees.gui.render import Location, Entity
-from OpenGL.GL.VERSION.GL_1_0 import glGetIntegerv
-from OpenGL.raw.GL.ARB.viewport_array import GL_VIEWPORT
+
 
 class Camera(Entity):
     def __init__(self):
+        super().__init__()
+        
         # Camera Variables
         self.near: float = 0.01
         self.far: float = 1000
@@ -45,7 +47,7 @@ class Camera(Entity):
             self.projection = glm.ortho(self.left, self.right, self.bottom, self.top, self.near, self.far)
     
     def getAspectRatio(self):
-        viewport: list = glGetIntegerv(GL_VIEWPORT) # x y width height
+        viewport = glGetIntegerv(GL_VIEWPORT) # x y width height
         
         width: float = viewport[2]
         height: float = viewport[3]

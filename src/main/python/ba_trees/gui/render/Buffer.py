@@ -1,15 +1,4 @@
-from OpenGL.GL.VERSION.GL_1_5 import (glGenBuffers, glBufferData, glDeleteBuffers, glBufferSubData)
-from OpenGL.raw.GL.ARB.compute_shader import GL_DISPATCH_INDIRECT_BUFFER
-from OpenGL.raw.GL.ARB.copy_buffer import GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER
-from OpenGL.raw.GL.ARB.draw_indirect import GL_DRAW_INDIRECT_BUFFER
-from OpenGL.raw.GL.ARB.enhanced_layouts import GL_TRANSFORM_FEEDBACK_BUFFER
-from OpenGL.raw.GL.ARB.internalformat_query2 import GL_TEXTURE_BUFFER
-from OpenGL.raw.GL.ARB.program_interface_query import GL_ATOMIC_COUNTER_BUFFER
-from OpenGL.raw.GL.ARB.query_buffer_object import GL_QUERY_BUFFER
-from OpenGL.raw.GL.ARB.shader_storage_buffer_object import GL_SHADER_STORAGE_BUFFER
-from OpenGL.raw.GL.ARB.uniform_buffer_object import GL_UNIFORM_BUFFER
-from OpenGL.raw.GL.VERSION.GL_1_5 import glBindBuffer, GL_STATIC_DRAW, GL_ELEMENT_ARRAY_BUFFER, GL_ARRAY_BUFFER
-from OpenGL.raw.GL.VERSION.GL_2_1 import GL_PIXEL_UNPACK_BUFFER, GL_PIXEL_PACK_BUFFER
+from OpenGL.GL import *
 
 
 class Buffer:

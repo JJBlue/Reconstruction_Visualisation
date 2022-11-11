@@ -1,20 +1,12 @@
-from nt import stat
 import os
 
-from OpenGL.GL.VERSION.GL_2_0 import glShaderSource, GL_INFO_LOG_LENGTH
-from OpenGL.GL.shaders import (GL_FALSE,
-    glGetShaderiv, GL_COMPILE_STATUS, GL_TRUE, glDeleteShader, glGetProgramiv,
-    glGetShaderInfoLog, glGetProgramInfoLog, glAttachShader, GL_LINK_STATUS)
-from OpenGL.raw.GL.VERSION.GL_2_0 import (GL_VERTEX_SHADER, GL_FRAGMENT_SHADER, glCreateShader,
-    glCompileShader, glIsShader, glIsProgram, glDeleteProgram, glUseProgram,
-    glCreateProgram, glLinkProgram)
-from OpenGL.raw.GL._types import GLuint, GLint
-
+from nt import stat
+from OpenGL.GL import *
 
 class ShaderSource:
-    def __init__(self, type):
+    def __init__(self, shader_type):
         self.src: str = None
-        self.type = type
+        self.type = shader_type
     
     def getSrc(self) -> str:
         return self.src
@@ -23,20 +15,20 @@ class ShaderSource:
         return self.type
 
 class ShaderString(ShaderSource):
-    def __init__(self, type, src: str):
-        super().__init__(type)
+    def __init__(self, shader_type, src: str):
+        super().__init__(shader_type)
         self.src = src
 
 class ShaderFile(ShaderSource):
-    def __init__(self, type, file: str):
-        super().__init__(type)
+    def __init__(self, shader_type, file: str):
+        super().__init__(shader_type)
         
         self.file = file
         self.modification_time = None
     
     def getSrc(self) -> str:
         if self.__isFileChanged():
-           self.__readFile() 
+            self.__readFile()
         
         return self.src
     
@@ -118,24 +110,24 @@ class Shader:
         self.recompile()
     
     @staticmethod
-    def getLogShader(id: GLuint):
+    def getLogShader(shader_id: GLuint):
         log_length: GLint = 0
         
-        if glIsShader(id):
-            log_length = glGetShaderiv(id, GL_INFO_LOG_LENGTH)
-        elif glIsProgram(id):
-            log_length = glGetProgramiv(id, GL_INFO_LOG_LENGTH)
+        if glIsShader(shader_id):
+            log_length = glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH)
+        elif glIsProgram(shader_id):
+            log_length = glGetProgramiv(shader_id, GL_INFO_LOG_LENGTH)
         else:
-            print(f"error Shader.getLogShader({id})")
+            print(f"error Shader.getLogShader({shader_id})")
             pass # TODO error
         
         if log_length <= 0:
             return None
         
-        if glIsShader(id):
-            return glGetShaderInfoLog(id, log_length, None)
-        elif glIsProgram(id):
-            return glGetProgramInfoLog(id, GL_INFO_LOG_LENGTH, None)
+        if glIsShader(shader_id):
+            return glGetShaderInfoLog(shader_id, log_length, None)
+        elif glIsProgram(shader_id):
+            return glGetProgramInfoLog(shader_id, GL_INFO_LOG_LENGTH, None)
         
         return None
     
