@@ -42,7 +42,7 @@ class Cube(Geometry):
         # GLfloat
         self.vertices = GeometryData(
             3,
-            np.array((
+            np.array([
                 -1.0, -1.0,  1.0, #0
                  1.0, -1.0,  1.0, #1
                 -1.0,  1.0,  1.0, #2
@@ -51,17 +51,17 @@ class Cube(Geometry):
                  1.0, -1.0, -1.0, #5
                 -1.0,  1.0, -1.0, #6
                  1.0,  1.0, -1.0  #7
-            ), np.float32)
+            ], np.float32)
         )
         
         # Triangle
         self.vertices = GeometryData(
             3,
-            np.array((
+            np.array([
                 -0.5, -0.5, 0.0, 1.0, 0.0, 0.0,
                  0.5, -0.5, 0.0, 0.0, 1.0, 0.0,
                  0.0,  0.5, 0.0, 0.0, 0.0, 1.0,
-            ), np.float32)
+            ], np.float32)
         )
         
         self.all_vertices.append(self.vertices)
@@ -69,7 +69,7 @@ class Cube(Geometry):
         # GLuint
         self.indices = GeometryData(
             1,
-            np.array((
+            np.array([
                 #Top
                 2, 6, 7,
                 2, 3, 7,
@@ -93,7 +93,7 @@ class Cube(Geometry):
                 #Back
                 4, 6, 7,
                 4, 5, 7
-            ), np.uint32)
+            ], np.uint32)
         )
         self.indices = None
         

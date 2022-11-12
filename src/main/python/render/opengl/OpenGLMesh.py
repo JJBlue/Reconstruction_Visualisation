@@ -69,11 +69,11 @@ class OpenGLMesh:
         glEnableVertexAttribArray(buffer_id)
         
         if primitive_type == GL_BYTE or primitive_type == GL_UNSIGNED_BYTE or primitive_type == GL_SHORT or primitive_type == GL_UNSIGNED_SHORT or primitive_type == GL_INT or primitive_type == GL_UNSIGNED_INT:
-            glVertexAttribIPointer(buffer_id, dimension, primitive_type, 0, 0);
+            glVertexAttribIPointer(buffer_id, dimension, primitive_type, 0, None);
         elif primitive_type == GL_DOUBLE:
-            glVertexAttribLPointer(buffer_id, dimension, primitive_type, 0, 0);
+            glVertexAttribLPointer(buffer_id, dimension, primitive_type, 0, None);
         else:
-            glVertexAttribPointer(buffer_id, dimension, primitive_type, GL_FALSE, 0, 0);
+            glVertexAttribPointer(buffer_id, dimension, primitive_type, GL_FALSE, 0, None);
         
         glBindVertexArray(0)
         buffer.unbind()
