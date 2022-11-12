@@ -7,6 +7,12 @@ class OpenGLShader(Shader):
         self.program: GLuint = 0
     
     def __del__(self):
+        try:
+            self.delete()
+        except:
+            pass
+    
+    def delete(self):
         if glIsProgram(self.program):
             glDeleteProgram(self.program)
         

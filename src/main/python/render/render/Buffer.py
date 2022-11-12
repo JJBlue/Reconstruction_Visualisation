@@ -1,6 +1,8 @@
+import numpy as np
+
 class Buffer:
-    def __init__(self, buffer_type):
-        self.buffer_type = buffer_type
+    def __init__(self):
+        pass
     
     def __del__(self):
         pass
@@ -11,8 +13,8 @@ class Buffer:
     def unbind(self):
         raise NotImplementedError
     
-    def setData(self, data: list, size_bytes: int, hint):
+    def setData(self, data: np.ndarray, hint):
         raise NotImplementedError
     
-    def setSubData(self, data: list, size_bytes: int, offset_bytes: int):
+    def setSubData(self, data: np.ndarray, offset_bytes: int):
         raise NotImplementedError

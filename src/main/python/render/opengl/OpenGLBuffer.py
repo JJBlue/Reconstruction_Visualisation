@@ -1,42 +1,91 @@
+import numpy as np
+
 from OpenGL.GL import *
 
-from render import Buffer
+from render.render import Buffer
+
 
 class OpenGLBuffer(Buffer):
     def __init__(self, buffer_type):
-        super().__init__(buffer_type)
-        self.id = glGenBuffers(1)
+        super().__init__()
+        
+        self.buffer_type = buffer_type
+        self.buffer_id = glGenBuffers(1)
     
     def __del__(self):
-        glDeleteBuffers(1, self.id)
+        try:
+            self.delete()
+        except:
+            pass
+        
+    def delete(self):
+        glDeleteBuffers(1, self.buffer_id)
     
     def bind(self):
-        glBindBuffer(self.buffer_type, self.id)
+        glBindBuffer(self.buffer_type, self.buffer_id)
     
     def unbind(self):
         glBindBuffer(self.buffer_type, 0)
     
-    def setData(self, data: list, size_bytes: int, hint = GL_STATIC_DRAW):
+    def setData(self, data: np.ndarray, hint = GL_STATIC_DRAW):
         self.bind()
-        glBufferData(self.buffer_type, size_bytes, data, hint)
+        glBufferData(self.buffer_type, data, hint)
         self.unbind()
     
-    def setSubData(self, data: list, size_bytes: int, offset_bytes: int):
+    def setSubData(self, data: np.ndarray, offset_bytes: int):
         self.bind()
-        glBufferSubData(self.buffer_type, offset_bytes, size_bytes, data)
+        glBufferSubData(self.buffer_type, offset_bytes, data)
         self.unbind()
 
-#VBO  = Buffer(GL_ARRAY_BUFFER)
-#IBO  = Buffer(GL_ELEMENT_ARRAY_BUFFER)
-#UBO  = Buffer(GL_UNIFORM_BUFFER)
-#SSBO = Buffer(GL_SHADER_STORAGE_BUFFER)
-#TBO  = Buffer(GL_TEXTURE_BUFFER)
-#QBO  = Buffer(GL_QUERY_BUFFER)
-#ACBO = Buffer(GL_ATOMIC_COUNTER_BUFFER)
-#DIBO = Buffer(GL_DRAW_INDIRECT_BUFFER)
-#CIBO = Buffer(GL_DISPATCH_INDIRECT_BUFFER)
-#TFBO = Buffer(GL_TRANSFORM_FEEDBACK_BUFFER)
-#PUBO = Buffer(GL_PIXEL_UNPACK_BUFFER)
-#PPBO = Buffer(GL_PIXEL_PACK_BUFFER)
-#CRBO = Buffer(GL_COPY_READ_BUFFER)
-#CWBO = Buffer(GL_COPY_WRITE_BUFFER)
+class OpenGLBufferFactory:
+    @staticmethod
+    def VBO():
+        return OpenGLBuffer(GL_ARRAY_BUFFER)
+    
+    @staticmethod
+    def IBO():
+        return OpenGLBuffer(GL_ELEMENT_ARRAY_BUFFER)
+
+    @staticmethod
+    def UBO():
+        return OpenGLBuffer(GL_UNIFORM_BUFFER)
+    
+    @staticmethod
+    def SSBO():
+        return OpenGLBuffer(GL_SHADER_STORAGE_BUFFER)
+    
+    @staticmethod
+    def TBO():
+        return OpenGLBuffer(GL_TEXTURE_BUFFER)
+    
+    @staticmethod
+    def ACBO():
+        return OpenGLBuffer(GL_ATOMIC_COUNTER_BUFFER)
+    
+    @staticmethod
+    def DIBO():
+        return OpenGLBuffer(GL_DRAW_INDIRECT_BUFFER)
+    
+    @staticmethod
+    def CIBO():
+        return OpenGLBuffer(GL_DISPATCH_INDIRECT_BUFFER)
+    
+    @staticmethod
+    def TFBO():
+        return OpenGLBuffer(GL_TRANSFORM_FEEDBACK_BUFFER)
+    
+    @staticmethod
+    def PUBO():
+        return OpenGLBuffer(GL_PIXEL_UNPACK_BUFFER)
+    
+    @staticmethod
+    def PPBO():
+        return OpenGLBuffer(GL_PIXEL_PACK_BUFFER)
+    
+    @staticmethod
+    def CRBO():
+        return OpenGLBuffer(GL_COPY_READ_BUFFER)
+    
+    @staticmethod
+    def CWBO():
+        return OpenGLBuffer(GL_COPY_WRITE_BUFFER)
