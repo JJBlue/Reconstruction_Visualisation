@@ -1,13 +1,12 @@
 import glm
-import numpy as np
 
 from OpenGL.GL import *
 from render import ShaderSource, Shader
 
 class OpenGLShader(Shader):
     def __init__(self):
-        super().__init__()
         self.program: GLuint = 0
+        super().__init__()
     
     def __del__(self):
         try:
@@ -19,7 +18,7 @@ class OpenGLShader(Shader):
         if glIsProgram(self.program):
             glDeleteProgram(self.program)
         
-        self.id = 0
+        self.program = 0
     
     def bind(self):
         glUseProgram(self.program)
@@ -110,10 +109,12 @@ class OpenGLShader(Shader):
         
         # Change Program with old program
         program_old = self.program
-        self.program = program_new
+        
         
         if program_old != 0 and glIsProgram(program_old):
             glDeleteProgram(program_old)
+        
+        self.program = program_new
         
         return True
     

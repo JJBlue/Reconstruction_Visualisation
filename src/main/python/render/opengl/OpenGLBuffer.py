@@ -29,12 +29,12 @@ class OpenGLBuffer(Buffer):
     
     def setData(self, data: np.ndarray, hint = GL_STATIC_DRAW):
         self.bind()
-        glBufferData(self.buffer_type, data, hint)
+        glBufferData(self.buffer_type, data.nbytes, data, hint)
         self.unbind()
     
     def setSubData(self, data: np.ndarray, offset_bytes: int):
         self.bind()
-        glBufferSubData(self.buffer_type, offset_bytes, data)
+        glBufferSubData(self.buffer_type, data.nbytes, offset_bytes, data)
         self.unbind()
 
 class OpenGLBufferFactory:

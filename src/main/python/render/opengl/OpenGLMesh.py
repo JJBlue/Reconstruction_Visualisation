@@ -55,12 +55,12 @@ class OpenGLMesh:
             self.addIndexBuffer(indices.getSize(), indices.getData())
     
     def addVertexBuffer(self, primitive_type, dimension: int, count_vertices: int, vertices: np.ndarray):
+        buffer_id = len(self.vbos)
+        
         # Upload to VBO Buffer
         buffer: Buffer = OpenGLBufferFactory.VBO()
         buffer.setData(vertices)
         self.vbos.append(buffer)
-        
-        buffer_id = len(self.vbos)
         self.count_vertices = count_vertices
         
         # Bind VBO with VAO
@@ -79,7 +79,7 @@ class OpenGLMesh:
         buffer.unbind()
     
     def updateVertexBuffer(self):
-        pass
+        raise NotImplementedError
     
     def addIndexBuffer(self, count_indices:int, indicies: np.ndarray):
         self.ibo = OpenGLBufferFactory.IBO()
@@ -93,4 +93,4 @@ class OpenGLMesh:
         self.ibo.unbind()
     
     def updateIndexBuffer(self):
-        pass
+        raise NotImplementedError

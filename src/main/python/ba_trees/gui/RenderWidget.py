@@ -18,19 +18,18 @@ class RenderWidget(QOpenGLWidget):
     def initializeGL(self):
         super().initializeGL()
         
-        self.fmt = QOpenGLVersionProfile()
-        self.fmt.setVersion(4, 3)
-        self.fmt.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
+        #self.fmt = QOpenGLVersionProfile()
+        #self.fmt.setVersion(4, 3)
+        #self.fmt.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
         
         # OpenGL
         self.camera: Camera = OpenGLCamera()
         self.shader: Shader = OpenGLShader()
         
-        shader_vertex: ShaderSource = Shaders.getShaderFile(GL_VERTEX_SHADER, "default.vert")
-        self.shader.addShaderSource(shader_vertex)
-        
-        shader_fragment: ShaderSource = Shaders.getShaderFile(GL_FRAGMENT_SHADER, "default.frag")
-        self.shader.addShaderSource(shader_fragment)
+        self.shader.addShaderSource(
+            Shaders.getShaderFile(GL_VERTEX_SHADER, "default.vert"),
+            Shaders.getShaderFile(GL_FRAGMENT_SHADER, "default.frag")
+        )
         
         self.cube: Mesh = OpenGLMesh(Cube())
         
@@ -44,9 +43,9 @@ class RenderWidget(QOpenGLWidget):
         
         self.cube.bind()
         #self.shader.uniform("position", position);
-        self.shader.uniform("view", self.camera.getView())
-        self.shader.uniform("view_normal", self.camera.getViewNormal())
-        self.shader.uniform("proj", self.camera.getProjection())
+        #self.shader.uniform("view", self.camera.getView())
+        #self.shader.uniform("view_normal", self.camera.getViewNormal())
+        #self.shader.uniform("proj", self.camera.getProjection())
         self.cube.draw()
         self.cube.unbind()
         
