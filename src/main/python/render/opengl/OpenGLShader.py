@@ -35,7 +35,7 @@ class OpenGLShader(Shader):
         glLinkProgram(program_new)
         link_status: GLint = glGetProgramiv(program_new, GL_LINK_STATUS)
         if link_status != GL_TRUE:
-            # TODO ERROR
+            print("Error Link Status")
             glDeleteProgram(program_new)
             return False
         
@@ -50,23 +50,10 @@ class OpenGLShader(Shader):
     
     @staticmethod
     def getLogShader(shader_id: GLuint):
-        log_length: GLint = 0
-        
         if glIsShader(shader_id):
-            log_length = glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH)
+            return glGetShaderInfoLog(shader_id)
         elif glIsProgram(shader_id):
-            log_length = glGetProgramiv(shader_id, GL_INFO_LOG_LENGTH)
-        else:
-            print(f"error Shader.getLogShader({shader_id})")
-            pass # TODO error
-        
-        if log_length <= 0:
-            return None
-        
-        if glIsShader(shader_id):
-            return glGetShaderInfoLog(shader_id, log_length, None)
-        elif glIsProgram(shader_id):
-            return glGetProgramInfoLog(shader_id, GL_INFO_LOG_LENGTH, None)
+            return glGetProgramInfoLog(shader_id)
         
         return None
     
@@ -74,7 +61,7 @@ class OpenGLShader(Shader):
     def createShader(source: ShaderSource) -> GLuint:
         shader_id: GLuint = glCreateShader(source.getType())
         
-        glShaderSource(shader_id, 1, source.getSrc(), None)
+        glShaderSource(shader_id, source.getSrc())
         glCompileShader(shader_id)
         
         compiled: GLuint = glGetShaderiv(shader_id, GL_COMPILE_STATUS)

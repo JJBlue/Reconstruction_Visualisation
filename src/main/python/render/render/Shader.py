@@ -1,6 +1,4 @@
-import os
-
-from nt import stat
+from pathlib import Path
 
 class ShaderSource:
     def __init__(self, shader_type):
@@ -32,14 +30,17 @@ class ShaderFile(ShaderSource):
         return self.src
     
     def __readFile(self):
-        with open(self.file, "r") as f:
-            lines = f.readlines()
+        lines: list = []
         
-        self.src = lines
+        with open(self.file, "r") as f:
+            for line in f.readlines():
+                lines.append(line)
+        
+        self.src = ''.join(lines)
     
     def __isFileChanged(self) -> bool:
-        file_stats = os.stat(self.file)
-        modification_time = file_stats[stat.ST_MTIME]
+        file_stats = Path(self.file).stat()
+        modification_time = file_stats.st_mtime
         
         if self.modification_time == None:
             self.modification_time = modification_time
