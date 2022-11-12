@@ -32,8 +32,6 @@ class ShaderFile(ShaderSource):
         return self.src
     
     def __readFile(self):
-        lines = None
-        
         with open(self.file, "r") as f:
             lines = f.readlines()
         
@@ -54,7 +52,7 @@ class ShaderFile(ShaderSource):
 
 class Shader:
     def __init__(self):
-        self.shader_sources: list = []
+        self.shader_sources: list = [] # dict: {type, shader}
     
     def __del__(self):
         pass

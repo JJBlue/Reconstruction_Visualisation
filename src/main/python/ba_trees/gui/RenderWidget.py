@@ -3,8 +3,8 @@ from PyQt6.QtCore import QSize
 from PyQt6.QtOpenGLWidgets import QOpenGLWidget
 
 from ba_trees.config import Shaders
-from render import Camera, Shader, ShaderSource
-from render.opengl import OpenGLShader
+from render import Shader, ShaderSource, Camera
+from render.opengl import OpenGLCamera, OpenGLShader
 
 
 class RenderWidget(QOpenGLWidget):
@@ -21,7 +21,7 @@ class RenderWidget(QOpenGLWidget):
         #self.fmt.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
         
         # OpenGL
-        self.camera: Camera = Camera()
+        self.camera: Camera = OpenGLCamera()
         self.shader: Shader = OpenGLShader()
         
         shader_vertex: ShaderSource = Shaders.getShaderFile(GL_VERTEX_SHADER, "default.vert")

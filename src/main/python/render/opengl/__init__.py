@@ -1,8 +1,4 @@
-from .Location import *
-
-from .Buffer import *
-from .Entity import *
-from .Model import *
+from .OpenGLBuffer import *
 from .OpenGLShader import *
-
-from .Camera import *
+from .OpenGLCamera import *
+from .OpenGLModel import *

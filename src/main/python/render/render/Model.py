@@ -1,9 +1,9 @@
-from render.opengl import Buffer
+from render.render import Buffer
 
 class Model:
-    def __init__(self):
+    def __init__(self, buffer: Buffer):
         self.vertices = None
-        self.buffer = Buffer()
+        self.buffer: Buffer = buffer
     
     def bind(self):
         self.buffer.bind()

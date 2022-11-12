@@ -1,7 +1,5 @@
 from OpenGL.GL import *
-
 from render import ShaderSource, Shader
-
 
 class OpenGLShader(Shader):
     def __init__(self):
@@ -23,17 +21,17 @@ class OpenGLShader(Shader):
     def compile(self) -> bool:
         program_new = glCreateProgram()
         
-        # TODO for shaders
-        # TODO type
-        shader: GLuint = OpenGLShader.createShader(type)
-        if shader == 0:
-            glDeleteProgram(program_new)
-            return False
+        # Attach Shader
+        for source in self.shader_sources:
+            shader: GLuint = OpenGLShader.createShader(source)
+            if shader == 0:
+                glDeleteProgram(program_new)
+                return False
+            
+            glAttachShader(program_new, shader)
         
-        glAttachShader(program_new, shader)
         
-        
-        
+        # Link Program
         glLinkProgram(program_new)
         link_status: GLint = glGetProgramiv(program_new, GL_LINK_STATUS)
         if link_status != GL_TRUE:
@@ -41,12 +39,13 @@ class OpenGLShader(Shader):
             glDeleteProgram(program_new)
             return False
         
+        # Change Program with old program
         program_old = self.program
         self.program = program_new
         
-        if glIsProgram(program_old):
+        if program_old != 0 and glIsProgram(program_old):
             glDeleteProgram(program_old)
-            
+        
         return True
     
     @staticmethod

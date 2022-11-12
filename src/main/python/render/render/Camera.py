@@ -1,8 +1,6 @@
 import glm
 
-from OpenGL.GL import *
-from render.opengl import Location, Entity
-
+from render.render import Entity, Location
 
 class Camera(Entity):
     def __init__(self):
@@ -46,13 +44,9 @@ class Camera(Entity):
         else:
             self.projection = glm.ortho(self.left, self.right, self.bottom, self.top, self.near, self.far)
     
+    # Must be implemented
     def getAspectRatio(self):
-        viewport = glGetIntegerv(GL_VIEWPORT) # x y width height
-        
-        width: float = viewport[2]
-        height: float = viewport[3]
-        
-        return width / height
+        raise 16 / 9
     
     def getPosition(self) -> Location:
         return self.position

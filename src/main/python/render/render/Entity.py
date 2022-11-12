@@ -1,4 +1,4 @@
-from render.opengl import Location
+from render.render import Location
 
 class Entity:
     def __init__(self):

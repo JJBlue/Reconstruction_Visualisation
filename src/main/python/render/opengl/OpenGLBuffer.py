@@ -1,10 +1,11 @@
 from OpenGL.GL import *
 
+from render import Buffer
 
-class Buffer:
+class OpenGLBuffer(Buffer):
     def __init__(self, buffer_type):
+        super().__init__(buffer_type)
         self.id = glGenBuffers(1)
-        self.buffer_type = buffer_type
     
     def __del__(self):
         glDeleteBuffers(1, self.id)

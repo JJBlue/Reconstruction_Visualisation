@@ -1,4 +1,4 @@
-from render.opengl.Model import Model
+from render.render import Model
 
 class Cube(Model):
     def __init__(self):
