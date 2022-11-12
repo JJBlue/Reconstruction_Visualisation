@@ -43,7 +43,11 @@ class RenderWidget(QOpenGLWidget):
         self.shader.bind()
         
         self.cube.bind()
-        #self.cube.draw()
+        #self.shader.uniform("position", position);
+        self.shader.uniform("view", self.camera.getView())
+        self.shader.uniform("view_normal", self.camera.getViewNormal())
+        self.shader.uniform("proj", self.camera.getProjection())
+        self.cube.draw()
         self.cube.unbind()
         
         self.shader.unbind()

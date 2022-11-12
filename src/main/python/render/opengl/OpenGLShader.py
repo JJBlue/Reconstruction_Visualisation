@@ -1,3 +1,6 @@
+import glm
+import numpy as np
+
 from OpenGL.GL import *
 from render import ShaderSource, Shader
 
@@ -23,6 +26,66 @@ class OpenGLShader(Shader):
     
     def unbind(self):
         glUseProgram(0)
+    
+    def uniform(self, name: str, value, count: int = 0):
+        location: int = glGetUniformLocation(self.program, name)
+        
+        if isinstance(value, int):
+            glUniform1i(location, value)
+            return
+        #elif isinstance(value, np.iarray):
+        #    glUniform1iv(location, count, value)
+        #    return
+        
+        elif isinstance(value, float):
+            glUniform1f(location, value)
+            return
+        #elif isinstance(value, np.farray):
+        #    glUniform1fv(location, count, value)
+        #    return
+        
+        elif isinstance(value, glm.fvec2):
+            glUniform2f(location, value.x, value.y)
+            return
+        elif isinstance(value, glm.fvec3):
+            glUniform3f(location, value.x, value.y, value.z)
+            return
+        elif isinstance(value, glm.fvec4):
+            glUniform4f(location, value.x, value.y, value.z, value.w)
+            return
+        
+        elif isinstance(value, glm.ivec2):
+            glUniform2i(location, value.x, value.y)
+            return
+        elif isinstance(value, glm.ivec3):
+            glUniform3i(location, value.x, value.y, value.z)
+            return
+        elif isinstance(value, glm.ivec4):
+            glUniform4i(location, value.x, value.y, value.z, value.w)
+            return
+        
+        elif isinstance(value, glm.uvec2):
+            glUniform2ui(location, value.x, value.y)
+            return
+        elif isinstance(value, glm.uvec3):
+            glUniform3ui(location, value.x, value.y, value.z)
+            return
+        elif isinstance(value, glm.uvec4):
+            glUniform4ui(location, value.x, value.y, value.z, value.w)
+            return
+        
+        elif isinstance(value, glm.mat3):
+            glUniformMatrix3fv(location, 1, GL_FALSE, glm.value_ptr(value))
+            return
+        elif isinstance(value, glm.mat4):
+            glUniformMatrix4fv(location, 1, GL_FALSE, glm.value_ptr(value))
+            return
+        
+        #elif isinstance(value, Texture):
+        #    texture.bind(unit)
+        #    glUniform1i(location, unit)
+        
+        raise Exception(f"Type not found: {type(value)}")
     
     def compile(self) -> bool:
         program_new = glCreateProgram()

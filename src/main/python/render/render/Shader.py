@@ -59,16 +59,20 @@ class Shader:
         pass
     
     def bind(self):
-        pass
+        raise NotImplementedError
     
     def unbind(self):
-        pass
+        raise NotImplementedError
+    
+    def uniform(self, name: str, value, count: int = 0):
+        raise NotImplementedError
     
     def recompile(self):
         return self.compile()
     
     def compile(self) -> bool:
-        return False # TODO exception
+        raise NotImplementedError
+        return False
     
     def addShaderSource(self, *args):
         for source in args:

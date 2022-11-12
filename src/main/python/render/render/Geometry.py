@@ -82,6 +82,7 @@ class Cube(Geometry):
                 #Back
                 4, 6, 7,
                 4, 5, 7
-            ], dtype='float32')
+            ], dtype='uint8')
         )
+        #self.indices = None
         
