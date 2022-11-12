@@ -37,7 +37,7 @@ class OpenGLMesh:
         
     def draw(self):
         if self.ibo != None:
-            glDrawElements(self.geometry_primitive_type, self.count_indices, GL_UNSIGNED_INT, 0)
+            glDrawElements(self.geometry_primitive_type, self.count_indices, GL_UNSIGNED_INT, None)
         else:
             glDrawArrays(self.geometry_primitive_type, 0, self.count_vertices)
     

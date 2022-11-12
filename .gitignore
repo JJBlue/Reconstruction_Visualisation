@@ -130,4 +130,5 @@ dmypy.json
 
 
 # OWn
-config/
+/config/*
+!/config/shaders/
