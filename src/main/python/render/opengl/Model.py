@@ -1,4 +1,4 @@
-from ba_trees.gui.render import Buffer
+from render.opengl import Buffer
 
 class Model:
     def __init__(self):

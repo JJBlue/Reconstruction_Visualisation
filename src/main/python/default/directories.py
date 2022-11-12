@@ -1,6 +1,7 @@
 from __future__ import annotations
 import os
 
+from pathlib import Path
 from default import Args, ArgsEnum
 
 class Directories:
@@ -27,6 +28,7 @@ class Directories:
             else:
                 work_dir = os.getcwd()
             
+            Path(work_dir).mkdir(parents=True, exist_ok=True)
             Directories.static_default_directories = Directories(work_dir)
         
         return Directories.static_default_directories

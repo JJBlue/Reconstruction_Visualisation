@@ -1,1 +1,1 @@
-python ./src/main/python/main.py
+python ./src/main/python/main.py -workdir "J:\Codes\git\BA_Trees\config"

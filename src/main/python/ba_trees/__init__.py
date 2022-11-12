@@ -3,6 +3,7 @@ from default import *
 from .main_init.pre_main import premain
 
 try:
+    from .config import *
     from .gui import *
 except ImportError:
     pass

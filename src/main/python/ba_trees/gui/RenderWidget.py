@@ -1,8 +1,10 @@
+from OpenGL.GL import *
 from PyQt6.QtCore import QSize
 from PyQt6.QtOpenGLWidgets import QOpenGLWidget
 
-from ba_trees.gui.render import Shader, Camera, ShaderSource, ShaderFile
-from OpenGL.GL import *
+from ba_trees.config import Shaders
+from render import Camera, Shader, ShaderSource
+from render.opengl import OpenGLShader
 
 
 class RenderWidget(QOpenGLWidget):
@@ -20,9 +22,9 @@ class RenderWidget(QOpenGLWidget):
         
         # OpenGL
         self.camera: Camera = Camera()
-        self.shader: Shader = Shader()
+        self.shader: Shader = OpenGLShader()
         
-        shader_vertex: ShaderSource = ShaderFile(GL_VERTEX_SHADER, "J:\D\Schule Informatik\git\BA_Trees\src\main\python\ba_trees\gui\render\shader\default.vert")
+        shader_vertex: ShaderSource = Shaders.getShaderFile(GL_VERTEX_SHADER, "default.vert")
         self.shader.addShaderSource(shader_vertex)
         
         

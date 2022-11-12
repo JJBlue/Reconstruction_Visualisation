@@ -1,4 +1,4 @@
-from ba_trees.gui.render.Model import Model
+from render.opengl.Model import Model
 
 class Cube(Model):
     def __init__(self):

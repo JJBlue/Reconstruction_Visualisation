@@ -1,7 +1,7 @@
 import glm
 
 from OpenGL.GL import *
-from ba_trees.gui.render import Location, Entity
+from render.opengl import Location, Entity
 
 
 class Camera(Entity):
