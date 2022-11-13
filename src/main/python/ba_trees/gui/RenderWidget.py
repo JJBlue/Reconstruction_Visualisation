@@ -13,7 +13,7 @@ class RenderWidget(QOpenGLWidget):
     def __init__(self, parent = None):
         super().__init__(parent)
         #self.setMinimumSize(640, 480)
-        self.setFixedSize(QSize(640, 480))
+        self.setFixedSize(QSize(1920, 1080))
         
     def initializeGL(self):
         super().initializeGL()
@@ -38,8 +38,10 @@ class RenderWidget(QOpenGLWidget):
         super().paintGL()
         
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        #glEnable(GL_CULL_FACE)
-        #glCullFace(GL_FRONT)
+        
+        glFrontFace(GL_CCW)
+        glCullFace(GL_BACK)
+        glEnable(GL_CULL_FACE)
         
         self.shader.bind()
         
