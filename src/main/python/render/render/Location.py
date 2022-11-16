@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import glm
 
 class Position:
@@ -22,31 +24,48 @@ class Position:
     def setZ(self, z: float):
         self.position.z = z
     
+    def move(self, direction: glm.vec3):
+        self.position += direction
+    
     def getPosition(self) -> glm.vec3:
         return self.position
+    
+    def setPosition(self,position: glm.vec3):
+        self.position = position
+    
+    def setPositionClass(self, position: Position):
+        self.position = position.getPosition()
 
 class Location(Position):
     def __init__(self, x = 0, y = 0, z = 0, pitch = 0, yaw = 0, roll = 0):
         super().__init__(x, y, z)
-        
-        self.pitch: float = pitch
-        self.yaw: float = yaw
-        self.roll: float = roll
+        self.orientation = glm.fvec3(roll, pitch, yaw)
     
     def getPitch(self) -> float:
-        return self.pitch
+        return self.orientation.y
     
     def setPitch(self, pitch: float):
-        self.pitch = pitch
+        self.orientation.y = pitch
     
     def getYaw(self) -> float:
-        return self.yaw
+        return self.orientation.z
     
     def setYaw(self, yaw: float):
-        self.yaw = yaw
+        self.orientation.z = yaw
     
     def getRoll(self) -> float:
-        return self.roll
+        return self.orientation.x
     
     def setRoll(self, roll: float):
-        self.roll = roll
+        self.orientation.x = roll
+    
+    def getOrientation(self) -> glm.vec3:
+        return self.orientation
+    
+    def setOrientation(self, orientation: glm.vec3):
+        self.orientation = orientation
+    
+    def setLocation(self, location: Location):
+        self.setPositionClass(location)
+        self.orientation = location.orientation
+        

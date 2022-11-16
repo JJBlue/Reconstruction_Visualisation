@@ -59,3 +59,22 @@ class Camera(Entity):
     
     def getProjection(self) -> glm.mat4x4:
         return self.projection
+    
+    # Movement
+    def forward(self, amount: float):
+        self.position.move(amount * self.direction)
+        
+    def backward(self, amount: float):
+        self.position.move(-amount * self.direction)
+    
+    def rightward(self, amount: float):
+        self.position.move(amount * glm.cross(self.direction, self.up))
+    
+    def leftward(self, amount: float):
+        self.position.move(-amount * glm.cross(self.direction, self.up))
+    
+    def upward(self, amount: float):
+        self.position.move(amount * glm.normalize(glm.cross(glm.cross(self.direction, self.up), self.direction)))
+    
+    def downward(self, amount: float):
+        self.position.move(-amount * glm.normalize(glm.cross(glm.cross(self.direction, self.up), self.direction)))
