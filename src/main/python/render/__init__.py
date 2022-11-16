@@ -1,6 +1,6 @@
-from .render import *
+from render.render import *
 
 try:
-    from .opengl import *
+    from render.opengl import *
 except ImportError:
     print("OpenGL Render could not be loaded")

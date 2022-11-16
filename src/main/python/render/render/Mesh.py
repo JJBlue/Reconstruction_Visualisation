@@ -10,3 +10,6 @@ class Mesh:
     
     def unbind(self):
         raise NotImplementedError
+    
+    def updateModel(self):
+        raise NotImplementedError

@@ -5,7 +5,7 @@ from PyQt6.QtOpenGL import QOpenGLVersionProfile
 from PyQt6.QtOpenGLWidgets import QOpenGLWidget
 
 from ba_trees.config import Shaders
-from render import Shader, Camera, Cube, Mesh
+from render import Shader, Camera, Cube, CubeDotCloud, Mesh
 from render.opengl import OpenGLCamera, OpenGLShader, OpenGLMesh
 
 
@@ -26,12 +26,19 @@ class RenderWidget(QOpenGLWidget):
         self.camera: Camera = OpenGLCamera()
         self.shader: Shader = OpenGLShader()
         
+        #self.shader.addShaderSource(
+        #    Shaders.getShaderFile(GL_VERTEX_SHADER, "default.vert"),
+        #    Shaders.getShaderFile(GL_FRAGMENT_SHADER, "default.frag")
+        #)
+        
+        #self.cube: Mesh = OpenGLMesh(Cube())
+        
         self.shader.addShaderSource(
-            Shaders.getShaderFile(GL_VERTEX_SHADER, "default.vert"),
-            Shaders.getShaderFile(GL_FRAGMENT_SHADER, "default.frag")
+            Shaders.getShaderFile(GL_VERTEX_SHADER, "point_cloud.vert"),
+            Shaders.getShaderFile(GL_FRAGMENT_SHADER, "point_cloud.frag")
         )
         
-        self.cube: Mesh = OpenGLMesh(Cube())
+        self.cube: Mesh = OpenGLMesh(CubeDotCloud())
         
         
     def paintGL(self):

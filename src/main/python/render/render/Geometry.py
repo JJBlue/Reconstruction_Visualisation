@@ -1,8 +1,11 @@
 import numpy as np
 
+from render.render import PrimitiveType, Primitves
+
 class GeometryData:
-    def __init__(self, dimension: int, data: np.ndarray):
+    def __init__(self, dimension: int, data: np.ndarray, primitive_type: PrimitiveType = PrimitiveType.FLOAT):
         self.dimension: int = dimension
+        self.primitive_type: PrimitiveType = primitive_type
         self.data: np.ndarray = data
         self.size: int = int(len(self.data) / self.dimension)
     
@@ -14,6 +17,9 @@ class GeometryData:
     
     def getSize(self) -> int:
         return self.size
+    
+    def getPrimitiveType(self) -> PrimitiveType:
+        return self.primitive_type
 
 class Geometry:
     def __init__(self):
@@ -22,6 +28,8 @@ class Geometry:
         self.indices: GeometryData = None
         
         self.all_vertices: list = []
+        
+        self.primtive = Primitves.TRIANGLES
     
     def getAllVertices(self) -> list:
         return self.all_vertices
@@ -34,10 +42,20 @@ class Geometry:
     
     def getIndices(self) -> GeometryData:
         return self.indices
+    
+    def getPrimitive(self):
+        return self.primtive
+
+
+##########################
+### Default Primitives ###
+##########################
 
 class Cube(Geometry):
     def __init__(self):
         super().__init__()
+        
+        self.primtive = Primitves.TRIANGLES
         
         # GLfloat
         self.vertices = GeometryData(
@@ -67,7 +85,8 @@ class Cube(Geometry):
                  0.5,  0.5, -0.5, #21    #7 (right top back)
                  0.5,  0.5, -0.5, #22
                  0.5,  0.5, -0.5  #23
-            ], np.float32)
+            ], np.float32),
+            PrimitiveType.FLOAT
         )
         self.all_vertices.append(self.vertices)
         
@@ -98,7 +117,8 @@ class Cube(Geometry):
                  1.0,  0.0,  0.0, #7 (right top back)
                  0.0,  1.0,  0.0,
                  0.0,  0.0, -1.0
-            ], np.float32)
+            ], np.float32),
+            PrimitiveType.FLOAT
         )
         self.all_vertices.append(self.normales)
         
@@ -129,12 +149,15 @@ class Cube(Geometry):
                 #Back
                 14, 20, 23,
                 23, 17, 14
-            ], np.uint32)
+            ], np.uint32),
+            PrimitiveType.UNSIGNED_INT
         )
 
 class CubeWithoutNormals(Geometry):
     def __init__(self):
         super().__init__()
+        
+        self.primtive = Primitves.TRIANGLES
         
         self.vertices = GeometryData(
             3,
@@ -177,15 +200,91 @@ class CubeWithoutNormals(Geometry):
                 #Back
                 4, 6, 7,
                 4, 5, 7
-            ], np.uint32)
+            ], np.uint32),
+            PrimitiveType.UNSIGNED_INT
         )
 
-# Triangle
-#self.vertices = GeometryData(
-#    3,
-#    np.array([
-#        -0.5, -0.5, 0.0, 1.0, 0.0, 0.0,
-#         0.5, -0.5, 0.0, 0.0, 1.0, 0.0,
-#         0.0,  0.5, 0.0, 0.0, 0.0, 1.0,
-#    ], np.float32)
-#)
+class CubeDotCloud(Geometry):
+    def __init__(self):
+        super().__init__()
+        
+        size_per_unit: int = 100
+        size: int = 1
+        
+        global_size = size * size_per_unit
+        
+        tmp_vertices: list = []
+        tmp_normal: list = []
+        tmp_color: list = []
+        
+        for tx in range(global_size + 1):
+            for ty in range(global_size + 1):
+                for tz in range(global_size + 1):
+                    x: int = (tx / size_per_unit) - (size / 2.0)
+                    y: int = (ty / size_per_unit) - (size / 2.0)
+                    z: int = (tz / size_per_unit) - (size / 2.0)
+                    
+                    tmp_vertices.append(x)
+                    tmp_vertices.append(y)
+                    tmp_vertices.append(z)
+                    
+                    # x
+                    if tx == 0:
+                        tmp_normal.append(-1)
+                    elif tx == global_size:
+                        tmp_normal.append(1)
+                    else:
+                        tmp_normal.append(0)
+                    
+                    if ty == 0:
+                        tmp_normal.append(-1)
+                    elif ty == global_size:
+                        tmp_normal.append(1)
+                    else:
+                        tmp_normal.append(0)
+                    
+                    if tz == 0:
+                        tmp_normal.append(-1)
+                    elif tz == global_size:
+                        tmp_normal.append(1)
+                    else:
+                        tmp_normal.append(0)
+                    
+                    tmp_color.append(float(tx / global_size))
+                    tmp_color.append(float(ty / global_size))
+                    tmp_color.append(float(tz / global_size))
+        
+        self.primtive = Primitves.POINTS
+        
+        self.vertices = GeometryData(3, np.array(tmp_vertices, np.float32), PrimitiveType.FLOAT)
+        self.all_vertices.append(self.vertices)
+        
+        self.normales = GeometryData(3, np.array(tmp_normal, np.float32), PrimitiveType.FLOAT)
+        self.all_vertices.append(self.normales)
+        
+        self.colors = GeometryData(3, np.array(tmp_color, np.float32), PrimitiveType.FLOAT)
+        self.all_vertices.append(self.colors)
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        

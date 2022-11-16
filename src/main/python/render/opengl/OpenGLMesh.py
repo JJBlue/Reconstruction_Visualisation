@@ -1,20 +1,19 @@
-import numpy as np
-
 from OpenGL.GL import *
 
-from render.opengl import OpenGLBufferFactory
+import numpy as np
+from render.opengl import OpenGLBufferFactory, Types
 from render.render import Buffer, Geometry
 
 
 class OpenGLMesh:
-    def __init__(self, model: Geometry, geometry_primitive_type = GL_TRIANGLES):
+    def __init__(self, model: Geometry):
         self.model = model
         self.vao = glGenVertexArrays(1)
         
         self.vbos: list[Buffer] = []
         self.ibo: Buffer = None
         
-        self.geometry_primitive_type = geometry_primitive_type
+        self.geometry_primitive_type = Types.PrimitivesToOpenGL(model.getPrimitive())
         self.count_vertices = 0
         self.count_indices = 0
         
@@ -47,7 +46,7 @@ class OpenGLMesh:
         
         # Verticies
         for geo_data in self.model.getAllVertices():
-            self.addVertexBuffer(GL_FLOAT, geo_data.getDimension(), geo_data.getSize(), geo_data.getData())
+            self.addVertexBuffer(Types.PrimitiveTypeToOpenGL(geo_data.getPrimitiveType()), geo_data.getDimension(), geo_data.getSize(), geo_data.getData())
         
         # Indicies
         indices = self.model.indices

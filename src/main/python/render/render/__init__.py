@@ -1,3 +1,5 @@
+from render.render.types import *
+
 from render.render.Renderer import *
 from render.render.Buffer import *
 from render.render.Location import *
