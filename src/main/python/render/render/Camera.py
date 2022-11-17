@@ -78,3 +78,12 @@ class Camera(Entity):
     
     def downward(self, amount: float):
         self.position.move(-amount * glm.normalize(glm.cross(glm.cross(self.direction, self.up), self.direction)))
+    
+    def pitch(self, degree: float):
+        self.direction = glm.normalize(glm.rotate(self.direction, degree * glm.pi() / 180.0, glm.normalize(glm.cross(self.direction, self.up))))
+    
+    def yaw(self, degree: float):
+        self.direction = glm.normalize(glm.rotate(self.direction, degree * glm.pi() / 180.0, self.up))
+    
+    def roll(self, degree: float):
+        self.up = glm.normalize(glm.rotate(self.up, degree * glm.pi() / 180.0, self.direction))

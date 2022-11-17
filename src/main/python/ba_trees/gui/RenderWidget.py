@@ -18,6 +18,7 @@ class RenderWidget(QOpenGLWidget):
         #self.setMinimumSize(640, 480)
         self.setFixedSize(QSize(1920, 1080))
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus) # Must be set for keyPressEvent to work
+        self.setMouseTracking(True) # To track Mouse Move without click event
         
         # GL Settings
         self.camera: Camera = None
@@ -41,6 +42,12 @@ class RenderWidget(QOpenGLWidget):
                     self.camera.rightward(self.camera_speed)
                     self.repaint()
     
+    def mousePressEvent(self, event):
+        pass
+
+    def mouseMoveEvent(self, event):
+        pass
+
     def initializeGL(self):
         super().initializeGL()
         
