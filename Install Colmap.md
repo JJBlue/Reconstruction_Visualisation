@@ -71,7 +71,7 @@ cd pycolmap
 pip install .
 ```
 
-# Windows
+# Windows (not working yet)
 
 Download Visual Studio 2019 at:
 https://visualstudio.microsoft.com/de/vs/older-downloads/
@@ -90,6 +90,7 @@ cd vcpkg
 # .\vcpkg install colmap[cuda,tests]:x64-windows
 .\vcpkg.exe install colmap --triplet=x64-windows --head
 # .\vcpkg install colmap[cuda-redist]:x64-windows     # To compile CUDA for multiple compute architectures
+# .\vcpkg.exe install pthread --triplet=x64-windows     # https://github.com/colmap/pycolmap/issues/76
 ```
 
 On Error Missing Cuda, download Cuda and/or edit Portfile:
@@ -115,31 +116,3 @@ $env:path += ";C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Com
 # py -m pip install ./
 pip install .
 ```
-
-<br><br><br><br>
-
-TODO (Others)
-
-To modify the source code, you can further add --editable --no-downloads. Or, if you want to build from another folder and use the dependencies from vcpkg, first run ```./vcpkg integrate install``` and then configure COLMAP as:
-```
-cd path/to/colmap
-mkdir build
-cd build
-cmake .. -DCMAKE_TOOLCHAIN_FILE=path/to/vcpkg/scripts/buildsystems/vcpkg.cmake
-cmake --build . --config release --target colmap_exe --parallel 24
-```
-
-
-Alternative Python Script
-
-```
-python scripts/python/build.py \
-    --build_path path/to/colmap/build \
-    --colmap_path path/to/colmap \
-    --boost_path "C:/local/boost_1_64_0/lib64-msvc-14.0" \
-    --qt_path "C:/Qt/5.9.3/msvc2015_64" \
-    --cuda_path "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v8.0" \
-    --cgal_path "C:/dev/CGAL-4.11.2/build"
-```
-
-Note that under Windows you must use forward slashes for specifying the paths here. If you want to compile COLMAP using a specific Visual Studio version, you can for example specify --cmake_generator "Visual Studio 14" for Visual Studio 2015. If you want to open the COLMAP source code in Visual Studio, you can open the solution file in path/to/colmap/build/colmap/build.
