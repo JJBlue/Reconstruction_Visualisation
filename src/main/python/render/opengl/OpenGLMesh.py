@@ -44,6 +44,10 @@ class OpenGLMesh:
         if self.model == None:
             return
         
+        self.geometry_primitive_type = Types.PrimitivesToOpenGL(self.model.getPrimitive())
+        self.count_vertices = 0
+        self.count_indices = 0
+        
         # Verticies
         for geo_data in self.model.getAllVertices():
             self.addVertexBuffer(Types.PrimitiveTypeToOpenGL(geo_data.getPrimitiveType()), geo_data.getDimension(), geo_data.getSize(), geo_data.getData())

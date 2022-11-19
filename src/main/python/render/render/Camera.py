@@ -7,14 +7,14 @@ class Camera(Entity):
         super().__init__()
         
         # Camera Variables
-        self.near: float = 0.01
+        self.near: float = 0.01 # Default: 0.01
         self.far: float = 1000
         self.left: float = -100
         self.right: float = 100
         self.bottom: float = -100
         self.top: float = 100
         
-        self.fov: float = 70 # in degree
+        self.fov: float = 90 # in degree: default 70
         
         self.perspective = True
         

@@ -1,6 +1,5 @@
 from OpenGL.GL import *
-
-from PyQt6.QtCore import QSize, Qt
+from PyQt6.QtCore import QSize, Qt, QPoint
 from PyQt6.QtGui import QSurfaceFormat
 from PyQt6.QtOpenGL import QOpenGLVersionProfile
 from PyQt6.QtOpenGLWidgets import QOpenGLWidget
@@ -25,28 +24,53 @@ class RenderWidget(QOpenGLWidget):
         self.shader: Shader = None
         
         self.camera_speed: float = 0.1
+        
+        self.mouse_pressed: bool = False
+        self.mouse_x: float = -1
+        self.mouse_y: float = -1
     
     def keyPressEvent(self, event):
         if self.camera != None:
-            match  event.key():
-                case Qt.Key.Key_W:
-                    self.camera.forward(self.camera_speed)
-                    self.repaint()
-                case Qt.Key.Key_S:
-                    self.camera.backward(self.camera_speed)
-                    self.repaint()
-                case Qt.Key.Key_A.value:
-                    self.camera.leftward(self.camera_speed)
-                    self.repaint()
-                case Qt.Key.Key_D:
-                    self.camera.rightward(self.camera_speed)
-                    self.repaint()
+            key = event.key()
+
+            if key == Qt.Key.Key_W:
+                self.camera.forward(self.camera_speed)
+                self.repaint()
+            elif key == Qt.Key.Key_S:
+                self.camera.backward(self.camera_speed)
+                self.repaint()
+            elif key == Qt.Key.Key_A:
+                self.camera.leftward(self.camera_speed)
+                self.repaint()
+            elif key == Qt.Key.Key_D:
+                self.camera.rightward(self.camera_speed)
+                self.repaint()
     
     def mousePressEvent(self, event):
-        pass
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.mouse_pressed = True
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.mouse_pressed = False
+            self.mouse_x: float = -1
+            self.mouse_y: float = -1
 
     def mouseMoveEvent(self, event):
-        pass
+        if self.mouse_pressed:
+            pos: QPoint = event.position()
+
+            if self.mouse_x != -1:
+                degree: float = pos.x() - self.mouse_x
+                self.camera.yaw(degree * -1.0 / 10.0)
+
+                degree: float = pos.y() - self.mouse_y
+                self.camera.pitch(degree * -1.0 / 10.0)
+                
+                self.repaint()
+            
+            self.mouse_x = pos.x()
+            self.mouse_y = pos.y()
 
     def initializeGL(self):
         super().initializeGL()
@@ -88,6 +112,10 @@ class RenderWidget(QOpenGLWidget):
         glCullFace(GL_BACK)
         glEnable(GL_CULL_FACE)
         
+        glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+        
+        glEnable(GL_DEPTH_TEST);
+        
         # Draw
         self.shader.bind()
         
@@ -103,3 +131,5 @@ class RenderWidget(QOpenGLWidget):
         
         # Disable OpenGL Settings
         glDisable(GL_CULL_FACE)
+        glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
+        glDisable(GL_DEPTH_TEST);

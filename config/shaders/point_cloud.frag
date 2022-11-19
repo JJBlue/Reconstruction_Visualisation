@@ -26,4 +26,5 @@ void main() {
 	// Color
 	vec3 result_color = (ambient + diffuse) * color;
 	out_color = vec4(result_color, 1.0);
+	out_color = vec4(normal * 0.5 + 0.5, 1.0);
 }

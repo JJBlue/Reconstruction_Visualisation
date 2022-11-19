@@ -220,9 +220,9 @@ class CubeDotCloud(Geometry):
         for tx in range(global_size + 1):
             for ty in range(global_size + 1):
                 for tz in range(global_size + 1):
-                    x: int = (tx / size_per_unit) - (size / 2.0)
-                    y: int = (ty / size_per_unit) - (size / 2.0)
-                    z: int = (tz / size_per_unit) - (size / 2.0)
+                    x: float = (tx / size_per_unit) - (size / 2.0)
+                    y: float = (ty / size_per_unit) - (size / 2.0)
+                    z: float = (tz / size_per_unit) - (size / 2.0)
                     
                     tmp_vertices.append(x)
                     tmp_vertices.append(y)
@@ -230,25 +230,25 @@ class CubeDotCloud(Geometry):
                     
                     # x
                     if tx == 0:
-                        tmp_normal.append(-1)
+                        tmp_normal.append(-1.0)
                     elif tx == global_size:
-                        tmp_normal.append(1)
+                        tmp_normal.append(1.0)
                     else:
-                        tmp_normal.append(0)
+                        tmp_normal.append(0.0)
                     
                     if ty == 0:
-                        tmp_normal.append(-1)
+                        tmp_normal.append(-1.0)
                     elif ty == global_size:
-                        tmp_normal.append(1)
+                        tmp_normal.append(1.0)
                     else:
-                        tmp_normal.append(0)
+                        tmp_normal.append(0.0)
                     
                     if tz == 0:
-                        tmp_normal.append(-1)
+                        tmp_normal.append(-1.0)
                     elif tz == global_size:
-                        tmp_normal.append(1)
+                        tmp_normal.append(1.0)
                     else:
-                        tmp_normal.append(0)
+                        tmp_normal.append(0.0)
                     
                     tmp_color.append(float(tx / global_size))
                     tmp_color.append(float(ty / global_size))
