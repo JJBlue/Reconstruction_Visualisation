@@ -59,7 +59,7 @@ def install_packages(packages: list) -> bool:
     for pkg in packages:
         print(f"Installing Module: {pkg}")
         
-        result = subprocess.check_call(["pip", "install", pkg])
+        result = subprocess.check_call([sys.executable, "-m", "pip", "install", pkg])
         if result > 0 :
             print(f"Module installation failed: {pkg}")
             print(f"Exit Status: {result}")
@@ -90,7 +90,7 @@ def remove_packages(packages: list) -> bool:
     for pkg in packages:
         print(f"Deinstall Module: {pkg}")
         
-        result = subprocess.check_call(["pip", "uninstall", pkg])
+        result = subprocess.check_call([sys.executable, "-m", "pip", "uninstall", pkg])
         if result > 0 :
             print(f"Module uninstallation failed: {pkg}")
             print(f"Exit Status: {result}")
