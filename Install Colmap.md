@@ -71,7 +71,7 @@ cd pycolmap
 pip install .
 ```
 
-# Windows (not working yet)
+# Windows
 
 Download Visual Studio 2019 at:
 https://visualstudio.microsoft.com/de/vs/older-downloads/
@@ -91,6 +91,7 @@ cd vcpkg
 .\vcpkg.exe install colmap --triplet=x64-windows --head
 # .\vcpkg install colmap[cuda-redist]:x64-windows     # To compile CUDA for multiple compute architectures
 # .\vcpkg.exe install pthread --triplet=x64-windows     # https://github.com/colmap/pycolmap/issues/76
+# Or Upgrade with: .\vcpkg upgrade --no-dry-run
 ```
 
 On Error Missing Cuda, download Cuda and/or edit Portfile:
@@ -111,8 +112,11 @@ Then set the `CMAKE_TOOLCHAIN_FILE` environment variable to your `vcpkg\scripts\
 # git clone --recursive git@github.com:colmap/pycolmap.git
 git clone --recursive https://github.com/colmap/pycolmap
 cd pycolmap
+cd pybind11
+git checkout 252ed8fb52e46eb3ec3e3b8c621ca9f79b53b26a   # Latest Release
+cd ..
 $env:CMAKE_TOOLCHAIN_FILE='C:\src\vcpkg\scripts\buildsystems\vcpkg.cmake'
 $env:path += ";C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin"
-# py -m pip install ./
-pip install .
+py -m pip install ./
+# pip install .
 ```
