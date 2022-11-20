@@ -12,7 +12,7 @@ out vec3 color;
 
 void main() {
 	gl_Position = proj * view * vec4(pos, 1.0);
-	gl_PointSize = 10;
+	gl_PointSize = 1;
 
 	normal = in_normal;
 	color = in_color;

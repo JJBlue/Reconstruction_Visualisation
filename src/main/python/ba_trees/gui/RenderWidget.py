@@ -1,12 +1,17 @@
+from pathlib import Path
+
 from OpenGL.GL import *
 from PyQt6.QtCore import QSize, Qt, QPoint
 from PyQt6.QtGui import QSurfaceFormat
 from PyQt6.QtOpenGL import QOpenGLVersionProfile
 from PyQt6.QtOpenGLWidgets import QOpenGLWidget
 
-from ba_trees.config import Shaders
+from ba_trees import Shaders
+from ba_trees.config.ConfigDirectories import ConfigDirectories
+from ba_trees.workspace.colmap import ColmapWorkspace
 from render import Shader, Camera, Cube, CubeDotCloud, Mesh
 from render.opengl import OpenGLCamera, OpenGLShader, OpenGLMesh
+from render.render import Model
 
 
 class RenderWidget(QOpenGLWidget):
@@ -28,6 +33,9 @@ class RenderWidget(QOpenGLWidget):
         self.mouse_pressed: bool = False
         self.mouse_x: float = -1
         self.mouse_y: float = -1
+        
+        self.colmap: ColmapWorkspace = ColmapWorkspace(Path(ConfigDirectories.getDefaultConfigDirectories().getWorkspaceFolder()).joinpath("reconstruction").absolute())
+        self.colmap.open()
     
     def keyPressEvent(self, event):
         if self.camera != None:
@@ -47,7 +55,7 @@ class RenderWidget(QOpenGLWidget):
                 self.repaint()
     
     def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton and self.camera != None:
             self.mouse_pressed = True
 
     def mouseReleaseEvent(self, event):
@@ -83,19 +91,12 @@ class RenderWidget(QOpenGLWidget):
         self.camera = OpenGLCamera()
         self.shader = OpenGLShader()
         
-        #self.shader.addShaderSource(
-        #    Shaders.getShaderFile(GL_VERTEX_SHADER, "default.vert"),
-        #    Shaders.getShaderFile(GL_FRAGMENT_SHADER, "default.frag")
-        #)
-        
-        #self.cube: Mesh = OpenGLMesh(Cube())
-        
         self.shader.addShaderSource(
             Shaders.getShaderFile(GL_VERTEX_SHADER, "point_cloud.vert"),
             Shaders.getShaderFile(GL_FRAGMENT_SHADER, "point_cloud.frag")
         )
         
-        self.cube: Mesh = OpenGLMesh(CubeDotCloud())
+        self.cube: Model = Model(OpenGLMesh(self.colmap.getGeometry()))
         
         
     def paintGL(self):

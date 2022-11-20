@@ -132,3 +132,4 @@ dmypy.json
 # OWn
 /config/*
 !/config/shaders/
+/src/main/python/colmap_wrapper/*

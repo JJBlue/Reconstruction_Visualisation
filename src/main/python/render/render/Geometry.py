@@ -265,7 +265,41 @@ class CubeDotCloud(Geometry):
         self.colors = GeometryData(3, np.array(tmp_color, np.float32), PrimitiveType.FLOAT)
         self.all_vertices.append(self.colors)
     
-
+class Pane(Geometry):
+    def __init__(self):
+        super().__init__()
+        
+        self.primtive = Primitves.TRIANGLES
+        
+        self.vertices = GeometryData(
+            3,
+            np.array([
+                0.0, 0.0, 0.0, #0
+                0.0, 1.0, 0.0, #1
+                1.0, 0.0, 0.0, #2
+                1.0, 1.0, 0.0, #3
+            ], np.float32)
+        )
+        self.all_vertices.append(self.vertices)
+        
+        self.normales = GeometryData(
+            3,
+            np.array([
+                0.0, 0.0, 1.0,
+                0.0, 0.0, 1.0,
+                0.0, 0.0, 1.0,
+                0.0, 0.0, 1.0,
+            ])
+        )
+        self.all_vertices.append(self.normales)
+        
+        self.indices = GeometryData(
+            1,
+            np.array([
+                0, 2, 1,
+                1, 2, 3
+            ], np.uint32),
+            PrimitiveType.UNSIGNED_INT
 
 
 

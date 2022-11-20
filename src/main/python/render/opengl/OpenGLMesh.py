@@ -1,23 +1,24 @@
+import numpy as np
+
 from OpenGL.GL import *
 
-import numpy as np
 from render.opengl import OpenGLBufferFactory, Types
-from render.render import Buffer, Geometry
+from render.render import Buffer, Geometry, Mesh
 
 
-class OpenGLMesh:
-    def __init__(self, model: Geometry):
-        self.model = model
+class OpenGLMesh(Mesh):
+    def __init__(self, geometry: Geometry):
+        super().__init__(geometry)
         self.vao = glGenVertexArrays(1)
         
         self.vbos: list[Buffer] = []
         self.ibo: Buffer = None
         
-        self.geometry_primitive_type = Types.PrimitivesToOpenGL(model.getPrimitive())
+        self.geometry_primitive_type = None
         self.count_vertices = 0
         self.count_indices = 0
         
-        self.updateModel()
+        self.updateGeometry()
     
     def __del__(self):
         try:
@@ -40,20 +41,20 @@ class OpenGLMesh:
         else:
             glDrawArrays(self.geometry_primitive_type, 0, self.count_vertices)
     
-    def updateModel(self):
-        if self.model == None:
+    def updateGeometry(self):
+        if self.geometry == None:
             return
         
-        self.geometry_primitive_type = Types.PrimitivesToOpenGL(self.model.getPrimitive())
+        self.geometry_primitive_type = Types.PrimitivesToOpenGL(self.geometry.getPrimitive())
         self.count_vertices = 0
         self.count_indices = 0
         
         # Verticies
-        for geo_data in self.model.getAllVertices():
+        for geo_data in self.geometry.getAllVertices():
             self.addVertexBuffer(Types.PrimitiveTypeToOpenGL(geo_data.getPrimitiveType()), geo_data.getDimension(), geo_data.getSize(), geo_data.getData())
         
         # Indicies
-        indices = self.model.indices
+        indices = self.geometry.indices
         if indices != None:
             self.addIndexBuffer(indices.getSize(), indices.getData())
     

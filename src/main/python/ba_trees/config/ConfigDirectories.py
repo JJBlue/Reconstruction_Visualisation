@@ -9,6 +9,7 @@ class ConfigDirectories:
     
     def __init__(self):
         self.shader_folder = Path(self.getWorkingDirectory()).joinpath("shaders")
+        self.workspace_folder = Path(self.getWorkingDirectory()).joinpath("workspace")
     
     def getWorkingDirectory(self) -> str:
         dirs = Directories.getDefaultDirectories()
@@ -20,6 +21,9 @@ class ConfigDirectories:
     
     def getShaderFolder(self):
         return self.shader_folder
+    
+    def getWorkspaceFolder(self):
+        return self.workspace_folder
     
     @staticmethod
     def getDefaultConfigDirectories() -> ConfigDirectories:

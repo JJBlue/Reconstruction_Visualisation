@@ -46,7 +46,7 @@ class Camera(Entity):
     
     # Must be implemented
     def getAspectRatio(self):
-        raise 16 / 9
+        raise NotImplementedError()
     
     def getPosition(self) -> Location:
         return self.position

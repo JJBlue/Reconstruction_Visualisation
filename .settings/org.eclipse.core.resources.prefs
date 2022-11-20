@@ -1,0 +1,7 @@
+eclipse.preferences.version=1
+encoding//src/main/python/colmap_wrapper/__init__.py=utf-8
+encoding//src/main/python/colmap_wrapper/bin.py=utf-8
+encoding//src/main/python/colmap_wrapper/camera.py=utf-8
+encoding//src/main/python/colmap_wrapper/colmap.py=utf-8
+encoding//src/main/python/colmap_wrapper/utils.py=utf-8
+encoding//src/main/python/colmap_wrapper/visualization.py=utf-8

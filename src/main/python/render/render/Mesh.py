@@ -1,5 +1,8 @@
+from render.render import Geometry
+
 class Mesh:
-    def __init__(self):
+    def __init__(self, geometry: Geometry):
+        self.geometry = geometry
         pass
     
     def bind(self):
@@ -11,5 +14,5 @@ class Mesh:
     def unbind(self):
         raise NotImplementedError
     
-    def updateModel(self):
+    def updateGeometry(self):
         raise NotImplementedError

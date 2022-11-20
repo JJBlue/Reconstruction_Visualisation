@@ -8,7 +8,5 @@ def startup_main():
     from ba_trees import postmain
     postmain()
 
-
-
 if __name__ == "__main__":
     startup_main()
