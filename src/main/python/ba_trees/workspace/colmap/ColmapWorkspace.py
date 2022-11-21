@@ -1,11 +1,16 @@
 from __future__ import annotations
 
-import numpy as np
-
 from pathlib import Path
 
+from PIL import Image
+
 from ba_trees import Workspace
-from render.render import Geometry, Primitves, GeometryData, PrimitiveType
+import numpy as np
+from render.render import Geometry, Primitves, GeometryData, PrimitiveType, Model, Pane,\
+    Texture
+from render.render.Texture import ImageInformation
+
+
 
 
 try:
@@ -16,9 +21,9 @@ except ImportError:
 class ColmapWorkspace(Workspace):
     def __init__(self, folder: str):
         self.folder: str = folder
-        self.folder_sparse: str = Path(folder).joinpath("sparse").absolute()
-        self.folder_images: str = Path(folder).joinpath("images").absolute()
-        self.folder_stereo: str = Path(folder).joinpath("stereo").absolute()
+        self.folder_sparse: Path = Path(folder).joinpath("sparse")
+        self.folder_images: Path = Path(folder).joinpath("images")
+        self.folder_stereo: Path = Path(folder).joinpath("stereo")
         
         self.loaded: bool = False
         self.reconstruction = None
@@ -27,7 +32,7 @@ class ColmapWorkspace(Workspace):
         if self.loaded:
             return True
         
-        self.reconstruction = pycolmap.Reconstruction(self.folder_sparse)
+        self.reconstruction = pycolmap.Reconstruction(self.folder_sparse.absolute())
         print(self.reconstruction.summary())
         # uv = camera.world_to_image(image.project(point3D.xyz))
         
@@ -41,8 +46,18 @@ class ColmapWorkspace(Workspace):
             #self.cameras.append(camera)
             break
         
-        for _, _ in self.reconstruction.images.items(): # image_id, camera_id, name, triangulated
-            break
+        self.images: list = []
+        for _, image in self.reconstruction.images.items(): # image_id, camera_id, name, triangulated
+            image_file = self.folder_images.joinpath(image.name).absolute()
+            #image_information = ImageInformation()
+            #data = np.array(list(img.getdata()), np.int8) # TODO change int8 (read out from source)
+            
+            # model: Model = Model(OpenGLMesh(Pane()))
+            # TODO Move Model
+            
+            #tex: Texture = OpenGLTexture()
+            
+            #self.images.append(model)
         
         # Finished
         self.loaded = True

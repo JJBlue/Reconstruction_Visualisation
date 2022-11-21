@@ -1,10 +1,10 @@
 from OpenGL.GL import *
 
-from PIL import Image, ImageFont, ImageDraw
+from render.render import Texture, ImageInformation
 
-class OpenGLTexture:
-    def __init__(self):
-        super().__init__()
+class OpenGLTexture(Texture):
+    def __init__(self, image: ImageInformation = ImageInformation()):
+        super().__init__(image)
         self.id: GL_INT = None
     
     def __del__(self):
@@ -25,9 +25,6 @@ class OpenGLTexture:
         glBindTexture(GL_TEXTURE_2D, 0)
     
     def upload(self):
-        # Load Image from file
-        
-        
         # Upload Image
         self.id = glGenTextures(1)
         glBindTexture(self.id)
@@ -37,7 +34,7 @@ class OpenGLTexture:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR if self.mipmap else GL_LINEAR)
         
-        glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, format, type, data) # TODO
+        glTexImage2D(GL_TEXTURE_2D, 0, self.image.internal_format, self.image.width, self.image.height, 0, self.image.img_format, type, self.image.data)
         
         if self.mipmap:
             glGenerateMipmap(GL_TEXTURE_2D)
@@ -46,5 +43,5 @@ class OpenGLTexture:
     
     def resize(self):
         glBindTexture(GL_TEXTURE_2D, id)
-        glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, format, type, None) # TODO
+        glTexImage2D(GL_TEXTURE_2D, 0, self.image.internal_format, self.image.width, self.image.height, 0, self.image.img_format, type, None)
         glBindTexture(GL_TEXTURE_2D, 0)
