@@ -300,6 +300,7 @@ class Pane(Geometry):
                 1, 2, 3
             ], np.uint32),
             PrimitiveType.UNSIGNED_INT
+        )
 
 
 
