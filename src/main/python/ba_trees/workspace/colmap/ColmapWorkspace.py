@@ -38,6 +38,9 @@ class ColmapWorkspace(Workspace):
         self.model: ModelData = ModelData()
         self.model.addGeometry(ColmapGeometry(self))
         
+        model_matrix = self.model.getModelMatrix()
+        model_matrix.setYaw(3.2)
+        
         # Load Cameras
         self.cameras: list = []
         for _, camera in self.reconstruction.cameras.items(): # model, width, height
@@ -78,6 +81,9 @@ class ColmapWorkspace(Workspace):
             return None
         
         return self.model
+    
+    def getImages(self) -> list:
+        return self.images
 
 class ColmapGeometry(Geometry):
     def __init__(self, workspace: ColmapWorkspace):

@@ -85,6 +85,7 @@ class OpenGLShader(Shader):
         elif isinstance(value, Texture):
             value.bind(arg0)
             glUniform1i(location, arg0)
+            return
         
         raise Exception(f"Type not found: {type(value)}")
     

@@ -19,3 +19,6 @@ class ModelData:
     
     def getTextures(self) -> list:
         return self.textures
+    
+    def getModelMatrix(self):
+        return self.position

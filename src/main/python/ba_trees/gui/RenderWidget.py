@@ -86,16 +86,25 @@ class RenderWidget(QOpenGLWidget):
         self.fmt.setVersion(4, 3)
         self.fmt.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
         
+        #glEnable(GL_TEXTURE_2D)
+        
         # OpenGL
         self.camera = OpenGLCamera()
-        self.shader = OpenGLShader()
+        self.shader_point_cloud = OpenGLShader()
+        self.shader_images = OpenGLShader()
         
-        self.shader.addShaderSource(
+        self.shader_point_cloud.addShaderSource(
             Shaders.getShaderFile(GL_VERTEX_SHADER, "point_cloud.vert"),
             Shaders.getShaderFile(GL_FRAGMENT_SHADER, "point_cloud.frag")
         )
         
-        self.cube: Model = OpenGLModel(self.colmap.getModel())
+        self.shader_images.addShaderSource(
+            Shaders.getShaderFile(GL_VERTEX_SHADER, "images.vert"),
+            Shaders.getShaderFile(GL_FRAGMENT_SHADER, "images.frag")
+        )
+        
+        self.point_cloud: Model = OpenGLModel(self.colmap.getModel())
+        self.model_image: Model = OpenGLModel(self.colmap.getImages()[0])
         
         
     def paintGL(self):
@@ -116,18 +125,26 @@ class RenderWidget(QOpenGLWidget):
         
         glEnable(GL_DEPTH_TEST);
         
-        # Draw
-        self.shader.bind()
+        # Draw Point Cloud
+        self.shader_point_cloud.bind()
+        self.camera.updateShaderUniform(self.shader_point_cloud)
         
-        self.cube.bind()
-        #self.shader.uniform("position", position);
-        self.shader.uniform("view", self.camera.getView())
-        self.shader.uniform("view_normal", self.camera.getViewNormal())
-        self.shader.uniform("proj", self.camera.getProjection())
-        self.cube.draw()
-        self.cube.unbind()
+        self.point_cloud.bind(self.shader_point_cloud)
+        self.point_cloud.draw()
+        self.point_cloud.unbind()
         
-        self.shader.unbind()
+        self.shader_point_cloud.unbind()
+        
+        
+        # Draw Image
+        self.shader_images.bind()
+        self.camera.updateShaderUniform(self.shader_images)
+        
+        self.model_image.bind(self.shader_images)
+        self.model_image.draw()
+        self.model_image.unbind()
+        
+        self.shader_images.unbind()
         
         # Disable OpenGL Settings
         glDisable(GL_CULL_FACE)

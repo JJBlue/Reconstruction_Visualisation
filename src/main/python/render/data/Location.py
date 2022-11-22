@@ -62,28 +62,33 @@ class Location(Position):
     
     def setPitch(self, pitch: float):
         self.orientation.y = pitch
+        self.updateModel()
     
     def getYaw(self) -> float:
         return self.orientation.z
     
     def setYaw(self, yaw: float):
         self.orientation.z = yaw
+        self.updateModel()
     
     def getRoll(self) -> float:
         return self.orientation.x
     
     def setRoll(self, roll: float):
         self.orientation.x = roll
+        self.updateModel()
     
     def getOrientation(self) -> glm.vec3:
         return self.orientation
     
     def setOrientation(self, orientation: glm.vec3):
         self.orientation = orientation
+        self.updateModel()
     
     def setLocation(self, location: Location):
         self.setPositionClass(location)
         self.orientation = location.orientation
+        self.updateModel()
     
     def updateModel(self):
         super().updateModel()
@@ -103,15 +108,19 @@ class ModelMatrix(Location):
     
     def scaleX(self, x: float):
         self.scale.x = x
+        self.updateModel()
     
     def scaleY(self, y: float):
         self.scale.y = y
+        self.updateModel()
         
     def scaleZ(self, z: float):
         self.scale.z = z
+        self.updateModel()
     
     def scale(self, scale: glm.vec3):
         self.scale = scale
+        self.updateModel()
     
     def updateModel(self):
         super().updateModel()

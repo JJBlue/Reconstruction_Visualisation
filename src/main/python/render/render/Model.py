@@ -1,30 +1,40 @@
 from render.data import ModelData
-from render.render import Shader, Mesh
+from render.render import Shader
 
 
 class Model:
     def __init__(self, data: ModelData):
         self.data = data
-        #self.meshes: list = []
-        self.mesh: Mesh = None
+        self.meshes: list = []
         self.textures: list = []
     
     def bind(self, shader: Shader = None):
         if shader:
-            shader.uniform("model", self.position.getModel())
+            shader.uniform("model", self.data.position.getModel())
             
             i: int = 0
             for tex in self.textures:
-                tex.bind(i)
+                shader.uniform("texture" + str(i), tex, i)
                 i += 1
         
-        self.mesh.bind()
+        if len(self.meshes) == 1:
+            self.meshes[0].bind()
     
     def draw(self):
-        self.mesh.draw()
+        count: int = len(self.meshes)
+        
+        for mesh in self.meshes:
+            if count > 1:
+                mesh.bind()
+            
+            mesh.draw()
+            
+            if count > 1:
+                mesh.unbind()
     
     def unbind(self):
-        self.mesh.unbind()
+        if len(self.meshes) == 1:
+            self.meshes[0].unbind()
     
     def getMesh(self):
         return self.mesh

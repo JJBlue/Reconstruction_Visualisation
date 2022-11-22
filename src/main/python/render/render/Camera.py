@@ -2,6 +2,7 @@ import glm
 
 from render.data import Location
 from render.data.Location import ModelMatrix
+from render.render import Shader
 
 
 class Camera:
@@ -45,6 +46,11 @@ class Camera:
             self.projection = glm.perspective(self.fov * (glm.pi() / 180), self.getAspectRatio(), self.near, self.far)
         else:
             self.projection = glm.ortho(self.left, self.right, self.bottom, self.top, self.near, self.far)
+    
+    def updateShaderUniform(self, shader: Shader):
+        shader.uniform("view", self.view)
+        shader.uniform("view_normal", self.view_normal)
+        shader.uniform("proj", self.projection)
     
     # Must be implemented
     def getAspectRatio(self):

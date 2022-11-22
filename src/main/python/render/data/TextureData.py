@@ -167,7 +167,14 @@ class TextureData:
     
 class TextureFile(TextureData):
     def __init__(self, file: str):
+        super().__init__(None, None, None, None, None, None)
         self.file = file
+        self.file_loaded = False
+    
+    def load(self):
+        if self.file_loaded:
+            return
+        self.file_loaded = True
         
         img = Image.open(self.file)
         
@@ -237,8 +244,34 @@ class TextureFile(TextureData):
             raise NotImplementedError()
         
         self.dtype = dtype
-        super().__init__(img_internal_format, mode_type, width, height, img_type, None)
+        
+        self.internal_format: TextureInternalFormat = img_internal_format
+        self.img_format: TextureFormat = mode_type
+        self.img_type: TextureType = img_type
+        self.width: int = width
+        self.height: int = height
     
-    def getData(self):
+    def getInternalFormat(self) -> TextureInternalFormat:
+        self.load()
+        return self.internal_format
+    
+    def getFormat(self) -> TextureFormat:
+        self.load()
+        return self.img_format
+    
+    def getType(self) -> TextureType:
+        self.load()
+        return self.img_type
+    
+    def getWidth(self) -> int:
+        self.load()
+        return self.width
+    
+    def getHeight(self) -> int:
+        self.load()
+        return self.height
+    
+    def getData(self) -> np.ndarray:
+        self.load()
         img = Image.open(self.file)
         return np.array(list(img.getdata()), self.dtype)

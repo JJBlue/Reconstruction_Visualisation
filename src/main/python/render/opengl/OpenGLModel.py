@@ -8,12 +8,10 @@ class OpenGLModel(Model):
         super().__init__(data)
         
         for geo in data.getGeometries():
-            #self.meshes = OpenGLCache.getOrCreateMesh(geo)
-            self.mesh = OpenGLCache.getOrCreateMesh(geo)
-            break # TODO
+            self.meshes.append(OpenGLCache.getOrCreateMesh(geo))
         
         for tex in data.getTextures():
-            self.textures = OpenGLCache.getOrCreateTexture(tex)
+            self.textures.append(OpenGLCache.getOrCreateTexture(tex))
             # TODO load parallel
             # print(f"Load Image: {image_file}")
             # import multiprocessing as mp
