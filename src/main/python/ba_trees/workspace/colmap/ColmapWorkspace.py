@@ -2,15 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PIL import Image
-
 from ba_trees import Workspace
+import multiprocessing as mp
 import numpy as np
-from render.render import Geometry, Primitves, GeometryData, PrimitiveType, Model, Pane,\
-    Texture
-from render.render.Texture import ImageInformation
-
-
+from render.data import TextureData, ModelData, GeometryData, Textures, Pane
+from render.data.Geometry import Geometry
+from render.render import Primitves, PrimitiveType
 
 
 try:
@@ -37,27 +34,38 @@ class ColmapWorkspace(Workspace):
         # uv = camera.world_to_image(image.project(point3D.xyz))
         
         # Load Geometry
-        self.geometry: Geometry = ColmapGeometry(self)
-        self.geometry.load()
+        self.model: ModelData = ModelData()
+        self.model.addGeometry(ColmapGeometry(self))
         
+        # Load Cameras
         self.cameras: list = []
         for _, camera in self.reconstruction.cameras.items(): # model, width, height
             #camera = Camera()
             #self.cameras.append(camera)
             break
         
-        self.images: list = []
+        # Load Images
+        images = []
         for _, image in self.reconstruction.images.items(): # image_id, camera_id, name, triangulated
-            image_file = self.folder_images.joinpath(image.name).absolute()
-            #image_information = ImageInformation()
-            #data = np.array(list(img.getdata()), np.int8) # TODO change int8 (read out from source)
-            
-            # model: Model = Model(OpenGLMesh(Pane()))
-            # TODO Move Model
-            
-            #tex: Texture = OpenGLTexture()
-            
-            #self.images.append(model)
+            images.append(ColmapImage(image.image_id, image.camera_id, image.name, self.folder_images))
+            break
+        
+        pool = mp.Pool(processes=4)
+        results = pool.map(ColmapImage.loadImage, images)
+        self.images = results
+        
+        #self.models: list = []
+        #for _, image in self.reconstruction.images.items(): # image_id, camera_id, name, triangulated
+        #    image_file: str = self.folder_images.joinpath(image.name).absolute()
+        #    print(f"Load Image: {image_file}")
+        #    texture: TextureData = Textures.loadFromFile(image_file)
+        #    
+        #    model: ModelData = ModelData()
+        #    model.addGeometry(Pane())
+        #    model.addTexture(texture)
+        #    # TODO Move ModelData
+        #    
+        #    self.models.append(model)
         
         # Finished
         self.loaded = True
@@ -74,17 +82,38 @@ class ColmapWorkspace(Workspace):
         self.loaded = False
         return True
     
-    def getGeometry(self) -> ColmapGeometry:
+    def getModel(self) -> ModelData:
         if not self.loaded:
             return None
         
-        return self.geometry
+        return self.model
+
+class ColmapImage:
+    def __init__(self, image_id, camera_id, name, folder_images):
+        self.image_id = image_id
+        self.camera_id = camera_id
+        self.name = name
+        self.image_file: str = folder_images.joinpath(name).absolute()
+    
+    @staticmethod
+    def loadImage(image):
+        image_file: str = image.image_file
+        print(f"Load Image: {image_file}")
+        texture: TextureData = Textures.loadFromFile(image_file)
+        
+        model: ModelData = ModelData()
+        model.addGeometry(Pane())
+        model.addTexture(texture)
+        # TODO Move ModelData
+        
+        return model
 
 class ColmapGeometry(Geometry):
     def __init__(self, workspace: ColmapWorkspace):
         super().__init__()
         
         self.workspace = workspace
+        self.load()
     
     def load(self):
         vertices: list = []

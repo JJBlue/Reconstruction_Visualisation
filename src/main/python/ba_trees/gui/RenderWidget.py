@@ -6,12 +6,11 @@ from PyQt6.QtGui import QSurfaceFormat
 from PyQt6.QtOpenGL import QOpenGLVersionProfile
 from PyQt6.QtOpenGLWidgets import QOpenGLWidget
 
-from ba_trees import Shaders
 from ba_trees.config.ConfigDirectories import ConfigDirectories
+from ba_trees.config.Shaders import Shaders
 from ba_trees.workspace.colmap import ColmapWorkspace
-from render import Shader, Camera, Cube, CubeDotCloud, Mesh
-from render.opengl import OpenGLCamera, OpenGLShader, OpenGLMesh
-from render.render import Model
+from render import Shader, Camera, Model
+from render.opengl import OpenGLCamera, OpenGLShader, OpenGLMesh, OpenGLModel
 
 
 class RenderWidget(QOpenGLWidget):
@@ -96,7 +95,7 @@ class RenderWidget(QOpenGLWidget):
             Shaders.getShaderFile(GL_FRAGMENT_SHADER, "point_cloud.frag")
         )
         
-        self.cube: Model = Model(OpenGLMesh(self.colmap.getGeometry()))
+        self.cube: Model = OpenGLModel(self.colmap.getModel())
         
         
     def paintGL(self):

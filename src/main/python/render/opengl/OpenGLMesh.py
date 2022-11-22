@@ -3,7 +3,8 @@ import numpy as np
 from OpenGL.GL import *
 
 from render.opengl import OpenGLBufferFactory, Types
-from render.render import Buffer, Geometry, Mesh
+from render.render import Buffer, Mesh
+from render.data import Geometry
 
 
 class OpenGLMesh(Mesh):

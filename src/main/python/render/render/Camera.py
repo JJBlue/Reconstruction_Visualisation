@@ -1,10 +1,12 @@
 import glm
 
-from render.render import Entity, Location
+from render.data import Location
+from render.data.Location import ModelMatrix
 
-class Camera(Entity):
+
+class Camera:
     def __init__(self):
-        super().__init__()
+        self.position = ModelMatrix()
         
         # Camera Variables
         self.near: float = 0.01 # Default: 0.01

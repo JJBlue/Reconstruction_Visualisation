@@ -1,16 +1,22 @@
-import glm
-
-from render.render import Mesh, Shader
+from render.data import ModelData
+from render.render import Shader, Mesh
 
 
 class Model:
-    def __init__(self, mesh: Mesh):
-        self.mesh: Mesh = mesh
-        self.model: glm.mat4 = glm.fmat4x4(1.0)
+    def __init__(self, data: ModelData):
+        self.data = data
+        #self.meshes: list = []
+        self.mesh: Mesh = None
+        self.textures: list = []
     
     def bind(self, shader: Shader = None):
         if shader:
-            shader.uniform("model", self.model)
+            shader.uniform("model", self.position.getModel())
+            
+            i: int = 0
+            for tex in self.textures:
+                tex.bind(i)
+                i += 1
         
         self.mesh.bind()
     

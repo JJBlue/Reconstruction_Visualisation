@@ -1,7 +1,9 @@
+from OpenGL.GL import *
 import glm
 
-from OpenGL.GL import *
 from render import ShaderSource, Shader
+from render.render import Texture
+
 
 class OpenGLShader(Shader):
     def __init__(self):
@@ -26,21 +28,21 @@ class OpenGLShader(Shader):
     def unbind(self):
         glUseProgram(0)
     
-    def uniform(self, name: str, value, count: int = 0):
+    def uniform(self, name: str, value, arg0: int = 0):
         location: int = glGetUniformLocation(self.program, name)
         
         if isinstance(value, int):
             glUniform1i(location, value)
             return
         #elif isinstance(value, np.iarray):
-        #    glUniform1iv(location, count, value)
+        #    glUniform1iv(location, arg0, value)
         #    return
         
         elif isinstance(value, float):
             glUniform1f(location, value)
             return
         #elif isinstance(value, np.farray):
-        #    glUniform1fv(location, count, value)
+        #    glUniform1fv(location, arg0, value)
         #    return
         
         elif isinstance(value, glm.fvec2):
@@ -80,9 +82,9 @@ class OpenGLShader(Shader):
             glUniformMatrix4fv(location, 1, GL_FALSE, glm.value_ptr(value))
             return
         
-        #elif isinstance(value, Texture):
-        #    texture.bind(unit)
-        #    glUniform1i(location, unit)
+        elif isinstance(value, Texture):
+            value.bind(arg0)
+            glUniform1i(location, arg0)
         
         raise Exception(f"Type not found: {type(value)}")
     

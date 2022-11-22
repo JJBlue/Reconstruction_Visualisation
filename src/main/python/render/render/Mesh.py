@@ -1,4 +1,4 @@
-from render.render import Geometry
+from render.data import Geometry
 
 class Mesh:
     def __init__(self, geometry: Geometry):
