@@ -6,84 +6,6 @@ from PIL import Image
 
 import numpy as np
 
-
-class Textures:
-    def __init__(self):
-        pass
-    
-    @staticmethod
-    def loadFromFile(file: str) -> TextureData:
-        img = Image.open(file)
-        
-        width, height = img.size
-        
-        mode: str = img.mode
-        mode_type: TextureFormat = None
-        img_type: TextureType = None
-        img_internal_format: TextureInternalFormat = None
-        dtype: np.dtype = None
-        
-        if mode == "1":
-            mode_type = TextureFormat.BLACK_WHITE_BIT
-            dtype = np.bit
-            raise NotImplementedError()
-        elif mode == "L":
-            mode_type = TextureFormat.BLACK_WHITE
-            dtype = np.int8
-            img_type = TextureType.UNSIGNED_BYTE
-            raise NotImplementedError()
-        elif mode == "P":
-            mode_type = TextureFormat.MAPPED_COLOR_PALETTE
-            dtype = np.int8
-            img_type = TextureType.UNSIGNED_BYTE
-            raise NotImplementedError()
-        elif mode == "LA":
-            mode_type = TextureFormat.BLACK_WHITE_ALPHA
-            dtype = np.int8
-            img_type = TextureType.UNSIGNED_BYTE
-            raise NotImplementedError()
-        elif mode == "PA":
-            mode_type = TextureFormat.MAPPED_COLOR_PALETTE_ALPHA
-            dtype = np.int8
-            img_type = TextureType.UNSIGNED_BYTE
-            raise NotImplementedError()
-        elif mode == "RGB":
-            mode_type = TextureFormat.RGB
-            dtype = np.int8
-            img_type = TextureType.UNSIGNED_BYTE
-            img_internal_format = TextureInternalFormat.RGB8
-        elif mode == "RGBA":
-            mode_type = TextureFormat.RGBA
-            dtype = np.int8
-            img_type = TextureType.UNSIGNED_BYTE
-            img_internal_format = TextureInternalFormat.RGBA8
-        elif mode == "CMYK":
-            mode_type = TextureFormat.CMYK
-            dtype = np.int8
-            img_type = TextureType.UNSIGNED_BYTE
-            raise NotImplementedError()
-        elif mode == "YCbCr":
-            mode_type = TextureFormat.YCbCr
-            dtype = np.int8
-            img_type = TextureType.UNSIGNED_BYTE
-            raise NotImplementedError()
-        elif mode == "LAB":
-            mode_type = TextureFormat.LAB
-            dtype = np.int8
-            img_type = TextureType.UNSIGNED_BYTE
-            raise NotImplementedError()
-        elif mode == "HSV":
-            mode_type = TextureFormat.HSV
-            dtype = np.int8
-            img_type = TextureType.UNSIGNED_BYTE
-            raise NotImplementedError()
-        else:
-            raise NotImplementedError()
-        
-        data = np.array(list(img.getdata()), dtype)
-        
-        return TextureData(img_internal_format, mode_type, width, height, img_type, data)
-
 # Missing modes from Pillow
 # I (32-bit signed integer pixels)
 # F (32-bit floating point pixels)
@@ -224,3 +146,99 @@ class TextureData:
         self.width: int = width
         self.height: int = height
         self.data = data
+    
+    def getInternalFormat(self) -> TextureInternalFormat:
+        return self.internal_format
+    
+    def getFormat(self) -> TextureFormat:
+        return self.img_format
+    
+    def getType(self) -> TextureType:
+        return self.img_type
+    
+    def getWidth(self) -> int:
+        return self.width
+    
+    def getHeight(self) -> int:
+        return self.height
+    
+    def getData(self):
+        return self.data
+    
+class TextureFile(TextureData):
+    def __init__(self, file: str):
+        self.file = file
+        
+        img = Image.open(self.file)
+        
+        width, height = img.size
+        
+        mode: str = img.mode
+        mode_type: TextureFormat = None
+        img_type: TextureType = None
+        img_internal_format: TextureInternalFormat = None
+        dtype: np.dtype = None
+        
+        if mode == "1":
+            mode_type = TextureFormat.BLACK_WHITE_BIT
+            dtype = np.bit
+            raise NotImplementedError()
+        elif mode == "L":
+            mode_type = TextureFormat.BLACK_WHITE
+            dtype = np.int8
+            img_type = TextureType.UNSIGNED_BYTE
+            raise NotImplementedError()
+        elif mode == "P":
+            mode_type = TextureFormat.MAPPED_COLOR_PALETTE
+            dtype = np.int8
+            img_type = TextureType.UNSIGNED_BYTE
+            raise NotImplementedError()
+        elif mode == "LA":
+            mode_type = TextureFormat.BLACK_WHITE_ALPHA
+            dtype = np.int8
+            img_type = TextureType.UNSIGNED_BYTE
+            raise NotImplementedError()
+        elif mode == "PA":
+            mode_type = TextureFormat.MAPPED_COLOR_PALETTE_ALPHA
+            dtype = np.int8
+            img_type = TextureType.UNSIGNED_BYTE
+            raise NotImplementedError()
+        elif mode == "RGB":
+            mode_type = TextureFormat.RGB
+            dtype = np.int8
+            img_type = TextureType.UNSIGNED_BYTE
+            img_internal_format = TextureInternalFormat.RGB8
+        elif mode == "RGBA":
+            mode_type = TextureFormat.RGBA
+            dtype = np.int8
+            img_type = TextureType.UNSIGNED_BYTE
+            img_internal_format = TextureInternalFormat.RGBA8
+        elif mode == "CMYK":
+            mode_type = TextureFormat.CMYK
+            dtype = np.int8
+            img_type = TextureType.UNSIGNED_BYTE
+            raise NotImplementedError()
+        elif mode == "YCbCr":
+            mode_type = TextureFormat.YCbCr
+            dtype = np.int8
+            img_type = TextureType.UNSIGNED_BYTE
+            raise NotImplementedError()
+        elif mode == "LAB":
+            mode_type = TextureFormat.LAB
+            dtype = np.int8
+            img_type = TextureType.UNSIGNED_BYTE
+            raise NotImplementedError()
+        elif mode == "HSV":
+            mode_type = TextureFormat.HSV
+            dtype = np.int8
+            img_type = TextureType.UNSIGNED_BYTE
+            raise NotImplementedError()
+        else:
+            raise NotImplementedError()
+        
+        self.dtype = dtype
+        super().__init__(img_internal_format, mode_type, width, height, img_type, None)
+    
+    def getData(self):
+        img = Image.open(self.file)
+        return np.array(list(img.getdata()), self.dtype)

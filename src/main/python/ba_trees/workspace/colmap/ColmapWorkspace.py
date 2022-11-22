@@ -3,9 +3,10 @@ from __future__ import annotations
 from pathlib import Path
 
 from ba_trees import Workspace
-import multiprocessing as mp
+
 import numpy as np
-from render.data import TextureData, ModelData, GeometryData, Textures, Pane
+
+from render.data import TextureData, ModelData, GeometryData, TextureFile, Pane
 from render.data.Geometry import Geometry
 from render.render import Primitves, PrimitiveType
 
@@ -45,27 +46,17 @@ class ColmapWorkspace(Workspace):
             break
         
         # Load Images
-        images = []
+        self.images: list = []
         for _, image in self.reconstruction.images.items(): # image_id, camera_id, name, triangulated
-            images.append(ColmapImage(image.image_id, image.camera_id, image.name, self.folder_images))
-            break
-        
-        pool = mp.Pool(processes=4)
-        results = pool.map(ColmapImage.loadImage, images)
-        self.images = results
-        
-        #self.models: list = []
-        #for _, image in self.reconstruction.images.items(): # image_id, camera_id, name, triangulated
-        #    image_file: str = self.folder_images.joinpath(image.name).absolute()
-        #    print(f"Load Image: {image_file}")
-        #    texture: TextureData = Textures.loadFromFile(image_file)
-        #    
-        #    model: ModelData = ModelData()
-        #    model.addGeometry(Pane())
-        #    model.addTexture(texture)
-        #    # TODO Move ModelData
-        #    
-        #    self.models.append(model)
+            image_file: str = self.folder_images.joinpath(image.name).absolute()
+            texture: TextureData = TextureFile(image_file)
+            
+            model: ModelData = ModelData()
+            model.addGeometry(Pane())
+            model.addTexture(texture)
+            # TODO Move ModelData
+            
+            self.images.append(model)
         
         # Finished
         self.loaded = True
@@ -87,26 +78,6 @@ class ColmapWorkspace(Workspace):
             return None
         
         return self.model
-
-class ColmapImage:
-    def __init__(self, image_id, camera_id, name, folder_images):
-        self.image_id = image_id
-        self.camera_id = camera_id
-        self.name = name
-        self.image_file: str = folder_images.joinpath(name).absolute()
-    
-    @staticmethod
-    def loadImage(image):
-        image_file: str = image.image_file
-        print(f"Load Image: {image_file}")
-        texture: TextureData = Textures.loadFromFile(image_file)
-        
-        model: ModelData = ModelData()
-        model.addGeometry(Pane())
-        model.addTexture(texture)
-        # TODO Move ModelData
-        
-        return model
 
 class ColmapGeometry(Geometry):
     def __init__(self, workspace: ColmapWorkspace):
