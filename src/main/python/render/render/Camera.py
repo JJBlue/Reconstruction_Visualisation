@@ -28,7 +28,7 @@ class Camera:
         # Camera Vec
         
         self.position = Location(1.0, 2.0, 3.0)
-        self.direction: glm.vec3 = glm.fvec3(0.0, -1.0, -1.0)
+        self.direction: glm.vec3 = glm.fvec3(0.0, 0.0, -1.0)
         self.up: glm.vec3 = glm.fvec3(0.0, 1.0, 0.0)
         
         # Update

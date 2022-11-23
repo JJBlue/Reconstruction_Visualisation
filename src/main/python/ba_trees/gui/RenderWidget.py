@@ -10,6 +10,8 @@ from ba_trees.config.ConfigDirectories import ConfigDirectories
 from ba_trees.config.Shaders import Shaders
 from ba_trees.workspace.colmap import ColmapWorkspace
 from render import Shader, Camera, Model
+from render.data import Geometry
+from render.data.Geometry import CoordinateSystem
 from render.opengl import OpenGLCamera, OpenGLShader, OpenGLMesh, OpenGLModel
 
 
@@ -92,6 +94,7 @@ class RenderWidget(QOpenGLWidget):
         self.camera = OpenGLCamera()
         self.shader_point_cloud = OpenGLShader()
         self.shader_images = OpenGLShader()
+        self.shader_coordinate_system = OpenGLShader()
         
         self.shader_point_cloud.addShaderSource(
             Shaders.getShaderFile(GL_VERTEX_SHADER, "point_cloud.vert"),
@@ -103,8 +106,14 @@ class RenderWidget(QOpenGLWidget):
             Shaders.getShaderFile(GL_FRAGMENT_SHADER, "images.frag")
         )
         
+        self.shader_coordinate_system.addShaderSource(
+            Shaders.getShaderFile(GL_VERTEX_SHADER, "coordinate_system.vert"),
+            Shaders.getShaderFile(GL_FRAGMENT_SHADER, "coordinate_system.frag")
+        )
+        
         self.point_cloud: Model = OpenGLModel(self.colmap.getModel())
         self.model_image: Model = OpenGLModel(self.colmap.getImages()[0])
+        self.coordinate_system: Geometry = OpenGLMesh(CoordinateSystem())
         
         
     def paintGL(self):
@@ -124,6 +133,16 @@ class RenderWidget(QOpenGLWidget):
         glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
         
         glEnable(GL_DEPTH_TEST);
+        
+        # Draw Coordinate System
+        self.shader_coordinate_system.bind()
+        self.camera.updateShaderUniform(self.shader_coordinate_system)
+        
+        self.coordinate_system.bind()
+        self.coordinate_system.draw()
+        self.coordinate_system.unbind()
+        
+        self.shader_coordinate_system.unbind()
         
         # Draw Point Cloud
         self.shader_point_cloud.bind()

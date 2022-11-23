@@ -1,6 +1,6 @@
 import numpy as np
-
 from render.render import PrimitiveType, Primitves
+
 
 class GeometryData:
     def __init__(self, dimension: int, data: np.ndarray, primitive_type: PrimitiveType = PrimitiveType.FLOAT):
@@ -289,7 +289,7 @@ class Pane(Geometry):
                 0.0, 0.0, 1.0,
                 0.0, 0.0, 1.0,
                 0.0, 0.0, 1.0,
-            ])
+            ], np.float32)
         )
         self.all_vertices.append(self.normales)
         
@@ -302,7 +302,37 @@ class Pane(Geometry):
             PrimitiveType.UNSIGNED_INT
         )
 
-
+class CoordinateSystem(Geometry):
+    def __init__(self):
+        super().__init__()
+        
+        self.primtive = Primitves.LINES
+        
+        self.vertices = GeometryData(
+            3,
+            np.array([
+                -100.0,    0.0,    0.0,
+                 100.0,    0.0,    0.0,
+                 0.0  ,  100.0,    0.0,
+                 0.0  , -100.0,    0.0,
+                 0.0  ,    0.0,  100.0,
+                 0.0  ,    0.0, -100.0,
+            ], np.float32)
+        )
+        self.all_vertices.append(self.vertices)
+        
+        self.colors = GeometryData(
+            3,
+            np.array([
+                1.0, 0.0, 0.0,
+                1.0, 0.0, 0.0,
+                0.0, 1.0, 0.0,
+                0.0, 1.0, 0.0,
+                0.0, 0.0, 1.0,
+                0.0, 0.0, 1.0,
+            ], np.float32)
+        )
+        self.all_vertices.append(self.colors)
 
 
 

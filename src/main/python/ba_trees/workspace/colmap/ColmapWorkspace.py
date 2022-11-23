@@ -39,7 +39,7 @@ class ColmapWorkspace(Workspace):
         self.model.addGeometry(ColmapGeometry(self))
         
         model_matrix = self.model.getModelMatrix()
-        model_matrix.setYaw(3.2)
+        #model_matrix.setYaw(3.2)
         
         # Load Cameras
         self.cameras: list = []
