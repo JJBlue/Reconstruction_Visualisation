@@ -9,9 +9,8 @@ from PyQt6.QtOpenGLWidgets import QOpenGLWidget
 from ba_trees.config.ConfigDirectories import ConfigDirectories
 from ba_trees.config.Shaders import Shaders
 from ba_trees.workspace.colmap import ColmapWorkspace
-from render import Shader, Camera, Model
-from render.data import Geometry
-from render.data.Geometry import CoordinateSystem
+from render.render import Shader, Camera, Model
+from render.data import Geometry, CoordinateSystem
 from render.opengl import OpenGLCamera, OpenGLShader, OpenGLMesh, OpenGLModel
 
 
@@ -112,7 +111,7 @@ class RenderWidget(QOpenGLWidget):
         )
         
         self.point_cloud: Model = OpenGLModel(self.colmap.getModel())
-        self.model_image: Model = OpenGLModel(self.colmap.getImages()[0])
+        #self.model_image: Model = OpenGLModel(self.colmap.getImages()[0])
         self.coordinate_system: Geometry = OpenGLMesh(CoordinateSystem())
         
         
@@ -156,14 +155,14 @@ class RenderWidget(QOpenGLWidget):
         
         
         # Draw Image
-        self.shader_images.bind()
-        self.camera.updateShaderUniform(self.shader_images)
+        #self.shader_images.bind()
+        #self.camera.updateShaderUniform(self.shader_images)
         
-        self.model_image.bind(self.shader_images)
-        self.model_image.draw()
-        self.model_image.unbind()
+        #self.model_image.bind(self.shader_images)
+        #self.model_image.draw()
+        #self.model_image.unbind()
         
-        self.shader_images.unbind()
+        #self.shader_images.unbind()
         
         # Disable OpenGL Settings
         glDisable(GL_CULL_FACE)

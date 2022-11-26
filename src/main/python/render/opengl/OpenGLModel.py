@@ -12,9 +12,3 @@ class OpenGLModel(Model):
         
         for tex in data.getTextures():
             self.textures.append(OpenGLCache.getOrCreateTexture(tex))
-            # TODO load parallel
-            # print(f"Load Image: {image_file}")
-            # import multiprocessing as mp
-            # pool = mp.Pool(processes=4)
-            # results = pool.map(ColmapImage.loadImage, images)
-            # self.images = results
