@@ -1,6 +1,11 @@
 from __future__ import annotations
 
-from enum import StrEnum, Enum
+from enum import Enum
+
+try:
+    from enum import StrEnum
+except:
+    from strenum import StrEnum
 
 from PIL import Image
 

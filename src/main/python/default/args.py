@@ -1,7 +1,10 @@
 from __future__ import annotations
 import sys
 
-from enum import StrEnum
+try:
+    from enum import StrEnum
+except:
+    from strenum import StrEnum
 
 class ArgsEnum(StrEnum):
     Working_Directory = "workdir"
