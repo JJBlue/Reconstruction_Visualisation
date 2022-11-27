@@ -19,7 +19,6 @@ class RenderWidget(QOpenGLWidget):
         super().__init__()
         
         # Widget Settings
-        #self.setMinimumSize(640, 480)
         self.setFixedSize(QSize(1920, 1080))
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus) # Must be set for keyPressEvent to work
         self.setMouseTracking(True) # To track Mouse Move without click event
