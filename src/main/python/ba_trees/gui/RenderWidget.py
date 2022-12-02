@@ -8,7 +8,7 @@ from PyQt6.QtOpenGLWidgets import QOpenGLWidget
 
 from ba_trees.config.ConfigDirectories import ConfigDirectories
 from ba_trees.config.Shaders import Shaders
-from ba_trees.workspace.colmap import ColmapWorkspace
+from ba_trees.workspace.colmap import ColmapProject
 from render.render import Shader, Camera, Model
 from render.data import Geometry, CoordinateSystem
 from render.opengl import OpenGLCamera, OpenGLShader, OpenGLMesh, OpenGLModel
@@ -33,7 +33,7 @@ class RenderWidget(QOpenGLWidget):
         self.mouse_x: float = -1
         self.mouse_y: float = -1
         
-        self.colmap: ColmapWorkspace = ColmapWorkspace(Path(ConfigDirectories.getDefaultConfigDirectories().getWorkspaceFolder()).joinpath("reconstruction").absolute())
+        self.colmap: ColmapProject = ColmapProject(Path(ConfigDirectories.getConfigDirectories().getWorkspaceFolder()).joinpath("reconstruction").absolute())
         self.colmap.open()
     
     def keyPressEvent(self, event):

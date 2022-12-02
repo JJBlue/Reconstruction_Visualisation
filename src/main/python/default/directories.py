@@ -18,7 +18,7 @@ class Directories:
         return self.config_folder
     
     @staticmethod
-    def getDefaultDirectories() -> Directories:
+    def getDirectories() -> Directories:
         if(Directories.static_default_directories == None):
             args: Args = Args.getSystemArgs()
             

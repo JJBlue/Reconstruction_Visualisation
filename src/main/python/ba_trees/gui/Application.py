@@ -2,17 +2,14 @@ import sys
 
 from PyQt6.QtWidgets import (QApplication, QHBoxLayout, QMainWindow, QWidget)
 
-from ba_trees.gui import Ui_window, RenderWidget
+from ba_trees.gui import RenderWidget, MainWindow
 
 
 class Application:
     def __init__(self):
         self.app: QApplication = QApplication(sys.argv)
         #self.window = Window()
-        self.window = QMainWindow()
-        
-        ui = Ui_window()
-        ui.setupUi(self.window)
+        self.window = MainWindow()
     
     def getWindows(self) -> QMainWindow:
         return self.window

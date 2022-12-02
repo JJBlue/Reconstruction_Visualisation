@@ -1,28 +1,37 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from colmap_wrapper.colmap import COLMAP
-from ba_trees import Workspace
+
+from ba_trees import Project
 from render.data import TextureData, ModelData, TextureFile, Pane
 from render.data.GeometryO3D import GeometryO3DPointCloud
 
 
-class ColmapWorkspace(Workspace):
-    def __init__(self, folder: str):
-        self.folder: str = folder
-        
+class ColmapProject(Project):
+    def __init__(self, folder: Path):
+        super().__init__(folder)
         self.loaded: bool = False
         self.reconstruction = None
     
     def open(self) -> bool:
-        if self.loaded:
+        if self.opened:
             return True
         
         self.reconstruction = COLMAP(
-                                        project_path=self.folder,
+                                        project_path=self.folder.absolute(),
                                         dense_pc='fused.ply',
                                         load_depth=False,
                                         image_resize=0.3
                                     )
+        
+        self.opened = True
+        return True
+    
+    def load(self) -> bool:
+        if self.loaded:
+            return True
         
         # Load Geometry
         self.model: ModelData = ModelData()
@@ -55,19 +64,18 @@ class ColmapWorkspace(Workspace):
             
             #self.images.append(model)
         
-        # Finished
         self.loaded = True
         return True
     
     def close(self) -> bool:
-        if not self.loaded:
+        if not self.opened:
             return True
         
         self.reconstruction = None
         self.geometry = None
         self.cameras = None
         
-        self.loaded = False
+        self.opened = False
         return True
     
     def getColmapData(self) -> COLMAP:
@@ -81,4 +89,7 @@ class ColmapWorkspace(Workspace):
     
     def getImages(self) -> list:
         return self.images
+    
+    def getProjectType(self) -> str:
+        return "colmap"
     

@@ -8,7 +8,7 @@ class Shaders:
     @staticmethod
     def getShaderFile(shader_type, file: str) -> ShaderFile:
         if not Path(file).exists():
-            dirs = ConfigDirectories.getDefaultConfigDirectories()
+            dirs = ConfigDirectories.getConfigDirectories()
             file = Path(dirs.getShaderFolder()).joinpath(file)
         
         return ShaderFile(shader_type, file)

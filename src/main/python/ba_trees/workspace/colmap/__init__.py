@@ -1,1 +1,1 @@
-from .ColmapWorkspace import *
+from .ColmapProject import *

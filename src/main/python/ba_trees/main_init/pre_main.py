@@ -35,7 +35,7 @@ def loadDependencies():
 def loadLanguage():
     print("Load Languages")
     from default import Directories
-    lang_folder = os.path.join(Directories.getDefaultDirectories().getWorkingDirectory(), "lang")
+    lang_folder = os.path.join(Directories.getDirectories().getWorkingDirectory(), "lang")
     if not os.path.exists(lang_folder):
         os.mkdir(lang_folder)
     
