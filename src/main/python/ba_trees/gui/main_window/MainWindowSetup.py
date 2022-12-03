@@ -32,20 +32,21 @@ class Ui_window(object):
         self.splitter.setSizePolicy(sizePolicy)
         self.splitter.setOrientation(QtCore.Qt.Orientation.Horizontal)
         self.splitter.setObjectName("splitter")
-        self.reconstructions = QtWidgets.QTreeView(self.splitter)
+        self.projects = ProjectTreeView(self.splitter)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.MinimumExpanding, QtWidgets.QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.reconstructions.sizePolicy().hasHeightForWidth())
-        self.reconstructions.setSizePolicy(sizePolicy)
-        self.reconstructions.setHeaderHidden(True)
-        self.reconstructions.setObjectName("reconstructions")
+        sizePolicy.setHeightForWidth(self.projects.sizePolicy().hasHeightForWidth())
+        self.projects.setSizePolicy(sizePolicy)
+        self.projects.setHeaderHidden(True)
+        self.projects.setObjectName("projects")
         self.tabs = QtWidgets.QTabWidget(self.splitter)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(1)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.tabs.sizePolicy().hasHeightForWidth())
         self.tabs.setSizePolicy(sizePolicy)
+        self.tabs.setTabsClosable(True)
         self.tabs.setObjectName("tabs")
         self.verticalLayout.addWidget(self.splitter)
         self.widget = QtWidgets.QWidget(self.centralwidget)
@@ -121,6 +122,8 @@ class Ui_window(object):
         self.close_workspace.triggered.connect(window.closeWorkspace) # type: ignore
         self.open_workspace.triggered.connect(window.openWorkspace) # type: ignore
         self.create_workspace.triggered.connect(window.createWorkspace) # type: ignore
+        self.projects.doubleClicked['QModelIndex'].connect(self.projects.doubleClickedEvent) # type: ignore
+        self.tabs.tabCloseRequested['int'].connect(window.tabClose) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(window)
 
     def retranslateUi(self, window):
@@ -136,3 +139,4 @@ class Ui_window(object):
         self.close_workspace.setText(_translate("window", "Close"))
         self.import_reconstruction.setText(_translate("window", "Import"))
         self.create_workspace.setText(_translate("window", "Create"))
+from ba_trees.gui.main_window.ProjectTreeView import ProjectTreeView

@@ -1,15 +1,12 @@
 from pathlib import Path
 from typing import List
 
-from PyQt6.QtGui import QStandardItemModel
 from PyQt6.QtWidgets import QMainWindow, QFileDialog
 
 from ba_trees.config.ConfigDirectories import ConfigDirectories
-from ba_trees.gui.main_window import PathTreeItem
 from ba_trees.gui.main_window.MainWindowSetup import Ui_window
 from ba_trees.workspace import Workspace, Workspaces
 from ba_trees.workspace.colmap.ColmapProject import ColmapProject
-from ba_trees.gui.project_widget.ProjectWidget import ProjectWidget
 
 
 class MainWindow(QMainWindow):
@@ -22,9 +19,6 @@ class MainWindow(QMainWindow):
         # Open Last Session
         workspace: Workspace = Workspaces.reopenLastSession()
         self.updateWorkspaceGui(workspace)
-        
-        # TODO delete
-        self.ui.tabs.addTab(ProjectWidget(), "Project")
     
     def createWorkspace(self):
         dialog: QFileDialog = QFileDialog()
@@ -65,32 +59,7 @@ class MainWindow(QMainWindow):
         return workspace
     
     def updateWorkspaceGui(self, workspace: Workspace):
-        if workspace == None:
-            self.ui.reconstructions.setModel(0, QStandardItemModel())
-            return
-        
-        # Show Projects
-        root_tree_model = QStandardItemModel()
-        root_node = root_tree_model.invisibleRootItem()
-        
-        for project in workspace.getProjects():
-            project_folder: Path = project.getProjectFolder()
-            
-            project_tree_item = PathTreeItem(project_folder)
-            # project_tree_item.appendRow(...)
-            # TODO
-            
-            root_node.appendRow(project_tree_item)
-        
-        self.ui.reconstructions.setModel(root_tree_model)
-        # self.ui.reconstructions.expandAll()
-        self.ui.reconstructions.doubleClicked.connect(self.getValue)
-    
-    def getValue(self, value):
-        print(value.data())
-        print(value.row())
-        print(value.column())
-        print(type(value.data()))
+        self.ui.projects.updateWorkspaceGui(workspace)
     
     def closeWorkspace(self):
         Workspaces.setWorkspace(None)
@@ -119,3 +88,6 @@ class MainWindow(QMainWindow):
             workspace.save()
             
             self.updateWorkspaceGui(workspace) # TODO not build all again
+    
+    def tabClose(self, index: int):
+        self.ui.tabs.removeTab(index)
