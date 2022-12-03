@@ -46,7 +46,7 @@ class Project:
         self.opened = False
         return True
     
-    def getProjectFolder(self):
+    def getProjectFolder(self) -> Path:
         return self.folder
     
     def getProjectType(self) -> str:

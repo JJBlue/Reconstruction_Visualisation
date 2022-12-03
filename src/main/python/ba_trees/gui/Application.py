@@ -2,7 +2,8 @@ import sys
 
 from PyQt6.QtWidgets import (QApplication, QHBoxLayout, QMainWindow, QWidget)
 
-from ba_trees.gui import RenderWidget, MainWindow
+from ba_trees.gui.project_widget import RenderWidget
+from ba_trees.gui.main_window import MainWindow
 
 
 class Application:

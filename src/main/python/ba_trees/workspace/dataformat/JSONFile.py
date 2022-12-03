@@ -30,6 +30,7 @@ class WorkspaceJSONFile:
     @staticmethod
     def readWorkspaceFromJSONObject(file: Path = None, data: dict = {}) -> Workspace:
         workspace = Workspace(file)
+        workspace.open()
         
         # Projects
         if "project" in data:

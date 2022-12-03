@@ -9,7 +9,8 @@ class Directories:
     
     def __init__(self, working_dir: str):
         self.working_directory: str = working_dir
-        self.config_folder: str = Path(self.working_directory).joinpath("config")
+        #self.config_folder: str = Path(self.working_directory).joinpath("config")
+        self.config_folder = self.working_directory
     
     def getWorkingDirectory(self) -> str:
         return self.working_directory

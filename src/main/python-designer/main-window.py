@@ -12,7 +12,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 class Ui_window(object):
     def setupUi(self, window):
         window.setObjectName("window")
-        window.resize(763, 685)
+        window.resize(1137, 704)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -46,6 +46,7 @@ class Ui_window(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.reconstructions.sizePolicy().hasHeightForWidth())
         self.reconstructions.setSizePolicy(sizePolicy)
+        self.reconstructions.setHeaderHidden(True)
         self.reconstructions.setObjectName("reconstructions")
         self.tabs = QtWidgets.QTabWidget(self.splitter)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
@@ -88,7 +89,7 @@ class Ui_window(object):
         self.verticalLayout.addWidget(self.widget)
         window.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(window)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 763, 22))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1137, 22))
         self.menubar.setObjectName("menubar")
         self.menuFile = QtWidgets.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
@@ -110,6 +111,9 @@ class Ui_window(object):
         self.close_workspace.setObjectName("close_workspace")
         self.import_reconstruction = QtGui.QAction(window)
         self.import_reconstruction.setObjectName("import_reconstruction")
+        self.create_workspace = QtGui.QAction(window)
+        self.create_workspace.setObjectName("create_workspace")
+        self.menuWorkspace.addAction(self.create_workspace)
         self.menuWorkspace.addAction(self.open_workspace)
         self.menuWorkspace.addAction(self.close_workspace)
         self.menuFile.addAction(self.menuWorkspace.menuAction())
@@ -124,6 +128,7 @@ class Ui_window(object):
         self.import_reconstruction.triggered.connect(window.importReconstruction) # type: ignore
         self.close_workspace.triggered.connect(window.closeWorkspace) # type: ignore
         self.open_workspace.triggered.connect(window.openWorkspace) # type: ignore
+        self.create_workspace.triggered.connect(window.createWorkspace) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(window)
 
     def retranslateUi(self, window):
@@ -138,6 +143,7 @@ class Ui_window(object):
         self.open_workspace.setText(_translate("window", "Open"))
         self.close_workspace.setText(_translate("window", "Close"))
         self.import_reconstruction.setText(_translate("window", "Import"))
+        self.create_workspace.setText(_translate("window", "Create"))
 
 
 if __name__ == "__main__":

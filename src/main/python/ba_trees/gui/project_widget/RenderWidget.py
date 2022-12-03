@@ -1,25 +1,22 @@
-from pathlib import Path
-
 from OpenGL.GL import *
-from PyQt6.QtCore import QSize, Qt, QPoint
+from PyQt6.QtCore import Qt, QPoint
 from PyQt6.QtGui import QSurfaceFormat
 from PyQt6.QtOpenGL import QOpenGLVersionProfile
 from PyQt6.QtOpenGLWidgets import QOpenGLWidget
 
-from ba_trees.config.ConfigDirectories import ConfigDirectories
 from ba_trees.config.Shaders import Shaders
-from ba_trees.workspace.colmap import ColmapProject
-from render.render import Shader, Camera, Model
+from ba_trees.workspace import Project
 from render.data import Geometry, CoordinateSystem
 from render.opengl import OpenGLCamera, OpenGLShader, OpenGLMesh, OpenGLModel
+from render.render import Shader, Camera, Model
 
 
 class RenderWidget(QOpenGLWidget):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent = None):
+        super().__init__(parent = parent)
         
         # Widget Settings
-        self.setFixedSize(QSize(1920, 1080))
+        #self.setFixedSize(QSize(1920, 1080))
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus) # Must be set for keyPressEvent to work
         self.setMouseTracking(True) # To track Mouse Move without click event
         
@@ -33,8 +30,14 @@ class RenderWidget(QOpenGLWidget):
         self.mouse_x: float = -1
         self.mouse_y: float = -1
         
-        self.colmap: ColmapProject = ColmapProject(Path(ConfigDirectories.getConfigDirectories().getWorkspaceFolder()).joinpath("reconstruction").absolute())
-        self.colmap.open()
+        self.projects: list = []
+        self.opengl_project_data: list = []
+        
+        self.setting_show_coordinate_system = False
+    
+    ##########################
+    ### Mouse and Keyboard ###
+    ##########################
     
     def keyPressEvent(self, event):
         if self.camera != None:
@@ -79,6 +82,37 @@ class RenderWidget(QOpenGLWidget):
             self.mouse_x = pos.x()
             self.mouse_y = pos.y()
 
+    ###########################
+    ### QT Designer Methods ###
+    ###########################
+    
+    def change_point_cloud_point_size(self, size: int):
+        pass
+    
+    def show_coordinate_system(self, value: bool):
+        self.setting_show_coordinate_system = value
+        self.repaint()
+    
+    ###############
+    ### Methods ###
+    ###############
+    
+    def addProject(self, project: Project):
+        self.projects.append(project)
+        
+        data: dict = {}
+        
+        point_cloud: Model = OpenGLModel(project.getModel())
+        data["point_cloud"] = point_cloud
+        
+        #self.model_image: Model = OpenGLModel(self.project.getImages()[0])
+        
+        self.opengl_project_data.append(data)
+    
+    ##############
+    ### OpenGL ###
+    ##############
+    
     def initializeGL(self):
         super().initializeGL()
         
@@ -86,10 +120,10 @@ class RenderWidget(QOpenGLWidget):
         self.fmt.setVersion(4, 3)
         self.fmt.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
         
-        #glEnable(GL_TEXTURE_2D)
-        
         # OpenGL
         self.camera = OpenGLCamera()
+        
+        # Shaders
         self.shader_point_cloud = OpenGLShader()
         self.shader_images = OpenGLShader()
         self.shader_coordinate_system = OpenGLShader()
@@ -109,11 +143,9 @@ class RenderWidget(QOpenGLWidget):
             Shaders.getShaderFile(GL_FRAGMENT_SHADER, "coordinate_system.frag")
         )
         
-        self.point_cloud: Model = OpenGLModel(self.colmap.getModel())
-        #self.model_image: Model = OpenGLModel(self.colmap.getImages()[0])
+        # Geometries
         self.coordinate_system: Geometry = OpenGLMesh(CoordinateSystem())
-        
-        
+    
     def paintGL(self):
         super().paintGL()
         
@@ -129,39 +161,46 @@ class RenderWidget(QOpenGLWidget):
         glEnable(GL_CULL_FACE)
         
         glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
-        
         glEnable(GL_DEPTH_TEST);
         
+        
         # Draw Coordinate System
-        self.shader_coordinate_system.bind()
-        self.camera.updateShaderUniform(self.shader_coordinate_system)
-        
-        self.coordinate_system.bind()
-        self.coordinate_system.draw()
-        self.coordinate_system.unbind()
-        
-        self.shader_coordinate_system.unbind()
+        if self.setting_show_coordinate_system:
+            self.shader_coordinate_system.bind()
+            self.camera.updateShaderUniform(self.shader_coordinate_system)
+            
+            self.coordinate_system.bind()
+            self.coordinate_system.draw()
+            self.coordinate_system.unbind()
+            
+            self.shader_coordinate_system.unbind()
         
         # Draw Point Cloud
         self.shader_point_cloud.bind()
         self.camera.updateShaderUniform(self.shader_point_cloud)
         
-        self.point_cloud.bind(self.shader_point_cloud)
-        self.point_cloud.draw()
-        self.point_cloud.unbind()
+        for data in self.opengl_project_data:
+            point_cloud = data["point_cloud"]
+            
+            point_cloud.bind(self.shader_point_cloud)
+            point_cloud.draw()
+            point_cloud.unbind()
         
         self.shader_point_cloud.unbind()
         
         
         # Draw Image
-        #self.shader_images.bind()
-        #self.camera.updateShaderUniform(self.shader_images)
+        self.shader_images.bind()
+        self.camera.updateShaderUniform(self.shader_images)
         
-        #self.model_image.bind(self.shader_images)
-        #self.model_image.draw()
-        #self.model_image.unbind()
+        for data in self.opengl_project_data:
+            pass
+            #self.model_image.bind(self.shader_images)
+            #self.model_image.draw()
+            #self.model_image.unbind()
         
-        #self.shader_images.unbind()
+        self.shader_images.unbind()
+        
         
         # Disable OpenGL Settings
         glDisable(GL_CULL_FACE)

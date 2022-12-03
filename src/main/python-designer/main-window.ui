@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>763</width>
-    <height>685</height>
+    <width>1137</width>
+    <height>704</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -59,6 +59,9 @@
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="headerHidden">
+        <bool>true</bool>
        </property>
       </widget>
       <widget class="QTabWidget" name="tabs">
@@ -156,7 +159,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>763</width>
+     <width>1137</width>
      <height>22</height>
     </rect>
    </property>
@@ -168,6 +171,7 @@
      <property name="title">
       <string>Workspace</string>
      </property>
+     <addaction name="create_workspace"/>
      <addaction name="open_workspace"/>
      <addaction name="close_workspace"/>
     </widget>
@@ -208,6 +212,11 @@
   <action name="import_reconstruction">
    <property name="text">
     <string>Import</string>
+   </property>
+  </action>
+  <action name="create_workspace">
+   <property name="text">
+    <string>Create</string>
    </property>
   </action>
  </widget>
@@ -261,10 +270,27 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>create_workspace</sender>
+   <signal>triggered()</signal>
+   <receiver>window</receiver>
+   <slot>createWorkspace()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>381</x>
+     <y>342</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>openWorkspace()</slot>
   <slot>importReconstruction()</slot>
   <slot>closeWorkspace()</slot>
+  <slot>createWorkspace()</slot>
  </slots>
 </ui>

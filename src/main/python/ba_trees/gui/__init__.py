@@ -1,4 +1,3 @@
-from .MainWindowSetup import *
-from .MainWindow import MainWindow
+from .main_window import MainWindow
+from ba_trees.gui.project_widget import RenderWidget
 from .Application import Application
-from .RenderWidget import RenderWidget
