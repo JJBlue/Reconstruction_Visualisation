@@ -4,6 +4,7 @@ from pathlib import Path
 
 from colmap_wrapper.colmap import COLMAP
 
+from default.Synchronization import synchronized
 from ba_trees import Project
 from render.data import TextureData, ModelData, TextureFile, Pane
 from render.data.GeometryO3D import GeometryO3DPointCloud
@@ -15,6 +16,7 @@ class ColmapProject(Project):
         self.loaded: bool = False
         self.reconstruction = None
     
+    @synchronized
     def open(self) -> bool:
         if self.opened:
             return True
@@ -26,9 +28,12 @@ class ColmapProject(Project):
                                         image_resize=0.3
                                     )
         
+        print(self.reconstruction)
+        
         self.opened = True
         return True
     
+    @synchronized
     def load(self) -> bool:
         if self.loaded:
             return True
@@ -67,6 +72,7 @@ class ColmapProject(Project):
         self.loaded = True
         return True
     
+    @synchronized
     def close(self) -> bool:
         if not self.opened:
             return True

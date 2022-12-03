@@ -53,7 +53,7 @@
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
-      <widget class="QTreeView" name="reconstructions">
+      <widget class="ProjectTreeView" name="projects">
        <property name="sizePolicy">
         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
@@ -73,6 +73,9 @@
        </property>
        <property name="currentIndex">
         <number>-1</number>
+       </property>
+       <property name="tabsClosable">
+        <bool>true</bool>
        </property>
       </widget>
      </widget>
@@ -220,6 +223,16 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ProjectTreeView</class>
+   <extends>QTreeView</extends>
+   <header>ba_trees.gui.main_window.ProjectTreeView.h</header>
+   <slots>
+    <slot>doubleClickedEvent(QModelIndex)</slot>
+   </slots>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>
@@ -286,11 +299,44 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>projects</sender>
+   <signal>doubleClicked(QModelIndex)</signal>
+   <receiver>projects</receiver>
+   <slot>doubleClickedEvent(QModelIndex)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>130</x>
+     <y>198</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>139</x>
+     <y>180</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>tabs</sender>
+   <signal>tabCloseRequested(int)</signal>
+   <receiver>window</receiver>
+   <slot>tabClose(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>448</x>
+     <y>97</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>419</x>
+     <y>-9</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>openWorkspace()</slot>
   <slot>importReconstruction()</slot>
   <slot>closeWorkspace()</slot>
   <slot>createWorkspace()</slot>
+  <slot>tabClose(int)</slot>
  </slots>
 </ui>

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from default.Synchronization import synchronized
 from ba_trees.config.Config import Config
 from ba_trees.workspace import Project
 
@@ -10,6 +11,7 @@ class Workspaces:
     __workspace: Workspace = None
     
     @staticmethod
+    @synchronized
     def setWorkspace(workspace: Workspace, save: bool = True):
         if Workspaces.__workspace != None:
             print(f"Close Workspace {workspace.workspace}")
@@ -54,6 +56,7 @@ class Workspace:
     def isOpend(self) -> bool:
         return self.opened
     
+    @synchronized
     def open(self) -> bool:
         if self.opened:
             return True
@@ -63,6 +66,7 @@ class Workspace:
         self.opened = True
         return True
     
+    @synchronized
     def close(self) -> bool:
         if not self.opened:
             return True

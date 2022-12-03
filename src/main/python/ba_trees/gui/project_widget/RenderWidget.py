@@ -108,6 +108,7 @@ class RenderWidget(QOpenGLWidget):
         #self.model_image: Model = OpenGLModel(self.project.getImages()[0])
         
         self.opengl_project_data.append(data)
+        self.repaint()
     
     ##############
     ### OpenGL ###

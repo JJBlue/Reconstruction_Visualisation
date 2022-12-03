@@ -1,7 +1,9 @@
 from __future__ import annotations
-from typing import Callable
 
 from pathlib import Path
+from typing import Callable
+
+from default.Synchronization import synchronized
 
 
 class Projects:
@@ -32,17 +34,20 @@ class Project:
     def isOpened(self) -> bool:
         return self.opened
     
+    @synchronized
     def open(self) -> bool:
-        if self.opened:
+        if self.opened or self.opening:
             return True
         
         self.opened = True
         return True
     
+    @synchronized
     def close(self) -> bool:
         if not self.opened:
             return True
         
+        self.opening = False
         self.opened = False
         return True
     
