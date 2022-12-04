@@ -1,5 +1,5 @@
 from OpenGL.GL import *
-from PyQt6.QtCore import Qt, QPoint
+from PyQt6.QtCore import Qt, QPoint, pyqtSignal, QTimer
 from PyQt6.QtGui import QSurfaceFormat
 from PyQt6.QtOpenGL import QOpenGLVersionProfile
 from PyQt6.QtOpenGLWidgets import QOpenGLWidget
@@ -12,19 +12,24 @@ from render.render import Shader, Camera, Model
 
 
 class RenderWidget(QOpenGLWidget):
+    # Signal
+    showCoordinateSystemChanged = pyqtSignal(bool)
+    pointSizeChanged = pyqtSignal(float)
+    
+    cameraSpeedChanged = pyqtSignal(float)
+    cameraFOVChanged = pyqtSignal(float)
+    cameraEnableMovementChanged = pyqtSignal(bool)
+    
     def __init__(self, parent = None):
         super().__init__(parent = parent)
         
         # Widget Settings
-        #self.setFixedSize(QSize(1920, 1080))
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus) # Must be set for keyPressEvent to work
         self.setMouseTracking(True) # To track Mouse Move without click event
         
         # GL Settings
         self.camera: Camera = None
         self.shader: Shader = None
-        
-        self.camera_speed: float = 0.1
         
         self.mouse_pressed: bool = False
         self.mouse_x: float = -1
@@ -34,14 +39,31 @@ class RenderWidget(QOpenGLWidget):
         self.projects_create_opengl_data: list = []
         self.opengl_project_data: list = []
         
+        # Settings
         self.setting_show_coordinate_system = False
+        self.point_size = 1.0
+        
+        self.camera_speed: float = 0.1
+        self.camera_enable_movement_speed: bool = True
+        
+        QTimer.singleShot(1, self.runEmit)
+    
+    def runEmit(self):
+        self.showCoordinateSystemChanged.emit(self.setting_show_coordinate_system)
+        self.pointSizeChanged.emit(self.point_size)
+        
+        self.cameraSpeedChanged.emit(self.camera_speed)
+        self.cameraEnableMovementChanged.emit(self.camera_enable_movement_speed)
+        
+        if self.camera != None:
+            self.cameraFOVChanged.emit(self.camera.fov)
     
     ##########################
     ### Mouse and Keyboard ###
     ##########################
     
     def keyPressEvent(self, event):
-        if self.camera != None:
+        if self.camera != None and self.camera_enable_movement_speed:
             key = event.key()
 
             if key == Qt.Key.Key_W:
@@ -58,7 +80,7 @@ class RenderWidget(QOpenGLWidget):
                 self.repaint()
     
     def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton and self.camera != None:
+        if event.button() == Qt.MouseButton.LeftButton:
             self.mouse_pressed = True
 
     def mouseReleaseEvent(self, event):
@@ -68,31 +90,62 @@ class RenderWidget(QOpenGLWidget):
             self.mouse_y: float = -1
 
     def mouseMoveEvent(self, event):
-        if self.mouse_pressed:
-            pos: QPoint = event.position()
-
-            if self.mouse_x != -1:
-                degree: float = pos.x() - self.mouse_x
-                self.camera.yaw(degree * -1.0 / 10.0)
-
-                degree: float = pos.y() - self.mouse_y
-                self.camera.pitch(degree * -1.0 / 10.0)
+        if self.camera != None and self.camera_enable_movement_speed:
+            if self.mouse_pressed:
+                pos: QPoint = event.position()
+    
+                if self.mouse_x != -1:
+                    degree: float = pos.x() - self.mouse_x
+                    self.camera.yaw(degree * -1.0 / 10.0)
+    
+                    degree: float = pos.y() - self.mouse_y
+                    self.camera.pitch(degree * -1.0 / 10.0)
+                    
+                    self.repaint()
                 
-                self.repaint()
-            
-            self.mouse_x = pos.x()
-            self.mouse_y = pos.y()
+                self.mouse_x = pos.x()
+                self.mouse_y = pos.y()
 
+    def wheelEvent(self, event):
+        delta = event.angleDelta().y()
+        
+        self.camera.forward(delta * self.camera_speed)
+        self.repaint()
+    
     ###########################
     ### QT Designer Methods ###
     ###########################
     
-    def change_point_cloud_point_size(self, size: int):
-        pass
+    def setPointSize(self, size: float):
+        if self.point_size != size:
+            self.point_size = size
+            self.repaint()
+            
+            self.pointSizeChanged.emit(self.point_size)
     
     def show_coordinate_system(self, value: bool):
-        self.setting_show_coordinate_system = value
-        self.repaint()
+        if self.setting_show_coordinate_system != value:
+            self.setting_show_coordinate_system = value
+            self.repaint()
+            
+            self.showCoordinateSystemChanged.emit(self.setting_show_coordinate_system)
+    
+    def setCameraSpeed(self, value: float):
+        if self.camera_speed != value:
+            self.camera_speed = value
+            self.cameraSpeedChanged.emit(self.camera_speed)
+    
+    def enableMovementChanged(self, value: bool):
+        if self.camera_enable_movement_speed != value:
+            self.camera_enable_movement_speed = value
+            self.cameraEnableMovementChanged.emit(self.camera_enable_movement_speed)
+    
+    def setCameraFOV(self, value: float):
+        if self.camera != None and self.camera.fov != value:
+            self.camera.fov = value
+            self.cameraFOVChanged.emit(self.camera.fov)
+            self.repaint()
+            
     
     ###############
     ### Methods ###
@@ -143,6 +196,9 @@ class RenderWidget(QOpenGLWidget):
     def resizeGL(self, width, height):
         super().resizeGL(width, height)
     
+    # TODO maybe:
+    # To Update automatic, send shoot with delay (example 1ms)
+    # QTimer.singleShot(1, self.repaint())
     def paintGL(self):
         super().paintGL()
         
@@ -187,6 +243,7 @@ class RenderWidget(QOpenGLWidget):
         
         # Draw Point Cloud
         self.shader_point_cloud.bind()
+        self.shader_point_cloud.uniform("point_size", self.point_size)
         self.camera.updateShaderUniform(self.shader_point_cloud)
         
         for data in self.opengl_project_data:

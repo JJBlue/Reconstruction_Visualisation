@@ -28,8 +28,6 @@ class ColmapProject(Project):
                                         image_resize=0.3
                                     )
         
-        print(self.reconstruction)
-        
         self.opened = True
         return True
     
