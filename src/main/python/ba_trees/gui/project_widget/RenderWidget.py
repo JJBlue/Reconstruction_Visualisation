@@ -31,6 +31,7 @@ class RenderWidget(QOpenGLWidget):
         self.mouse_y: float = -1
         
         self.projects: list = []
+        self.projects_create_opengl_data: list = []
         self.opengl_project_data: list = []
         
         self.setting_show_coordinate_system = False
@@ -99,15 +100,7 @@ class RenderWidget(QOpenGLWidget):
     
     def addProject(self, project: Project):
         self.projects.append(project)
-        
-        data: dict = {}
-        
-        point_cloud: Model = OpenGLModel(project.getModel())
-        data["point_cloud"] = point_cloud
-        
-        #self.model_image: Model = OpenGLModel(self.project.getImages()[0])
-        
-        self.opengl_project_data.append(data)
+        self.projects_create_opengl_data.append(project)
         self.repaint()
     
     ##############
@@ -147,8 +140,24 @@ class RenderWidget(QOpenGLWidget):
         # Geometries
         self.coordinate_system: Geometry = OpenGLMesh(CoordinateSystem())
     
+    def resizeGL(self, width, height):
+        super().resizeGL(width, height)
+    
     def paintGL(self):
         super().paintGL()
+        
+        # Add Porject to OpenGL
+        while len(self.projects_create_opengl_data) > 0:
+            project = self.projects_create_opengl_data.pop()
+            
+            data: dict = {}
+        
+            point_cloud: Model = OpenGLModel(project.getModel())
+            data["point_cloud"] = point_cloud
+            
+            #self.model_image: Model = OpenGLModel(self.project.getImages()[0])
+            
+            self.opengl_project_data.append(data)
         
         # Update Objects
         self.camera.update()

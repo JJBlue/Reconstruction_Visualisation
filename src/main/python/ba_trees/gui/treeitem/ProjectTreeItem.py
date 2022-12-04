@@ -1,26 +1,31 @@
 from pathlib import Path
 
-from PyQt6 import QtGui
-from PyQt6.QtCore import QRunnable, QThreadPool
+from PyQt6 import QtCore
 
 from ba_trees.gui.project_widget.ProjectWidget import ProjectWidget
 from ba_trees.gui.treeitem import PathTreeItem, Event
 from ba_trees.gui.treeitem.CustomTreeItem import CustomTreeItem
 from ba_trees.workspace import Project
 
-
-class Runnable_Open_Project(QRunnable):
+class Runnable_Open_Project(QtCore.QThread):
+    __signal = QtCore.pyqtSignal(object)
+    
     def __init__(self, project: Project, project_widget, event: Event):
         super().__init__()
+        
         self.project = project
         self.project_widget = project_widget
         self.event = event
         
+        self.__signal.connect(self.runLater)
+        
     def run(self):
-        #QtGui.QOpenGLContext.makeCurrent(surface)
-        #QtGui.QOpenGLContext.currentContext().functions()
         self.project.open()
         self.project.load()
+        #self.project_widget.ui.opengl_widget.addProject(self.project)
+        self.__signal.emit(None)
+    
+    def runLater(self):
         self.project_widget.ui.opengl_widget.addProject(self.project)
 
 class ProjectTreeItem(CustomTreeItem):
@@ -50,5 +55,5 @@ class ProjectTreeItem(CustomTreeItem):
         window = event.window
         window.ui.tabs.addTab(project_widget, "Project")
         
-        #QThreadPool.globalInstance().start(Runnable_Open_Project(self.project, project_widget, event))
-        #Runnable_Open_Project(self.project, project_widget, event).run()
+        self.thread = Runnable_Open_Project(self.project, project_widget, event)
+        self.thread.start()
