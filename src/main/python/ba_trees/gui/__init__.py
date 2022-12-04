@@ -1,3 +1,4 @@
+from .opengl import *
 from .treeitem import *
 from .main_window import MainWindow
 from .project_widget import RenderWidget

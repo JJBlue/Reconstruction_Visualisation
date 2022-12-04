@@ -105,7 +105,7 @@ class Ui_root(object):
         self.verticalLayout_6.addItem(spacerItem)
         self.toolBox.addItem(self.page, "")
         self.page_2 = QtWidgets.QWidget()
-        self.page_2.setGeometry(QtCore.QRect(0, 0, 157, 473))
+        self.page_2.setGeometry(QtCore.QRect(0, 0, 169, 473))
         self.page_2.setObjectName("page_2")
         self.formLayout = QtWidgets.QFormLayout(self.page_2)
         self.formLayout.setObjectName("formLayout")
@@ -115,6 +115,7 @@ class Ui_root(object):
         self.label.setObjectName("label")
         self.formLayout.setWidget(0, QtWidgets.QFormLayout.ItemRole.LabelRole, self.label)
         self.setting_point_cloud = QtWidgets.QDoubleSpinBox(self.page_2)
+        self.setting_point_cloud.setSingleStep(0.1)
         self.setting_point_cloud.setObjectName("setting_point_cloud")
         self.formLayout.setWidget(0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.setting_point_cloud)
         self.toolBox.addItem(self.page_2, "")
@@ -126,6 +127,8 @@ class Ui_root(object):
         self.label_2.setObjectName("label_2")
         self.formLayout_2.setWidget(2, QtWidgets.QFormLayout.ItemRole.LabelRole, self.label_2)
         self.setting_camera_speed = QtWidgets.QDoubleSpinBox(self.page_3)
+        self.setting_camera_speed.setMaximum(10.0)
+        self.setting_camera_speed.setSingleStep(0.01)
         self.setting_camera_speed.setObjectName("setting_camera_speed")
         self.formLayout_2.setWidget(2, QtWidgets.QFormLayout.ItemRole.FieldRole, self.setting_camera_speed)
         spacerItem2 = QtWidgets.QSpacerItem(20, 374, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
@@ -141,6 +144,7 @@ class Ui_root(object):
         self.label_4.setObjectName("label_4")
         self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.ItemRole.LabelRole, self.label_4)
         self.doubleSpinBox = QtWidgets.QDoubleSpinBox(self.page_3)
+        self.doubleSpinBox.setMaximum(360.0)
         self.doubleSpinBox.setObjectName("doubleSpinBox")
         self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.ItemRole.FieldRole, self.doubleSpinBox)
         self.toolBox.addItem(self.page_3, "")
@@ -156,7 +160,7 @@ class Ui_root(object):
         self.retranslateUi(root)
         self.tabWidget_2.setCurrentIndex(1)
         self.tabWidget.setCurrentIndex(0)
-        self.toolBox.setCurrentIndex(2)
+        self.toolBox.setCurrentIndex(1)
         self.checkBox.toggled['bool'].connect(self.opengl_widget.show_coordinate_system) # type: ignore
         self.opengl_widget.showCoordinateSystemChanged['bool'].connect(self.checkBox.setChecked) # type: ignore
         self.opengl_widget.pointSizeChanged['double'].connect(self.setting_point_cloud.setValue) # type: ignore
@@ -183,7 +187,7 @@ class Ui_root(object):
         self.label_4.setText(_translate("root", "FOV:"))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page_3), _translate("root", "Camera"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("root", "Render Settings"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("root", "Tab 2"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("root", "Models"))
 from ba_trees.gui.project_widget.RenderWidget import RenderWidget
 
 

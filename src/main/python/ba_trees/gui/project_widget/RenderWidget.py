@@ -4,10 +4,11 @@ from PyQt6.QtGui import QSurfaceFormat
 from PyQt6.QtOpenGL import QOpenGLVersionProfile
 from PyQt6.QtOpenGLWidgets import QOpenGLWidget
 
-from ba_trees.config.Shaders import Shaders
+from ba_trees.gui.opengl.OpenGLData import OpenGLData
 from ba_trees.workspace import Project
-from render.data import Geometry, CoordinateSystem
-from render.opengl import OpenGLCamera, OpenGLShader, OpenGLMesh, OpenGLModel
+from render.data import CoordinateSystem
+from render.functions.OpenGLDataStorage import OpenGLDataStorage
+from render.opengl import OpenGLCamera, OpenGLMesh, OpenGLModel
 from render.render import Shader, Camera, Model
 
 
@@ -169,29 +170,15 @@ class RenderWidget(QOpenGLWidget):
         
         # OpenGL
         self.camera = OpenGLCamera()
+        OpenGLData.load()
         
         # Shaders
-        self.shader_point_cloud = OpenGLShader()
-        self.shader_images = OpenGLShader()
-        self.shader_coordinate_system = OpenGLShader()
-        
-        self.shader_point_cloud.addShaderSource(
-            Shaders.getShaderFile(GL_VERTEX_SHADER, "point_cloud.vert"),
-            Shaders.getShaderFile(GL_FRAGMENT_SHADER, "point_cloud.frag")
-        )
-        
-        self.shader_images.addShaderSource(
-            Shaders.getShaderFile(GL_VERTEX_SHADER, "images.vert"),
-            Shaders.getShaderFile(GL_FRAGMENT_SHADER, "images.frag")
-        )
-        
-        self.shader_coordinate_system.addShaderSource(
-            Shaders.getShaderFile(GL_VERTEX_SHADER, "coordinate_system.vert"),
-            Shaders.getShaderFile(GL_FRAGMENT_SHADER, "coordinate_system.frag")
-        )
+        self.shader_point_cloud = OpenGLDataStorage.getShaders().get("point_cloud")
+        self.shader_images = OpenGLDataStorage.getShaders().get("images")
+        self.shader_coordinate_system = OpenGLDataStorage.getShaders().get("coordinate_system")
         
         # Geometries
-        self.coordinate_system: Geometry = OpenGLMesh(CoordinateSystem())
+        self.coordinate_system = OpenGLDataStorage.getMeshes().get("coordinate_system")
     
     def resizeGL(self, width, height):
         super().resizeGL(width, height)

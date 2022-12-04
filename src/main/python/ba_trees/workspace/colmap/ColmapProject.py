@@ -4,8 +4,8 @@ from pathlib import Path
 
 from colmap_wrapper.colmap import COLMAP
 
+from ba_trees.workspace import Project
 from default.Synchronization import synchronized
-from ba_trees import Project
 from render.data import TextureData, ModelData, TextureFile, Pane
 from render.data.GeometryO3D import GeometryO3DPointCloud
 
