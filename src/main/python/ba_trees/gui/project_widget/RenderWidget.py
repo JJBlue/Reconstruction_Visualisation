@@ -2,60 +2,90 @@ import time
 
 from OpenGL.GL import *
 from PyQt6.QtCore import Qt, QPoint, pyqtSignal, QTimer, QThread
-from PyQt6.QtGui import QSurfaceFormat, QOffscreenSurface
+from PyQt6.QtGui import QSurfaceFormat, QOffscreenSurface, QOpenGLContext
 from PyQt6.QtOpenGL import QOpenGLVersionProfile
 from PyQt6.QtOpenGLWidgets import QOpenGLWidget
 
 from ba_trees.gui.opengl.OpenGLData import OpenGLData
 from ba_trees.workspace import Project
-from render.functions import RenderDataStorage.OpenGLDataStorage
-from render.opengl import OpenGLCamera
+from render.functions import RenderDataStorages
+from render.opengl import OpenGLCamera, OpenGLModel
 from render.render import Shader, Camera
+from render.render.FrameBuffer import FrameBuffer
 
 
-class OffscreenRenderWidget(QThread):
-    def __init__(self):
+class BackgroundRenderWidget(QThread):
+    def __init__(self, rw):
         super().__init__()
+        
+        self.rw = rw
+        self.format = self.rw.format()
+        
+        self.surface = QOffscreenSurface()
+        self.surface.setFormat(self.format)
+        self.surface.create()
+        
+        self.projects_create_opengl_data: list = []
+        self.opengl_project_data: list = []
     
     def run(self):
-        pass
+        self.context = QOpenGLContext()
+        #self.context.setShareContext(other_context)
+        self.context.setFormat(self.format)
+        self.context.create()
+        
+        self.context.makeCurrent(self.surface)
+        
+        self.initialize()
+        
+        # TODO maybe:
+        # To Update automatic, run while loop
+        #self.initializeNewObjects()
+        self.update()
+        self.render()
+        
+        self.context.doneCurrent()
     
     def initialize(self):
         # OpenGL
         self.camera = OpenGLCamera()
         OpenGLData.load()
         
+        # Global storage
+        global_storage = RenderDataStorages.getGloablRenderDataStorage()
+        global_shader_storage = global_storage.getShaders()
+        local_mesh_storage = RenderDataStorages.getMeshes()
+        
         # Shaders
-        self.shader_point_cloud = RenderDataStorage.getShaders().get("point_cloud")
-        self.shader_images = RenderDataStorage.getShaders().get("images")
-        self.shader_coordinate_system = RenderDataStorage.getShaders().get("coordinate_system")
+        self.shader_point_cloud = global_shader_storage.get("point_cloud")
+        self.shader_images = global_shader_storage.get("images")
+        self.shader_coordinate_system = global_shader_storage.get("coordinate_system")
         
         # Geometries
-        self.coordinate_system = RenderDataStorage.getMeshes().get("coordinate_system")
-    
-    # TODO maybe:
-    # To Update automatic, send shoot with delay (example 1ms)
-    # QTimer.singleShot(1, self.repaint())
-    def render(self):
-        # Add Porject to OpenGL
-        #while len(self.projects_create_opengl_data) > 0:
-        #    project = self.projects_create_opengl_data.pop()
-        #    
-        #    data: dict = {}
-        #
-        #    point_cloud: Model = OpenGLModel(project.getModel())
-        #    data["point_cloud"] = point_cloud
-        #    
-        #    #self.model_image: Model = OpenGLModel(self.project.getImages()[0])
-        #    
-        #    self.opengl_project_data.append(data)
+        self.coordinate_system = local_mesh_storage.get("coordinate_system")
         
+        # FrameBuffer
+        self.framebuffer: FrameBuffer = FrameBuffer()
+    
+    def initializeNewObjects(self):
+        # Add Project to OpenGL
+        while len(self.projects_create_opengl_data) > 0:
+            project = self.projects_create_opengl_data.pop()
+            
+            data: dict = {}
+        
+            point_cloud = OpenGLModel(project.getModel())
+            data["point_cloud"] = point_cloud
+            
+            #self.model_image: Model = OpenGLModel(self.project.getImages()[0])
+            
+            self.opengl_project_data.append(data)
+    
+    def update(self):
         # Update Objects
         self.camera.update()
-        
-        # Clear OpenGL Frame
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        
+    
+    def render(self):
         # Enable OpenGL Settings
         glFrontFace(GL_CCW)
         glCullFace(GL_BACK)
@@ -63,6 +93,11 @@ class OffscreenRenderWidget(QThread):
         
         glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
         glEnable(GL_DEPTH_TEST);
+        
+        self.framebuffer.bind()
+        
+        # Clear OpenGL Frame
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         
         # Draw Coordinate System
         if self.setting_show_coordinate_system:
@@ -102,6 +137,7 @@ class OffscreenRenderWidget(QThread):
         
         self.shader_images.unbind()
         
+        self.framebuffer.unbind()
         
         # Disable OpenGL Settings
         glDisable(GL_CULL_FACE)
@@ -126,7 +162,7 @@ class RenderWidget(QOpenGLWidget):
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus) # Must be set for keyPressEvent to work
         self.setMouseTracking(True) # To track Mouse Move without click event
         
-        self.repaintSingal.connect(self.repaintObject())
+        self.repaintSignal.connect(self.repaintObject)
         
         # GL Settings
         self.camera: Camera = None
@@ -137,8 +173,6 @@ class RenderWidget(QOpenGLWidget):
         self.mouse_y: float = -1
         
         self.projects: list = []
-        self.projects_create_opengl_data: list = []
-        self.opengl_project_data: list = []
         
         # Settings
         self.setting_show_coordinate_system = True
@@ -262,7 +296,6 @@ class RenderWidget(QOpenGLWidget):
     ##############
     def repaintObject(self, value: int):
         self.repaint()
-        pass
     
     def initializeGL(self)->None:
         super().initializeGL()
@@ -271,12 +304,8 @@ class RenderWidget(QOpenGLWidget):
         self.fmt.setVersion(4, 3)
         self.fmt.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
         
-        self.surface = OffscreenRenderWidget()
-        self.surface.setFormat(self.format())
-        self.surface.create()
-        
-        #self.thread = TestThread(self)
-        #self.thread.start()
+        self.thread = BackgroundRenderWidget(self)
+        self.thread.start()
     
     def resizeGL(self, width, height):
         super().resizeGL(width, height)

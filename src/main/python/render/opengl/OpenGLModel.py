@@ -1,5 +1,5 @@
 from render.data import ModelData
-from render.opengl.OpenGLCache import OpenGLCache
+from render.opengl import OpenGLCache
 from render.render import Model
 
 

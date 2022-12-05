@@ -36,5 +36,14 @@ class Model:
         if len(self.meshes) == 1:
             self.meshes[0].unbind()
     
-    def getMesh(self):
-        return self.mesh
+    def addMesh(self, mesh):
+        self.meshes.append(mesh)
+    
+    def getMeshes(self) -> list:
+        return self.meshes
+    
+    def addTexture(self, texture):
+        self.textures.append(texture)
+    
+    def getTextures(self) -> list:
+        return self.textures

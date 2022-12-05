@@ -5,7 +5,7 @@ from OpenGL.raw.GL.VERSION.GL_2_0 import GL_VERTEX_SHADER, GL_FRAGMENT_SHADER
 from ba_trees.config.ConfigDirectories import ConfigDirectories
 from default.Synchronization import synchronized
 from render.data.GeometryStructures import CoordinateSystem
-from render.functions import RenderDataStorage.OpenGLDataStorage
+from render.functions import RenderDataStorage
 from render.opengl import OpenGLShader, OpenGLMesh
 from render.render.Shader import ShaderFile
 
