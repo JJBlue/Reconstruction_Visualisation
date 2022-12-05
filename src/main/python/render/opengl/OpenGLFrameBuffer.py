@@ -1,7 +1,9 @@
+from typing import overload
+
 from OpenGL.GL import *
 
-from render.render import FrameBuffer, Texture, RenderBuffer
 from render.data.RenderBufferData import RenderBufferInternalFormat
+from render.render import FrameBuffer, Texture, RenderBuffer
 
 
 class OpenGLFrameBuffer(FrameBuffer):
@@ -9,7 +11,7 @@ class OpenGLFrameBuffer(FrameBuffer):
         super().__init__()
         
         self.color_attachments: list = []
-        self.draw_buffers: list = []
+        self.render_buffers: list = []
         
         self.fbo = glGenFramebuffers(1)
     
@@ -19,17 +21,13 @@ class OpenGLFrameBuffer(FrameBuffer):
     def unbind(self):
         glBindFramebuffer(GL_FRAMEBUFFER, 0)
     
-    def addColorAttachment(self, texture: Texture, is_draw_buffer: bool = True):
+    def addTexture(self, texture: Texture):
         self.bind()
         
         color_attachment_id = len(self.color_attachments)
         self.color_attachments.append(texture)
         
         glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + color_attachment_id, texture.getID(), 0)
-        
-        if is_draw_buffer:
-            self.draw_buffers.append(GL_COLOR_ATTACHMENT0 + color_attachment_id)
-            glDrawBuffers(len(self.draw_buffers), self.draw_buffers)
         
         if glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE:
             print("ERROR: addColorAttachment")
@@ -51,6 +49,8 @@ class OpenGLFrameBuffer(FrameBuffer):
             self.color_attachments.append(renderbuffer)
             attachment = GL_COLOR_ATTACHMENT0 + color_attachment_id
         
+        self.render_buffers.append(renderbuffer)
+        
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, renderbuffer.getID())
         
         checked = False
@@ -64,6 +64,31 @@ class OpenGLFrameBuffer(FrameBuffer):
         self.unbind()
         
         return checked
+    
+    @overload
+    def setDrawBuffer(self, *args: int):
+        draw_buffers: list = []
+        
+        for i in args:
+            draw_buffers.append(GL_COLOR_ATTACHMENT0 + i)
+        
+        self.setOpenGLDrawBuffer(draw_buffers)
+    
+    @overload
+    def setDrawBuffer(self, enums: list):
+        raise NotImplementedError()
+    
+    # GL_NONE, GL_FRONT_LEFT, GL_FRONT_RIGHT, GL_BACK_LEFT, GL_BACK_RIGHT, GL_COLOR_ATTACHMENT
+    def setOpenGLDrawBuffer(self, draw_buffers: list):
+        self.bind()
+        glDrawBuffers(len(draw_buffers), draw_buffers)
+        self.unbind()
+    
+    def resize(self, width, height):
+        for render_buffer in self.render_buffers:
+            render_buffer.resize(width, height)
+        
+        # TODO Texture
     
     def getID(self):
         return self.fbo
