@@ -27,22 +27,31 @@ class OpenGLDataStorage:
     __shaders: OpenGLDataStorageElements[str, Shader] = OpenGLDataStorageElements[str, Shader]()
     __textures: OpenGLDataStorageElements[str, Texture] = OpenGLDataStorageElements[str, Texture]()
     
+    # Shareable
     @staticmethod
     def getBuffers() -> OpenGLDataStorageElements[str, Buffer]:
         return OpenGLDataStorage.__buffers
     
+    # Not Shareable (VAO)
     @staticmethod
     def getMeshes() -> OpenGLDataStorageElements[str, Mesh]:
         return OpenGLDataStorage.__meshes
     
+    # Not Shareable (Meshes)
     @staticmethod
     def getModels() -> OpenGLDataStorageElements[str, Model]:
         return OpenGLDataStorage.__models
     
+    # Shareable
     @staticmethod
     def getShaders() -> OpenGLDataStorageElements[str, Shader]:
         return OpenGLDataStorage.__shaders
 
+    # Shareable
     @staticmethod
     def getTextures() -> OpenGLDataStorageElements[str, Texture]:
         return OpenGLDataStorage.__textures
+
+class OpenGLLocalDataStorage():
+    def __init__(self):
+        pass

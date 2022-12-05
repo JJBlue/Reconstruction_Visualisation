@@ -1,112 +1,41 @@
 import time
 
 from OpenGL.GL import *
-from PyQt6.QtCore import Qt, QPoint, pyqtSignal, QTimer, QThread
-from PyQt6.QtGui import QSurfaceFormat, QOffscreenSurface
-from PyQt6.QtOpenGL import QOpenGLVersionProfile
+from PyQt6.QtCore import Qt, QPoint, pyqtSignal, QTimer, QThread, \
+    QCoreApplication
+from PyQt6.QtGui import QSurfaceFormat, QPaintEvent, \
+    QResizeEvent
+from PyQt6.QtOpenGL import QOpenGLVersionProfile, QOpenGLWindow
 from PyQt6.QtOpenGLWidgets import QOpenGLWidget
 
 from ba_trees.gui.opengl.OpenGLData import OpenGLData
 from ba_trees.workspace import Project
 from render.functions import RenderDataStorage.OpenGLDataStorage
-from render.opengl import OpenGLCamera
-from render.render import Shader, Camera
+from render.opengl import OpenGLCamera, OpenGLModel
+from render.render import Shader, Camera, Model
 
 
-class OffscreenRenderWidget(QThread):
-    def __init__(self):
+class TestThread(QThread):
+    def __init__(self, rw):
         super().__init__()
+        
+        self.rw = rw
     
+    def start(self):
+        self.rw.second_thread_activated = True
+        self.rw.doneCurrent()
+        self.rw.context().moveToThread(self)
+        super().start()
+        
     def run(self):
-        pass
-    
-    def initialize(self):
-        # OpenGL
-        self.camera = OpenGLCamera()
-        OpenGLData.load()
+        self.rw.makeCurrent()
+        print("another Thread")
+        self.rw.initializeGLs()
+        self.rw.paintGLs()
+        self.rw.doneCurrent()
         
-        # Shaders
-        self.shader_point_cloud = RenderDataStorage.getShaders().get("point_cloud")
-        self.shader_images = RenderDataStorage.getShaders().get("images")
-        self.shader_coordinate_system = RenderDataStorage.getShaders().get("coordinate_system")
-        
-        # Geometries
-        self.coordinate_system = RenderDataStorage.getMeshes().get("coordinate_system")
-    
-    # TODO maybe:
-    # To Update automatic, send shoot with delay (example 1ms)
-    # QTimer.singleShot(1, self.repaint())
-    def render(self):
-        # Add Porject to OpenGL
-        #while len(self.projects_create_opengl_data) > 0:
-        #    project = self.projects_create_opengl_data.pop()
-        #    
-        #    data: dict = {}
-        #
-        #    point_cloud: Model = OpenGLModel(project.getModel())
-        #    data["point_cloud"] = point_cloud
-        #    
-        #    #self.model_image: Model = OpenGLModel(self.project.getImages()[0])
-        #    
-        #    self.opengl_project_data.append(data)
-        
-        # Update Objects
-        self.camera.update()
-        
-        # Clear OpenGL Frame
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        
-        # Enable OpenGL Settings
-        glFrontFace(GL_CCW)
-        glCullFace(GL_BACK)
-        glEnable(GL_CULL_FACE)
-        
-        glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
-        glEnable(GL_DEPTH_TEST);
-        
-        # Draw Coordinate System
-        if self.setting_show_coordinate_system:
-            self.shader_coordinate_system.bind()
-            self.camera.updateShaderUniform(self.shader_coordinate_system)
-            
-            self.coordinate_system.bind()
-            self.coordinate_system.draw()
-            self.coordinate_system.unbind()
-            
-            self.shader_coordinate_system.unbind()
-        
-        # Draw Point Cloud
-        self.shader_point_cloud.bind()
-        self.shader_point_cloud.uniform("point_size", self.point_size)
-        self.camera.updateShaderUniform(self.shader_point_cloud)
-        
-        for data in self.opengl_project_data:
-            point_cloud = data["point_cloud"]
-            
-            point_cloud.bind(self.shader_point_cloud)
-            point_cloud.draw()
-            point_cloud.unbind()
-        
-        self.shader_point_cloud.unbind()
-        
-        
-        # Draw Image
-        self.shader_images.bind()
-        self.camera.updateShaderUniform(self.shader_images)
-        
-        for data in self.opengl_project_data:
-            pass
-            #self.model_image.bind(self.shader_images)
-            #self.model_image.draw()
-            #self.model_image.unbind()
-        
-        self.shader_images.unbind()
-        
-        
-        # Disable OpenGL Settings
-        glDisable(GL_CULL_FACE)
-        glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
-        glDisable(GL_DEPTH_TEST);
+        self.rw.context().moveToThread(QCoreApplication.instance().thread())
+        self.rw.second_thread_activated = False
 
 class RenderWidget(QOpenGLWidget):
     # Signal
@@ -117,16 +46,12 @@ class RenderWidget(QOpenGLWidget):
     cameraFOVChanged = pyqtSignal(float)
     cameraEnableMovementChanged = pyqtSignal(bool)
     
-    repaintSignal = pyqtSignal(int)
-    
     def __init__(self, parent = None):
         super().__init__(parent = parent)
         
         # Widget Settings
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus) # Must be set for keyPressEvent to work
         self.setMouseTracking(True) # To track Mouse Move without click event
-        
-        self.repaintSingal.connect(self.repaintObject())
         
         # GL Settings
         self.camera: Camera = None
@@ -148,6 +73,9 @@ class RenderWidget(QOpenGLWidget):
         self.camera_enable_movement_speed: bool = True
         
         QTimer.singleShot(1, self.runEmit)
+        
+        self.second_thread_activated = False
+        self.second_thread_Count = 0
     
     def runEmit(self):
         self.showCoordinateSystemChanged.emit(self.setting_show_coordinate_system)
@@ -260,9 +188,20 @@ class RenderWidget(QOpenGLWidget):
     ##############
     ### OpenGL ###
     ##############
-    def repaintObject(self, value: int):
-        self.repaint()
-        pass
+    
+    def paintEvent(self, e: QPaintEvent)->None:
+        if not self.second_thread_activated:
+            super().paintEvent(e)
+        
+        if self.second_thread_Count == 10:
+            pass
+            #self.thread.start()
+        
+        self.second_thread_Count += 1
+    
+    def resizeEvent(self, e: QResizeEvent)->None:
+        if not self.second_thread_activated:
+            super().resizeEvent(e)
     
     def initializeGL(self)->None:
         super().initializeGL()
@@ -271,16 +210,106 @@ class RenderWidget(QOpenGLWidget):
         self.fmt.setVersion(4, 3)
         self.fmt.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
         
-        self.surface = OffscreenRenderWidget()
-        self.surface.setFormat(self.format())
-        self.surface.create()
+        self.thread = TestThread(self)
+    
+    def initializeGLs(self):
+        print("here1")
+        # OpenGL
+        self.camera = OpenGLCamera()
+        OpenGLData.load()
         
-        #self.thread = TestThread(self)
-        #self.thread.start()
+        # Shaders
+        self.shader_point_cloud = RenderDataStorage.getShaders().get("point_cloud")
+        self.shader_images = RenderDataStorage.getShaders().get("images")
+        self.shader_coordinate_system = RenderDataStorage.getShaders().get("coordinate_system")
+        
+        # Geometries
+        self.coordinate_system = RenderDataStorage.getMeshes().get("coordinate_system")
+        print("here1 end")
     
     def resizeGL(self, width, height):
         super().resizeGL(width, height)
     
+    # TODO maybe:
+    # To Update automatic, send shoot with delay (example 1ms)
+    # QTimer.singleShot(1, self.repaint())
     def paintGL(self):
-        super().paintGL()
+        if self.second_thread_Count == 10:
+            self.thread.start()
+        
+        if not self.second_thread_activated:
+            super().paintGL()
     
+    def paintGLs(self):
+        print("here2")
+        # Add Porject to OpenGL
+        #while len(self.projects_create_opengl_data) > 0:
+        #    project = self.projects_create_opengl_data.pop()
+        #    
+        #    data: dict = {}
+        #
+        #    point_cloud: Model = OpenGLModel(project.getModel())
+        #    data["point_cloud"] = point_cloud
+        #    
+        #    #self.model_image: Model = OpenGLModel(self.project.getImages()[0])
+        #    
+        #    self.opengl_project_data.append(data)
+        
+        # Update Objects
+        self.camera.update()
+        
+        # Clear OpenGL Frame
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        
+        # Enable OpenGL Settings
+        glFrontFace(GL_CCW)
+        glCullFace(GL_BACK)
+        glEnable(GL_CULL_FACE)
+        
+        glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+        glEnable(GL_DEPTH_TEST);
+        
+        # Draw Coordinate System
+        if self.setting_show_coordinate_system:
+            self.shader_coordinate_system.bind()
+            self.camera.updateShaderUniform(self.shader_coordinate_system)
+            
+            self.coordinate_system.bind()
+            self.coordinate_system.draw()
+            self.coordinate_system.unbind()
+            
+            self.shader_coordinate_system.unbind()
+        
+        # Draw Point Cloud
+        self.shader_point_cloud.bind()
+        self.shader_point_cloud.uniform("point_size", self.point_size)
+        self.camera.updateShaderUniform(self.shader_point_cloud)
+        
+        for data in self.opengl_project_data:
+            point_cloud = data["point_cloud"]
+            
+            point_cloud.bind(self.shader_point_cloud)
+            point_cloud.draw()
+            point_cloud.unbind()
+        
+        self.shader_point_cloud.unbind()
+        
+        
+        # Draw Image
+        self.shader_images.bind()
+        self.camera.updateShaderUniform(self.shader_images)
+        
+        for data in self.opengl_project_data:
+            pass
+            #self.model_image.bind(self.shader_images)
+            #self.model_image.draw()
+            #self.model_image.unbind()
+        
+        self.shader_images.unbind()
+        
+        
+        # Disable OpenGL Settings
+        glDisable(GL_CULL_FACE)
+        glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
+        glDisable(GL_DEPTH_TEST);
+        print("here5")

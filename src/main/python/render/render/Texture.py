@@ -11,3 +11,6 @@ class Texture:
     
     def unbind(self):
         pass
+    
+    def getID(self):
+        return 0

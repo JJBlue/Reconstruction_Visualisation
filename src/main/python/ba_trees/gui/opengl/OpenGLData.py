@@ -5,7 +5,7 @@ from OpenGL.raw.GL.VERSION.GL_2_0 import GL_VERTEX_SHADER, GL_FRAGMENT_SHADER
 from ba_trees.config.ConfigDirectories import ConfigDirectories
 from default.Synchronization import synchronized
 from render.data.GeometryStructures import CoordinateSystem
-from render.functions.OpenGLDataStorage import OpenGLDataStorage
+from render.functions import RenderDataStorage.OpenGLDataStorage
 from render.opengl import OpenGLShader, OpenGLMesh
 from render.render.Shader import ShaderFile
 
@@ -25,26 +25,26 @@ class OpenGLData:
             OpenGLData.getShaderFile(GL_VERTEX_SHADER, "point_cloud.vert"),
             OpenGLData.getShaderFile(GL_FRAGMENT_SHADER, "point_cloud.frag")
         )
-        OpenGLDataStorage.getShaders().put("point_cloud", shader)
+        RenderDataStorage.getShaders().put("point_cloud", shader)
         
         shader = OpenGLShader()
         shader.addShaderSource(
             OpenGLData.getShaderFile(GL_VERTEX_SHADER, "images.vert"),
             OpenGLData.getShaderFile(GL_FRAGMENT_SHADER, "images.frag")
         )
-        OpenGLDataStorage.getShaders().put("images", shader)
+        RenderDataStorage.getShaders().put("images", shader)
         
         shader = OpenGLShader()
         shader.addShaderSource(
             OpenGLData.getShaderFile(GL_VERTEX_SHADER, "coordinate_system.vert"),
             OpenGLData.getShaderFile(GL_FRAGMENT_SHADER, "coordinate_system.frag")
         )
-        OpenGLDataStorage.getShaders().put("coordinate_system", shader)
+        RenderDataStorage.getShaders().put("coordinate_system", shader)
         
         
         # Meshes
         mesh = OpenGLMesh(CoordinateSystem())
-        OpenGLDataStorage.getMeshes().put("coordinate_system", mesh)
+        RenderDataStorage.getMeshes().put("coordinate_system", mesh)
         
         # Finished
         OpenGLData.__loaded = True

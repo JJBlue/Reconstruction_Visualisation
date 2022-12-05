@@ -36,7 +36,7 @@ class OpenGLTexture(Texture):
     
     def upload(self):
         self.id = glGenTextures(1)
-        glPixelStorei(GL_UNPACK_ALIGNMENT,1)
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
         glBindTexture(GL_TEXTURE_2D, self.id)
         
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
@@ -65,6 +65,9 @@ class OpenGLTexture(Texture):
         glTexImage2D(GL_TEXTURE_2D, 0, img_internal_format, self.image.getWidth(), self.image.getHeight(), 0, img_format, img_type, None)
         
         glBindTexture(GL_TEXTURE_2D, 0)
+    
+    def getID(self):
+        return self.id
     
     @staticmethod
     def toOpenGLFormat(img_format: TextureFormat):
