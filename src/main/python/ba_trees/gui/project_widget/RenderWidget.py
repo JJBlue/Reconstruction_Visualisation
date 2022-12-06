@@ -1,18 +1,20 @@
 from OpenGL.GL import *
+
+from glm import fvec2
 from PIL import Image, ImageOps
 
-from PyQt6.QtCore import Qt, QPoint, pyqtSignal, QTimer, QThread, QWaitCondition, \
-    QMutex
+from PyQt6.QtCore import Qt, QPoint, pyqtSignal, QTimer, QThread, QWaitCondition, QMutex
 from PyQt6.QtGui import QSurfaceFormat, QOffscreenSurface, QOpenGLContext
 from PyQt6.QtOpenGL import QOpenGLVersionProfile
 from PyQt6.QtOpenGLWidgets import QOpenGLWidget
+
 
 from ba_trees.gui.opengl.OpenGLData import OpenGLData
 from ba_trees.workspace import Project
 from render.data import CoordinateSystem
 from render.data.GeometryStructures import Pane
 from render.data.TextureData import TextureInternalFormat, TextureFormat, TextureType, TextureData
-from render.functions import RenderDataStorages
+from render.functions import RenderDataStorages, MousePicking
 from render.opengl import OpenGLCamera, OpenGLModel, OpenGLMesh, OpenGLTexture, OpenGLFrameBuffer, OpenGLProgramm
 from render.render import FrameBuffer, Texture
 
@@ -293,6 +295,11 @@ class RenderWidget(QOpenGLWidget):
             self.mouse_pressed = False
             self.mouse_x: float = -1
             self.mouse_y: float = -1
+        
+        if self.thread != None and self.thread.camera != None:
+            pass
+            # ray = MousePicking.getRayFromCamera(fvec2(event.position().x(), event.position().y()), fvec2(self.width(), self.height()), self.thread.camera)
+            # print(ray)
 
     def mouseMoveEvent(self, event):
         if self.thread != None and self.thread.camera != None and self.camera_enable_movement_speed:

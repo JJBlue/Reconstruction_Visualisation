@@ -36,7 +36,7 @@ class MousePicking:
     
     @staticmethod
     def getRayFromCamera(mouse: vec2, frame_size: vec2, camera: Camera) -> vec3:
-        return MousePicking.getRay2(mouse, frame_size, camera.getProjection(), camera.getView())
+        return MousePicking.getRay(mouse, frame_size, camera.getProjection(), camera.getView())
     
     @staticmethod
     def getRay(mouse: vec2, frame_size: vec2, projectionMatrix: mat4x4, viewMatrix: mat4x4) -> vec3:
@@ -67,9 +67,12 @@ class MousePicking:
     @staticmethod
     def toEyeSpaceRay(homogeneous_clip_space: vec4, inverse_projection_matrix: mat4x4) -> vec4:
         es_ray: vec4 = inverse_projection_matrix * homogeneous_clip_space
-        
-        vec4.z = -1.0 # Ray points into the Frame
-        vec4.w = 0.0
+        es_ray = fvec4(
+                    es_ray.x,
+                    es_ray.y,
+                    -1.0, # Ray points into the Frame
+                    0.0
+                )
         
         return es_ray
     
@@ -88,7 +91,7 @@ class MousePicking:
         """
             mouse: (x, y)       x: 0 - width
                                 y: 0 - height
-                                Mouse Origin (0, 0): Bottom Left
+                                Mouse Origin (0, 0): Top Left (For Buttom Left: -y)
             frame_size: (width, height)
             
             return  x: -1.0 - 1.0
@@ -99,7 +102,7 @@ class MousePicking:
         nds: vec2 = fvec2(0.0)
         
         nds.x = (2.0 * mouse.x) / frame_size.x - 1.0
-        nds.y = (2.0 * mouse.y) / frame_size.y - 1.0 # Eventuell -y in qt
+        nds.y = - ((2.0 * mouse.y) / frame_size.y - 1.0)
         
         return nds
         
