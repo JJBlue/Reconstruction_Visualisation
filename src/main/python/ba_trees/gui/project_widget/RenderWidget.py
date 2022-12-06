@@ -1,6 +1,8 @@
 from OpenGL.GL import *
 from PIL import Image, ImageOps
-from PyQt6.QtCore import Qt, QPoint, pyqtSignal, QTimer, QThread
+
+from PyQt6.QtCore import Qt, QPoint, pyqtSignal, QTimer, QThread, QWaitCondition, \
+    QMutex
 from PyQt6.QtGui import QSurfaceFormat, QOffscreenSurface, QOpenGLContext
 from PyQt6.QtOpenGL import QOpenGLVersionProfile
 from PyQt6.QtOpenGLWidgets import QOpenGLWidget
@@ -11,13 +13,15 @@ from render.data import CoordinateSystem
 from render.data.GeometryStructures import Pane
 from render.data.TextureData import TextureInternalFormat, TextureFormat, TextureType, TextureData
 from render.functions import RenderDataStorages
-from render.opengl import OpenGLCamera, OpenGLModel, OpenGLMesh, OpenGLTexture, OpenGLFrameBuffer, \
-    OpenGLProgramm
-from render.render import Shader, Camera, FrameBuffer, Texture
+from render.opengl import OpenGLCamera, OpenGLModel, OpenGLMesh, OpenGLTexture, OpenGLFrameBuffer, OpenGLProgramm
+from render.render import FrameBuffer, Texture
 
 
 class BackgroundRenderWidget(QThread):
-    repaintSignal = pyqtSignal(object)
+    repaintSignal = QWaitCondition()
+    mutex_repaintSignal = QMutex()
+    
+    #mutex_texture = QMutex()
     
     def __init__(self, rw):
         super().__init__()
@@ -35,6 +39,9 @@ class BackgroundRenderWidget(QThread):
         
         self.width: int = 1080
         self.height: int = 1920
+        
+        # OpenGL
+        self.camera = None
     
     def addProject(self, project: Project):
         self.new_projects.append(project)
@@ -45,12 +52,9 @@ class BackgroundRenderWidget(QThread):
         self.sizeChanged = True
     
     def repaint(self):
-        self.repaintSignal.emit(None)
+        self.repaintSignal.wakeAll()
     
     def run(self):
-        self.repaintSignal.connect(self.__render_steps)
-        
-        
         self.context = QOpenGLContext()
         self.context.setFormat(self.format)
         self.context.setShareContext(self.rw.context())
@@ -58,16 +62,18 @@ class BackgroundRenderWidget(QThread):
         
         self.context.makeCurrent(self.surface)
         self.__initialize()
-        self.__render_steps()
         self.context.doneCurrent()
+        
+        while True: # Change True
+            self.__render_steps()
+            
+            self.mutex_repaintSignal.lock()
+            self.repaintSignal.wait(self.mutex_repaintSignal)
+            self.mutex_repaintSignal.unlock()
     
     def __render_steps(self, _ = None):
-        print("Steps")
         self.context.makeCurrent(self.surface)
         
-        # TODO maybe:
-        # To Update automatic, run while loop
-        #self.__initializeNewObjects()
         self.__update()
         self.__render()
         
@@ -113,20 +119,6 @@ class BackgroundRenderWidget(QThread):
         
         self.framebuffer.unbind()
     
-    def __initializeNewObjects(self):
-        # Add Project to OpenGL
-        while len(self.new_projects) > 0:
-            project = self.new_projects.pop()
-            
-            data: dict = {}
-        
-            point_cloud = OpenGLModel(project.getModel())
-            data["point_cloud"] = point_cloud
-            
-            #self.model_image: Model = OpenGLModel(self.project.getImages()[0])
-            
-            self.opengl_project_data.append(data)
-    
     def __update(self):
         # Update Objects
         self.camera.update()
@@ -136,6 +128,19 @@ class BackgroundRenderWidget(QThread):
             self.sizeChanged = False
             
             self.framebuffer.resize(self.width, self.height)
+        
+        # Add Project to OpenGL
+        while len(self.new_projects) > 0:
+            project = self.new_projects.pop()
+            
+            data: dict = {}
+        
+            point_cloud = OpenGLModel(project.getModel())
+            data["point_cloud"] = point_cloud
+            
+            #self.model_image = OpenGLModel(self.project.getImages()[0])
+            
+            self.opengl_project_data.append(data)
     
     def __render(self):
         # Enable OpenGL Settings
@@ -146,6 +151,7 @@ class BackgroundRenderWidget(QThread):
         glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
         glEnable(GL_DEPTH_TEST);
         
+        #self.mutex_texture.lock()
         self.framebuffer.bind()
         glViewport(0, 0, self.width, self.height);
         
@@ -190,9 +196,11 @@ class BackgroundRenderWidget(QThread):
         
         self.shader_images.unbind()
         
-        self.saveImage()
-        
+        #self.saveImage()
         self.framebuffer.unbind()
+        glFlush() # Start Rendering if it is not happend yet
+        glFinish() # Wait for finished rendering
+        #self.mutex_texture.unlock()
         
         # Disable OpenGL Settings
         glDisable(GL_CULL_FACE)
@@ -230,9 +238,6 @@ class RenderWidget(QOpenGLWidget):
         self.repaintSignal.connect(self.repaintObject)
         
         # GL Settings
-        self.camera: Camera = None
-        self.shader: Shader = None
-        
         self.mouse_pressed: bool = False
         self.mouse_x: float = -1
         self.mouse_y: float = -1
@@ -255,28 +260,28 @@ class RenderWidget(QOpenGLWidget):
         self.cameraSpeedChanged.emit(self.camera_speed)
         self.cameraEnableMovementChanged.emit(self.camera_enable_movement_speed)
         
-        if self.camera != None:
-            self.cameraFOVChanged.emit(self.camera.fov)
+        if self.thread != None and self.thread.camera != None:
+            self.cameraFOVChanged.emit(self.thread.camera.fov)
     
     ##########################
     ### Mouse and Keyboard ###
     ##########################
     
     def keyPressEvent(self, event):
-        if self.camera != None and self.camera_enable_movement_speed:
+        if self.thread != None and self.thread.camera != None and self.camera_enable_movement_speed:
             key = event.key()
 
             if key == Qt.Key.Key_W:
-                self.camera.forward(self.camera_speed)
+                self.thread.camera.forward(self.camera_speed)
                 self.repaintInBackground()
             elif key == Qt.Key.Key_S:
-                self.camera.backward(self.camera_speed)
+                self.thread.camera.backward(self.camera_speed)
                 self.repaintInBackground()
             elif key == Qt.Key.Key_A:
-                self.camera.leftward(self.camera_speed)
+                self.thread.camera.leftward(self.camera_speed)
                 self.repaintInBackground()
             elif key == Qt.Key.Key_D:
-                self.camera.rightward(self.camera_speed)
+                self.thread.camera.rightward(self.camera_speed)
                 self.repaintInBackground()
     
     def mousePressEvent(self, event):
@@ -290,16 +295,16 @@ class RenderWidget(QOpenGLWidget):
             self.mouse_y: float = -1
 
     def mouseMoveEvent(self, event):
-        if self.camera != None and self.camera_enable_movement_speed:
+        if self.thread != None and self.thread.camera != None and self.camera_enable_movement_speed:
             if self.mouse_pressed:
                 pos: QPoint = event.position()
     
                 if self.mouse_x != -1:
                     degree: float = pos.x() - self.mouse_x
-                    self.camera.yaw(degree * -1.0 / 10.0)
+                    self.thread.camera.yaw(degree * -1.0 / 10.0)
     
                     degree: float = pos.y() - self.mouse_y
-                    self.camera.pitch(degree * -1.0 / 10.0)
+                    self.thread.camera.pitch(degree * -1.0 / 10.0)
                     
                     self.repaintInBackground()
                 
@@ -309,8 +314,9 @@ class RenderWidget(QOpenGLWidget):
     def wheelEvent(self, event):
         delta = event.angleDelta().y()
         
-        self.camera.forward(delta * self.camera_speed)
-        self.repaintInBackground()
+        if self.thread != None and self.thread.camera != None:
+            self.thread.camera.forward(delta * self.camera_speed)
+            self.repaintInBackground()
     
     ###########################
     ### QT Designer Methods ###
@@ -341,10 +347,11 @@ class RenderWidget(QOpenGLWidget):
             self.cameraEnableMovementChanged.emit(self.camera_enable_movement_speed)
     
     def setCameraFOV(self, value: float):
-        if self.camera != None and self.camera.fov != value:
-            self.camera.fov = value
-            self.cameraFOVChanged.emit(self.camera.fov)
-            self.repaintInBackground()
+        if self.thread != None and self.thread.camera != None and self.thread.camera.fov != value:
+            self.thread.camera.fov = value
+            self.repaint()
+            self.cameraFOVChanged.emit(self.thread.camera.fov)
+            #self.repaintInBackground()
             
     
     ###############
@@ -353,8 +360,8 @@ class RenderWidget(QOpenGLWidget):
     
     def addProject(self, project: Project):
         self.projects.append(project)
-        #self.thread.addProject(project)
-        #self.repaintInBackground()
+        self.thread.addProject(project)
+        self.repaintInBackground()
     
     ##############
     ### OpenGL ###
@@ -385,6 +392,7 @@ class RenderWidget(QOpenGLWidget):
         
         self.thread = BackgroundRenderWidget(self)
         QTimer.singleShot(1, self.initBackground)
+        QTimer.singleShot(100, self.runEmit)
         
     def initBackground(self):
         self.thread.start()
@@ -394,6 +402,7 @@ class RenderWidget(QOpenGLWidget):
         
         if self.thread != None:
             self.thread.resize(width, height)
+            self.thread.repaint()
     
     def repaintInBackground(self):
         if self.thread != None:
@@ -405,21 +414,16 @@ class RenderWidget(QOpenGLWidget):
         if self.outputTexture == None:
             return
         
+        #self.thread.mutex_texture.lock()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         
         self.shader.bind()
-        
         self.image_mesh.bind()
         
-        glActiveTexture(GL_TEXTURE0)
-        glBindTexture(GL_TEXTURE_2D, self.outputTexture.getID())
-        self.shader.uniform("tex", self.outputTexture)
-        
+        self.shader.uniform("tex", self.outputTexture, 0)
         self.image_mesh.draw()
         
-        glBindTexture(GL_TEXTURE_2D, 0)
-        
         self.image_mesh.unbind()
-        
         self.shader.unbind()
-    
+        
+        #self.thread.mutex_texture.unlock()
