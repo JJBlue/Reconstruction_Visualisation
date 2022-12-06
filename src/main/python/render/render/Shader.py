@@ -52,20 +52,11 @@ class ShaderFile(ShaderSource):
         return result
 
 class Shader:
-    def __init__(self):
-        self.shader_sources: list = [] # dict: {type, shader}
+    def __init__(self, source: ShaderSource):
+        self.shader_source = source
     
     def __del__(self):
         pass
-    
-    def bind(self):
-        raise NotImplementedError
-    
-    def unbind(self):
-        raise NotImplementedError
-    
-    def uniform(self, name: str, value, count: int = 0):
-        raise NotImplementedError
     
     def recompile(self):
         return self.compile()
@@ -74,7 +65,32 @@ class Shader:
         raise NotImplementedError
         return False
     
-    def addShaderSource(self, *args):
-        for source in args:
-            self.shader_sources.append(source)
-        self.recompile()
+    def getID(self):
+        return 0
+
+class ShaderGroup(Shader):
+    def __init__(self, *shaders):
+        self.shaders: list = [] # dict: {type, shader}
+        
+        for shader in shaders:
+            self.shaders.append(shader)
+    
+    def __del__(self):
+        pass
+    
+    def recompile(self):
+        return self.compile()
+    
+    def compile(self) -> bool:
+        result: bool = True
+        
+        for shader in self.shaders:
+            tf = shader.compile()
+            
+            if not tf:
+                result = False
+        
+        return result
+    
+    def getShaders(self) -> list:
+        return self.shaders

@@ -22,8 +22,6 @@ class OpenGLFrameBuffer(FrameBuffer):
         glBindFramebuffer(GL_FRAMEBUFFER, 0)
     
     def addTexture(self, texture: Texture):
-        self.bind()
-        
         color_attachment_id = len(self.color_attachments)
         self.color_attachments.append(texture)
         
@@ -35,13 +33,9 @@ class OpenGLFrameBuffer(FrameBuffer):
         else:
             checked = True
         
-        self.unbind()
-        
         return checked
     
     def addRenderBuffer(self, renderbuffer: RenderBuffer):
-        self.bind()
-        
         attachment = OpenGLFrameBuffer.toOpenGLAttachment(renderbuffer.getInternalFormat(), 0)
         
         if attachment == GL_COLOR_ATTACHMENT0:
@@ -61,28 +55,30 @@ class OpenGLFrameBuffer(FrameBuffer):
         else:
             checked = True
         
-        self.unbind()
-        
         return checked
     
     @overload
     def setDrawBuffer(self, *args: int):
+        pass
+        
+    @overload
+    def setDrawBuffer(self, *args: str): # Enums
+        raise NotImplementedError()
+    
+    def setDrawBuffer(self, *args):
         draw_buffers: list = []
         
-        for i in args:
-            draw_buffers.append(GL_COLOR_ATTACHMENT0 + i)
+        for arg in args:
+            if isinstance(arg, int):
+                draw_buffers.append(GL_COLOR_ATTACHMENT0 + arg)
+            else:
+                raise NotImplementedError()
         
         self.setOpenGLDrawBuffer(draw_buffers)
     
-    @overload
-    def setDrawBuffer(self, enums: list):
-        raise NotImplementedError()
-    
     # GL_NONE, GL_FRONT_LEFT, GL_FRONT_RIGHT, GL_BACK_LEFT, GL_BACK_RIGHT, GL_COLOR_ATTACHMENT
     def setOpenGLDrawBuffer(self, draw_buffers: list):
-        self.bind()
         glDrawBuffers(len(draw_buffers), draw_buffers)
-        self.unbind()
     
     def resize(self, width, height):
         for render_buffer in self.render_buffers:

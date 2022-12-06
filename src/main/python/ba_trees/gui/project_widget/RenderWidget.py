@@ -1,6 +1,7 @@
 import time
 
 from OpenGL.GL import *
+from PIL import Image, ImageOps
 from PyQt6.QtCore import Qt, QPoint, pyqtSignal, QTimer, QThread
 from PyQt6.QtGui import QSurfaceFormat, QOffscreenSurface, QOpenGLContext
 from PyQt6.QtOpenGL import QOpenGLVersionProfile
@@ -8,10 +9,13 @@ from PyQt6.QtOpenGLWidgets import QOpenGLWidget
 
 from ba_trees.gui.opengl.OpenGLData import OpenGLData
 from ba_trees.workspace import Project
+from render.data import CoordinateSystem
+from render.data.GeometryStructures import Pane
+from render.data.TextureData import TextureInternalFormat, TextureFormat, TextureType, TextureData
 from render.functions import RenderDataStorages
-from render.opengl import OpenGLCamera, OpenGLModel
-from render.render import Shader, Camera
-from render.render.FrameBuffer import FrameBuffer
+from render.opengl import OpenGLCamera, OpenGLModel, OpenGLMesh, OpenGLTexture, OpenGLFrameBuffer, \
+    OpenGLProgramm
+from render.render import Shader, Camera, FrameBuffer
 
 
 class BackgroundRenderWidget(QThread):
@@ -25,13 +29,17 @@ class BackgroundRenderWidget(QThread):
         self.surface.setFormat(self.format)
         self.surface.create()
         
-        self.projects_create_opengl_data: list = []
+        self.new_projects: list = []
         self.opengl_project_data: list = []
+        self.outputTextureID = 0
+    
+    def addProject(self, project: Project):
+        self.new_projects.append(project)
     
     def run(self):
         self.context = QOpenGLContext()
-        #self.context.setShareContext(other_context)
         self.context.setFormat(self.format)
+        self.context.setShareContext(self.rw.context())
         self.context.create()
         
         self.context.makeCurrent(self.surface)
@@ -47,6 +55,9 @@ class BackgroundRenderWidget(QThread):
         self.context.doneCurrent()
     
     def initialize(self):
+        self.width: int = 1080
+        self.height: int = 1920
+        
         # OpenGL
         self.camera = OpenGLCamera()
         OpenGLData.load()
@@ -54,23 +65,43 @@ class BackgroundRenderWidget(QThread):
         # Global storage
         global_storage = RenderDataStorages.getGloablRenderDataStorage()
         global_shader_storage = global_storage.getShaders()
-        local_mesh_storage = RenderDataStorages.getMeshes()
+        local_mesh_storage = RenderDataStorages.getLocalRenderDataStorage(self.context).getMeshes()
         
         # Shaders
-        self.shader_point_cloud = global_shader_storage.get("point_cloud")
-        self.shader_images = global_shader_storage.get("images")
-        self.shader_coordinate_system = global_shader_storage.get("coordinate_system")
+        self.shader_point_cloud = OpenGLProgramm(global_shader_storage.get("point_cloud"))
+        self.shader_images = OpenGLProgramm(global_shader_storage.get("images"))
+        self.shader_coordinate_system = OpenGLProgramm(global_shader_storage.get("coordinate_system"))
+        
+        # Meshes
+        mesh = OpenGLMesh(CoordinateSystem())
+        local_mesh_storage.put("coordinate_system", mesh)
         
         # Geometries
         self.coordinate_system = local_mesh_storage.get("coordinate_system")
         
         # FrameBuffer
-        self.framebuffer: FrameBuffer = FrameBuffer()
+        self.framebuffer: FrameBuffer = OpenGLFrameBuffer()
+        self.framebuffer.bind()
+        
+        self.framebuffer.resize(self.width, self.height)
+        
+        texture_data: TextureData = TextureData(TextureInternalFormat.RGBA, TextureFormat.RGBA, TextureType.UNSIGNED_BYTE, self.width, self.height, None)
+        texture_data.setUseMipmap(False)
+        texture_data.setRepeatImage(False)
+        texture_data.setUnpackAlignment(False)
+        texture_data.setPoorFiltering(True)
+        
+        texture = OpenGLTexture(texture_data)
+        self.outputTextureID = texture.getID()
+        self.framebuffer.addTexture(texture)
+        self.framebuffer.setDrawBuffer(0)
+        
+        self.framebuffer.unbind()
     
     def initializeNewObjects(self):
         # Add Project to OpenGL
-        while len(self.projects_create_opengl_data) > 0:
-            project = self.projects_create_opengl_data.pop()
+        while len(self.new_projects) > 0:
+            project = self.new_projects.pop()
             
             data: dict = {}
         
@@ -95,12 +126,13 @@ class BackgroundRenderWidget(QThread):
         glEnable(GL_DEPTH_TEST);
         
         self.framebuffer.bind()
+        glViewport(0, 0, self.width, self.height);
         
         # Clear OpenGL Frame
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         
         # Draw Coordinate System
-        if self.setting_show_coordinate_system:
+        if self.rw.setting_show_coordinate_system:
             self.shader_coordinate_system.bind()
             self.camera.updateShaderUniform(self.shader_coordinate_system)
             
@@ -112,7 +144,7 @@ class BackgroundRenderWidget(QThread):
         
         # Draw Point Cloud
         self.shader_point_cloud.bind()
-        self.shader_point_cloud.uniform("point_size", self.point_size)
+        self.shader_point_cloud.uniform("point_size", self.rw.point_size)
         self.camera.updateShaderUniform(self.shader_point_cloud)
         
         for data in self.opengl_project_data:
@@ -137,12 +169,24 @@ class BackgroundRenderWidget(QThread):
         
         self.shader_images.unbind()
         
+        self.save()
+        
         self.framebuffer.unbind()
         
         # Disable OpenGL Settings
         glDisable(GL_CULL_FACE)
         glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
         glDisable(GL_DEPTH_TEST);
+        
+        self.rw.repaintSignal.emit(self.outputTextureID)
+
+    def save(self):
+        glPixelStorei(GL_PACK_ALIGNMENT, 1)
+        data = glReadPixels(0, 0, self.width, self.height, GL_RGBA, GL_UNSIGNED_BYTE)
+        image = Image.frombytes("RGBA", (self.width, self.height), data)
+        image = ImageOps.flip(image)
+        image.save('J:\\Codes\\git\\BA_Trees\\config\\test.png', 'PNG')
+        
 
 class RenderWidget(QOpenGLWidget):
     # Signal
@@ -288,13 +332,15 @@ class RenderWidget(QOpenGLWidget):
     
     def addProject(self, project: Project):
         self.projects.append(project)
-        self.projects_create_opengl_data.append(project)
+        #self.thread.addProject(project)
         #self.repaint()
     
     ##############
     ### OpenGL ###
     ##############
     def repaintObject(self, value: int):
+        print("repaint")
+        print(value)
         self.repaint()
     
     def initializeGL(self)->None:
@@ -304,12 +350,42 @@ class RenderWidget(QOpenGLWidget):
         self.fmt.setVersion(4, 3)
         self.fmt.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
         
+        OpenGLData.load()
+        
+        # Shaders
+        global_storage = RenderDataStorages.getGloablRenderDataStorage()
+        global_shader_storage = global_storage.getShaders()
+
+        self.shader = OpenGLProgramm(global_shader_storage.get("framebuffer_image"))
+        
+        # Meshes
+        self.image_mesh = OpenGLMesh(Pane())
+        
+        self.outputTextureID = 0
+        
+        QTimer.singleShot(1, self.initBackground)
+        
+    def initBackground(self):
+        # Background Thread
         self.thread = BackgroundRenderWidget(self)
         self.thread.start()
     
     def resizeGL(self, width, height):
         super().resizeGL(width, height)
-    
+        
     def paintGL(self):
         super().paintGL()
+        
+        if self.outputTextureID == 0:
+            return
+        
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        
+        self.shader.bind()
+        
+        self.image_mesh.bind()
+        self.image_mesh.draw()
+        self.image_mesh.unbind()
+        
+        self.shader.unbind()
     

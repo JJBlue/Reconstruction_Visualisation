@@ -226,10 +226,10 @@ class Pane(Geometry):
         self.vertices = GeometryData(
             3,
             np.array([
-                0.0, 0.0, 0.0, #0
-                0.0, 1.0, 0.0, #1
-                1.0, 0.0, 0.0, #2
-                1.0, 1.0, 0.0, #3
+                -1.0, -1.0, 0.0, #0
+                 1.0, -1.0, 0.0, #1
+                 1.0,  1.0, 0.0, #2
+                -1.0,  1.0, 0.0, #3
             ], np.float32)
         )
         self.all_vertices.append(self.vertices)
@@ -245,11 +245,33 @@ class Pane(Geometry):
         )
         self.all_vertices.append(self.normales)
         
+        self.colors = GeometryData(
+            3,
+            np.array([
+                0.0, 0.0, 0.0,
+                1.0, 0.0, 0.0,
+                0.0, 0.0, 1.0,
+                1.0, 0.0, 1.0,
+            ], np.float32)
+        )
+        self.all_vertices.append(self.colors)
+        
+        self.tex = GeometryData(
+            2,
+            np.array([
+                0.0, 0.0,
+                1.0, 0.0,
+                1.0, 1.0,
+                0.0, 1.0,
+            ], np.float32)
+        )
+        self.all_vertices.append(self.tex)
+        
         self.indices = GeometryData(
             1,
             np.array([
-                0, 2, 1,
-                1, 2, 3
+                0, 1, 2,
+                2, 3, 0
             ], np.uint32),
             PrimitiveType.UNSIGNED_INT
         )

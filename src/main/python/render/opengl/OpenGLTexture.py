@@ -4,6 +4,7 @@ from render.data import TextureData
 from render.data.TextureData import TextureFormat, TextureType, \
     TextureInternalFormat
 from render.render import Texture
+from typing import overload
 
 
 class OpenGLTexture(Texture):
@@ -36,13 +37,22 @@ class OpenGLTexture(Texture):
     
     def upload(self):
         self.id = glGenTextures(1)
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
+        
+        if self.image.getUnpackAlignment():
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
+        
         glBindTexture(GL_TEXTURE_2D, self.id)
         
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR if self.mipmap else GL_LINEAR)
+        if self.image.getRepeatImage():
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+        
+        if self.image.getPoorFiltering():
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        else:
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR if self.image.getUseMipmap() else GL_LINEAR)
         
         img_format = OpenGLTexture.toOpenGLFormat(self.image.getFormat())
         img_internal_format = OpenGLTexture.toOpenGLInternalFormat(self.image.getInternalFormat())
@@ -50,21 +60,27 @@ class OpenGLTexture(Texture):
         
         glTexImage2D(GL_TEXTURE_2D, 0, img_internal_format, self.image.getWidth(), self.image.getHeight(), 0, img_format, img_type, self.image.getData())
         
-        if self.mipmap:
+        if self.image.getUseMipmap():
             glGenerateMipmap(GL_TEXTURE_2D)
         
         glBindTexture(GL_TEXTURE_2D, 0)
     
+    @overload
     def resize(self):
+        self.resize(self.image.getWidth(), self.image.getHeight())
+    
+    @overload
+    def resize(self, width, height):
         glBindTexture(GL_TEXTURE_2D, id)
         
         img_format = OpenGLTexture.toOpenGLFormat(self.image.getFormat())
         img_internal_format = OpenGLTexture.toOpenGLInternalFormat(self.image.getInternalFormat())
         img_type = OpenGLTexture.toOpenGLType(self.image.getType())
         
-        glTexImage2D(GL_TEXTURE_2D, 0, img_internal_format, self.image.getWidth(), self.image.getHeight(), 0, img_format, img_type, None)
+        glTexImage2D(GL_TEXTURE_2D, 0, img_internal_format, width, height, 0, img_format, img_type, None)
         
         glBindTexture(GL_TEXTURE_2D, 0)
+        
     
     def getID(self):
         return self.id

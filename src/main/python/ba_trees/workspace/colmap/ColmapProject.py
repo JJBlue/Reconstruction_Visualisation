@@ -6,7 +6,7 @@ from colmap_wrapper.colmap import COLMAP
 
 from ba_trees.workspace import Project
 from default.Synchronization import synchronized
-from render.data import TextureData, ModelData, TextureFile, Pane
+from render.data import ModelData
 from render.data.GeometryO3D import GeometryO3DPointCloud
 
 

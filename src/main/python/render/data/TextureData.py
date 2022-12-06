@@ -7,9 +7,62 @@ try:
 except:
     from strenum import StrEnum
 
-from PIL import Image
 
-import numpy as np
+class TextureData:
+    def __init__(self, internal_format: TextureInternalFormat, img_format: TextureFormat, img_type: TextureType, width: int, height: int, data: object):
+        self.internal_format: TextureInternalFormat = internal_format
+        self.img_format: TextureFormat = img_format
+        self.img_type: TextureType = img_type
+        self.width: int = width
+        self.height: int = height
+        self.data: object = data
+        
+        self.use_mipmap: bool = True
+        self.repeat_image: bool = True
+        self.unpack_alignment: bool = True
+        self.poor_filtering = False
+    
+    def setUseMipmap(self, value: bool):
+        self.use_mipmap = value
+    
+    def getUseMipmap(self):
+        return self.use_mipmap
+    
+    def setRepeatImage(self, value: bool):
+        self.repeat_image = value
+    
+    def getRepeatImage(self):
+        return self.repeat_image
+    
+    def setUnpackAlignment(self, value: bool):
+        self.unpack_alignment = value
+    
+    def getUnpackAlignment(self):
+        return self.unpack_alignment
+    
+    def setPoorFiltering(self, value: bool):
+        self.poor_filtering = value
+    
+    def getPoorFiltering(self):
+        return self.poor_filtering
+    
+    def getInternalFormat(self) -> TextureInternalFormat:
+        return self.internal_format
+    
+    def getFormat(self) -> TextureFormat:
+        return self.img_format
+    
+    def getType(self) -> TextureType:
+        return self.img_type
+    
+    def getWidth(self) -> int:
+        return self.width
+    
+    def getHeight(self) -> int:
+        return self.height
+    
+    def getData(self) -> object:
+        return self.data
 
 # Missing modes from Pillow
 # I (32-bit signed integer pixels)
@@ -142,141 +195,3 @@ class TextureType(Enum):
     UNSIGNED_INT_8_8_8_8_REV = 17
     UNSIGNED_INT_10_10_10_2 = 18
     UNSIGNED_INT_2_10_10_10_REV = 19
-
-class TextureData:
-    def __init__(self, internal_format: TextureInternalFormat, img_format: TextureFormat, img_type: TextureType, width: int, height: int, data):
-        self.internal_format: TextureInternalFormat = internal_format
-        self.img_format: TextureFormat = img_format
-        self.img_type: TextureType = img_type
-        self.width: int = width
-        self.height: int = height
-        self.data = data
-    
-    def getInternalFormat(self) -> TextureInternalFormat:
-        return self.internal_format
-    
-    def getFormat(self) -> TextureFormat:
-        return self.img_format
-    
-    def getType(self) -> TextureType:
-        return self.img_type
-    
-    def getWidth(self) -> int:
-        return self.width
-    
-    def getHeight(self) -> int:
-        return self.height
-    
-    def getData(self):
-        return self.data
-    
-class TextureFile(TextureData):
-    def __init__(self, file: str):
-        super().__init__(None, None, None, None, None, None)
-        self.file = file
-        self.file_loaded = False
-    
-    def load(self):
-        if self.file_loaded:
-            return
-        self.file_loaded = True
-        
-        img = Image.open(self.file)
-        
-        width, height = img.size
-        
-        mode: str = img.mode
-        mode_type: TextureFormat = None
-        img_type: TextureType = None
-        img_internal_format: TextureInternalFormat = None
-        dtype: np.dtype = None
-        
-        if mode == "1":
-            mode_type = TextureFormat.BLACK_WHITE_BIT
-            dtype = np.bit
-            raise NotImplementedError()
-        elif mode == "L":
-            mode_type = TextureFormat.BLACK_WHITE
-            dtype = np.int8
-            img_type = TextureType.UNSIGNED_BYTE
-            raise NotImplementedError()
-        elif mode == "P":
-            mode_type = TextureFormat.MAPPED_COLOR_PALETTE
-            dtype = np.int8
-            img_type = TextureType.UNSIGNED_BYTE
-            raise NotImplementedError()
-        elif mode == "LA":
-            mode_type = TextureFormat.BLACK_WHITE_ALPHA
-            dtype = np.int8
-            img_type = TextureType.UNSIGNED_BYTE
-            raise NotImplementedError()
-        elif mode == "PA":
-            mode_type = TextureFormat.MAPPED_COLOR_PALETTE_ALPHA
-            dtype = np.int8
-            img_type = TextureType.UNSIGNED_BYTE
-            raise NotImplementedError()
-        elif mode == "RGB":
-            mode_type = TextureFormat.RGB
-            dtype = np.int8
-            img_type = TextureType.UNSIGNED_BYTE
-            img_internal_format = TextureInternalFormat.RGB8
-        elif mode == "RGBA":
-            mode_type = TextureFormat.RGBA
-            dtype = np.int8
-            img_type = TextureType.UNSIGNED_BYTE
-            img_internal_format = TextureInternalFormat.RGBA8
-        elif mode == "CMYK":
-            mode_type = TextureFormat.CMYK
-            dtype = np.int8
-            img_type = TextureType.UNSIGNED_BYTE
-            raise NotImplementedError()
-        elif mode == "YCbCr":
-            mode_type = TextureFormat.YCbCr
-            dtype = np.int8
-            img_type = TextureType.UNSIGNED_BYTE
-            raise NotImplementedError()
-        elif mode == "LAB":
-            mode_type = TextureFormat.LAB
-            dtype = np.int8
-            img_type = TextureType.UNSIGNED_BYTE
-            raise NotImplementedError()
-        elif mode == "HSV":
-            mode_type = TextureFormat.HSV
-            dtype = np.int8
-            img_type = TextureType.UNSIGNED_BYTE
-            raise NotImplementedError()
-        else:
-            raise NotImplementedError()
-        
-        self.dtype = dtype
-        
-        self.internal_format: TextureInternalFormat = img_internal_format
-        self.img_format: TextureFormat = mode_type
-        self.img_type: TextureType = img_type
-        self.width: int = width
-        self.height: int = height
-    
-    def getInternalFormat(self) -> TextureInternalFormat:
-        self.load()
-        return self.internal_format
-    
-    def getFormat(self) -> TextureFormat:
-        self.load()
-        return self.img_format
-    
-    def getType(self) -> TextureType:
-        self.load()
-        return self.img_type
-    
-    def getWidth(self) -> int:
-        self.load()
-        return self.width
-    
-    def getHeight(self) -> int:
-        self.load()
-        return self.height
-    
-    def getData(self) -> np.ndarray:
-        self.load()
-        img = Image.open(self.file)
-        return np.array(list(img.getdata()), self.dtype)

@@ -73,16 +73,6 @@ class RenderDataStorages:
     def getBuffers() -> RenderDataStorageElements[str, Buffer]:
         return RenderDataStorages.__global_storage.getBuffers()
     
-    # Not Shareable (VAO)
-    @staticmethod
-    def getMeshes() -> RenderDataStorageElements[str, Mesh]:
-        return RenderDataStorages.__global_storage.getMeshes()
-    
-    # Not Shareable (Meshes)
-    @staticmethod
-    def getModels() -> RenderDataStorageElements[str, Model]:
-        return RenderDataStorages.__global_storage.getModels()
-    
     # Shareable
     @staticmethod
     def getShaders() -> RenderDataStorageElements[str, Shader]:
@@ -100,7 +90,7 @@ class RenderDataStorages:
     @staticmethod
     def getLocalRenderDataStorage(context) -> RenderDataStorage:
         if not (context in RenderDataStorages.__local_storages):
-            RenderDataStorages.__local_storages[context] = RenderDataStorages(local = True)
+            RenderDataStorages.__local_storages[context] = RenderDataStorage(local = True)
         return RenderDataStorages.__local_storages[context]
     
     @staticmethod
