@@ -349,9 +349,8 @@ class RenderWidget(QOpenGLWidget):
     def setCameraFOV(self, value: float):
         if self.thread != None and self.thread.camera != None and self.thread.camera.fov != value:
             self.thread.camera.fov = value
-            self.repaint()
             self.cameraFOVChanged.emit(self.thread.camera.fov)
-            #self.repaintInBackground()
+            self.repaintInBackground()
             
     
     ###############
@@ -392,7 +391,7 @@ class RenderWidget(QOpenGLWidget):
         
         self.thread = BackgroundRenderWidget(self)
         QTimer.singleShot(1, self.initBackground)
-        QTimer.singleShot(100, self.runEmit)
+        QTimer.singleShot(500, self.runEmit)
         
     def initBackground(self):
         self.thread.start()

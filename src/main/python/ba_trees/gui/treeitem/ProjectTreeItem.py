@@ -22,7 +22,7 @@ class Runnable_Open_Project(QtCore.QThread):
     def run(self):
         self.project.open()
         self.project.load()
-        #self.__signal.emit(None)
+        self.__signal.emit(None)
     
     def runLater(self):
         self.project_widget.ui.opengl_widget.addProject(self.project)
@@ -55,6 +55,4 @@ class ProjectTreeItem(CustomTreeItem):
         window.ui.tabs.addTab(project_widget, "Project")
         
         self.thread = Runnable_Open_Project(self.project, project_widget, event)
-        self.thread.run()
-        self.thread.runLater()
-        #self.thread.start()
+        self.thread.start()
