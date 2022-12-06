@@ -11,5 +11,8 @@ class Texture:
     def unbind(self):
         pass
     
+    def resize(self, width, height):
+        pass
+    
     def getID(self):
         return 0

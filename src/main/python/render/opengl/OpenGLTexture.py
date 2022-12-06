@@ -67,12 +67,19 @@ class OpenGLTexture(Texture):
     
     @overload
     def resize(self):
-        self.resize(self.image.getWidth(), self.image.getHeight())
+        pass
     
     @overload
     def resize(self, width, height):
-        glBindTexture(GL_TEXTURE_2D, id)
+        pass
+    
+    def resize(self, width = None, height = None):
+        if width == None or height == None:
+            width = self.image.getWidth()
+            height = self.image.getHeight()
         
+        glBindTexture(GL_TEXTURE_2D, self.id)
+    
         img_format = OpenGLTexture.toOpenGLFormat(self.image.getFormat())
         img_internal_format = OpenGLTexture.toOpenGLInternalFormat(self.image.getInternalFormat())
         img_type = OpenGLTexture.toOpenGLType(self.image.getType())
@@ -81,7 +88,6 @@ class OpenGLTexture(Texture):
         
         glBindTexture(GL_TEXTURE_2D, 0)
         
-    
     def getID(self):
         return self.id
     

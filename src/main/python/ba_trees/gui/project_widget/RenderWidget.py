@@ -1,5 +1,3 @@
-import time
-
 from OpenGL.GL import *
 from PIL import Image, ImageOps
 from PyQt6.QtCore import Qt, QPoint, pyqtSignal, QTimer, QThread
@@ -15,10 +13,12 @@ from render.data.TextureData import TextureInternalFormat, TextureFormat, Textur
 from render.functions import RenderDataStorages
 from render.opengl import OpenGLCamera, OpenGLModel, OpenGLMesh, OpenGLTexture, OpenGLFrameBuffer, \
     OpenGLProgramm
-from render.render import Shader, Camera, FrameBuffer
+from render.render import Shader, Camera, FrameBuffer, Texture
 
 
 class BackgroundRenderWidget(QThread):
+    repaintSignal = pyqtSignal(object)
+    
     def __init__(self, rw):
         super().__init__()
         
@@ -31,33 +31,49 @@ class BackgroundRenderWidget(QThread):
         
         self.new_projects: list = []
         self.opengl_project_data: list = []
-        self.outputTextureID = 0
+        self.outputTexture = None
+        
+        self.width: int = 1080
+        self.height: int = 1920
     
     def addProject(self, project: Project):
         self.new_projects.append(project)
     
+    def resize(self, width, height):
+        self.width = width
+        self.height = height
+        self.sizeChanged = True
+    
+    def repaint(self):
+        self.repaintSignal.emit(None)
+    
     def run(self):
+        self.repaintSignal.connect(self.__render_steps)
+        
+        
         self.context = QOpenGLContext()
         self.context.setFormat(self.format)
         self.context.setShareContext(self.rw.context())
         self.context.create()
         
         self.context.makeCurrent(self.surface)
-        
-        self.initialize()
+        self.__initialize()
+        self.__render_steps()
+        self.context.doneCurrent()
+    
+    def __render_steps(self, _ = None):
+        print("Steps")
+        self.context.makeCurrent(self.surface)
         
         # TODO maybe:
         # To Update automatic, run while loop
-        #self.initializeNewObjects()
-        self.update()
-        self.render()
+        #self.__initializeNewObjects()
+        self.__update()
+        self.__render()
         
         self.context.doneCurrent()
     
-    def initialize(self):
-        self.width: int = 1080
-        self.height: int = 1920
-        
+    def __initialize(self):
         # OpenGL
         self.camera = OpenGLCamera()
         OpenGLData.load()
@@ -91,14 +107,13 @@ class BackgroundRenderWidget(QThread):
         texture_data.setUnpackAlignment(False)
         texture_data.setPoorFiltering(True)
         
-        texture = OpenGLTexture(texture_data)
-        self.outputTextureID = texture.getID()
-        self.framebuffer.addTexture(texture)
+        self.outputTexture = OpenGLTexture(texture_data)
+        self.framebuffer.addTexture(self.outputTexture)
         self.framebuffer.setDrawBuffer(0)
         
         self.framebuffer.unbind()
     
-    def initializeNewObjects(self):
+    def __initializeNewObjects(self):
         # Add Project to OpenGL
         while len(self.new_projects) > 0:
             project = self.new_projects.pop()
@@ -112,11 +127,17 @@ class BackgroundRenderWidget(QThread):
             
             self.opengl_project_data.append(data)
     
-    def update(self):
+    def __update(self):
         # Update Objects
         self.camera.update()
+        
+        # Resize
+        if self.sizeChanged:
+            self.sizeChanged = False
+            
+            self.framebuffer.resize(self.width, self.height)
     
-    def render(self):
+    def __render(self):
         # Enable OpenGL Settings
         glFrontFace(GL_CCW)
         glCullFace(GL_BACK)
@@ -169,7 +190,7 @@ class BackgroundRenderWidget(QThread):
         
         self.shader_images.unbind()
         
-        self.save()
+        self.saveImage()
         
         self.framebuffer.unbind()
         
@@ -178,9 +199,9 @@ class BackgroundRenderWidget(QThread):
         glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
         glDisable(GL_DEPTH_TEST);
         
-        self.rw.repaintSignal.emit(self.outputTextureID)
+        self.rw.repaintSignal.emit(self.outputTexture)
 
-    def save(self):
+    def saveImage(self):
         glPixelStorei(GL_PACK_ALIGNMENT, 1)
         data = glReadPixels(0, 0, self.width, self.height, GL_RGBA, GL_UNSIGNED_BYTE)
         image = Image.frombytes("RGBA", (self.width, self.height), data)
@@ -197,7 +218,7 @@ class RenderWidget(QOpenGLWidget):
     cameraFOVChanged = pyqtSignal(float)
     cameraEnableMovementChanged = pyqtSignal(bool)
     
-    repaintSignal = pyqtSignal(int)
+    repaintSignal = pyqtSignal(Texture)
     
     def __init__(self, parent = None):
         super().__init__(parent = parent)
@@ -247,16 +268,16 @@ class RenderWidget(QOpenGLWidget):
 
             if key == Qt.Key.Key_W:
                 self.camera.forward(self.camera_speed)
-                self.repaint()
+                self.repaintInBackground()
             elif key == Qt.Key.Key_S:
                 self.camera.backward(self.camera_speed)
-                self.repaint()
+                self.repaintInBackground()
             elif key == Qt.Key.Key_A:
                 self.camera.leftward(self.camera_speed)
-                self.repaint()
+                self.repaintInBackground()
             elif key == Qt.Key.Key_D:
                 self.camera.rightward(self.camera_speed)
-                self.repaint()
+                self.repaintInBackground()
     
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
@@ -280,7 +301,7 @@ class RenderWidget(QOpenGLWidget):
                     degree: float = pos.y() - self.mouse_y
                     self.camera.pitch(degree * -1.0 / 10.0)
                     
-                    self.repaint()
+                    self.repaintInBackground()
                 
                 self.mouse_x = pos.x()
                 self.mouse_y = pos.y()
@@ -289,7 +310,7 @@ class RenderWidget(QOpenGLWidget):
         delta = event.angleDelta().y()
         
         self.camera.forward(delta * self.camera_speed)
-        self.repaint()
+        self.repaintInBackground()
     
     ###########################
     ### QT Designer Methods ###
@@ -298,14 +319,14 @@ class RenderWidget(QOpenGLWidget):
     def setPointSize(self, size: float):
         if self.point_size != size:
             self.point_size = size
-            self.repaint()
+            self.repaintInBackground()
             
             self.pointSizeChanged.emit(self.point_size)
     
     def show_coordinate_system(self, value: bool):
         if self.setting_show_coordinate_system != value:
             self.setting_show_coordinate_system = value
-            self.repaint()
+            self.repaintInBackground()
             
             self.showCoordinateSystemChanged.emit(self.setting_show_coordinate_system)
     
@@ -323,7 +344,7 @@ class RenderWidget(QOpenGLWidget):
         if self.camera != None and self.camera.fov != value:
             self.camera.fov = value
             self.cameraFOVChanged.emit(self.camera.fov)
-            self.repaint()
+            self.repaintInBackground()
             
     
     ###############
@@ -333,14 +354,13 @@ class RenderWidget(QOpenGLWidget):
     def addProject(self, project: Project):
         self.projects.append(project)
         #self.thread.addProject(project)
-        #self.repaint()
+        #self.repaintInBackground()
     
     ##############
     ### OpenGL ###
     ##############
-    def repaintObject(self, value: int):
-        print("repaint")
-        print(value)
+    def repaintObject(self, value):
+        self.outputTexture = value
         self.repaint()
     
     def initializeGL(self)->None:
@@ -361,22 +381,28 @@ class RenderWidget(QOpenGLWidget):
         # Meshes
         self.image_mesh = OpenGLMesh(Pane())
         
-        self.outputTextureID = 0
+        self.outputTexture = None
         
+        self.thread = BackgroundRenderWidget(self)
         QTimer.singleShot(1, self.initBackground)
         
     def initBackground(self):
-        # Background Thread
-        self.thread = BackgroundRenderWidget(self)
         self.thread.start()
     
     def resizeGL(self, width, height):
         super().resizeGL(width, height)
         
+        if self.thread != None:
+            self.thread.resize(width, height)
+    
+    def repaintInBackground(self):
+        if self.thread != None:
+            self.thread.repaint()
+    
     def paintGL(self):
         super().paintGL()
         
-        if self.outputTextureID == 0:
+        if self.outputTexture == None:
             return
         
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -384,7 +410,15 @@ class RenderWidget(QOpenGLWidget):
         self.shader.bind()
         
         self.image_mesh.bind()
+        
+        glActiveTexture(GL_TEXTURE0)
+        glBindTexture(GL_TEXTURE_2D, self.outputTexture.getID())
+        self.shader.uniform("tex", self.outputTexture)
+        
         self.image_mesh.draw()
+        
+        glBindTexture(GL_TEXTURE_2D, 0)
+        
         self.image_mesh.unbind()
         
         self.shader.unbind()

@@ -11,6 +11,8 @@ class OpenGLFrameBuffer(FrameBuffer):
         super().__init__()
         
         self.color_attachments: list = []
+        
+        self.textures: list = []
         self.render_buffers: list = []
         
         self.fbo = glGenFramebuffers(1)
@@ -24,6 +26,7 @@ class OpenGLFrameBuffer(FrameBuffer):
     def addTexture(self, texture: Texture):
         color_attachment_id = len(self.color_attachments)
         self.color_attachments.append(texture)
+        self.textures.append(texture)
         
         glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + color_attachment_id, texture.getID(), 0)
         
@@ -84,7 +87,8 @@ class OpenGLFrameBuffer(FrameBuffer):
         for render_buffer in self.render_buffers:
             render_buffer.resize(width, height)
         
-        # TODO Texture
+        for texture in self.textures:
+            texture.resize(width, height)
     
     def getID(self):
         return self.fbo
