@@ -3,7 +3,6 @@ from PIL import Image, ImageOps
 from PyQt6.QtCore import QThread, QWaitCondition, QMutex
 from PyQt6.QtGui import QOffscreenSurface, QOpenGLContext
 
-from ba_trees.gui.opengl.OpenGLData import OpenGLData
 from ba_trees.workspace import Project
 from render.data import CoordinateSystem
 from render.data.TextureData import TextureInternalFormat, TextureFormat, TextureType, TextureData
@@ -51,10 +50,8 @@ class BackgroundRenderWidget(QThread):
         # Create Context
         self.context = QOpenGLContext()
         self.context.setFormat(self.format)
-        self.context.setShareContext(self.rw.context())
+        self.context.setShareContext(self.context.globalShareContext())
         self.context.create()
-        
-        OpenGLData.addShareContext(self.context)
         
         # Initialize
         self.context.makeCurrent(self.surface)

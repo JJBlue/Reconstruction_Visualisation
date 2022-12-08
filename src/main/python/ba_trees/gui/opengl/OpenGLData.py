@@ -3,7 +3,7 @@ import queue
 
 from OpenGL.raw.GL.VERSION.GL_2_0 import GL_VERTEX_SHADER, GL_FRAGMENT_SHADER
 from PyQt6.QtCore import QThread, QWaitCondition, QMutex
-from PyQt6.QtGui import QOffscreenSurface, QOpenGLContext
+from PyQt6.QtGui import QOffscreenSurface, QOpenGLContext, QSurfaceFormat
 
 from ba_trees.config.ConfigDirectories import ConfigDirectories
 from default.Synchronization import synchronized
@@ -22,6 +22,16 @@ class OpenGLBackgroundUploadData(QThread):
         self.running = False
         self.queue = queue.Queue()
         self.queue_context = queue.Queue()
+        
+        surface_format = QSurfaceFormat()
+        surface_format.setVersion(4, 0)
+        surface_format.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
+        
+        self.surface = QOffscreenSurface()
+        self.surface.setFormat(surface_format)
+        self.surface.create()
+        
+        self.context = None
     
     @synchronized
     def start(self) -> None:
@@ -43,18 +53,22 @@ class OpenGLBackgroundUploadData(QThread):
         self.queue.put(functon)
         self.signal.wakeAll()
     
+    # DO NOT USE! Share with context.globalShareContext() instead
+    # Activate globale Share before: QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts)
     def addShareContext(self, context):
-        self.queue_context.put(context)
-        self.signal.wakeAll()
+        if self.context != None:
+            self.context.setShareContext(context)
+        else:
+            self.queue_context.put(context)
+            self.signal.wakeAll()
     
     def isRunning(self):
         return self.running
     
-    def run(self):
-        self.surface = QOffscreenSurface()
-        self.surface.create()
-        
+    def run(self):        
         self.context = QOpenGLContext()
+        self.context.setFormat(self.surface.format())
+        self.context.setShareContext(self.context.globalShareContext()) # Share with globalShareContext from Qt (Shares over all Applications)
         self.context.create()
         
         while self.running:
@@ -63,7 +77,7 @@ class OpenGLBackgroundUploadData(QThread):
             while not self.queue.empty():
                 while not self.queue_context.empty():
                     self.context.setShareContext(self.queue.get())
-                
+                    
                 runnable = self.queue.get()
                 runnable()
             
@@ -75,26 +89,30 @@ class OpenGLBackgroundUploadData(QThread):
 
 class OpenGLData:
     __loaded = False
-    __background_task = OpenGLBackgroundUploadData()
+    __background_task = None
     
     @staticmethod
     @synchronized
     def start():
-        OpenGLData.__background_task.start()
-        OpenGLData.load()
+        if OpenGLData.__background_task == None:
+            OpenGLData.__background_task = OpenGLBackgroundUploadData()
+            OpenGLData.__background_task.start()
+            OpenGLData.load()
     
     @staticmethod
     @synchronized
     def stop():
         OpenGLData.__background_task.stop()
     
-    def add(self, function):
+    @staticmethod
+    def add(function):
         if not OpenGLData.__background_task.isRunning():
             OpenGLData.__background_task.start()
         
         OpenGLData.__background_task.add(function)
     
-    def addShareContext(self, context):
+    @staticmethod
+    def addShareContext(context):
         if not OpenGLData.__background_task.isRunning():
             OpenGLData.__background_task.start()
         

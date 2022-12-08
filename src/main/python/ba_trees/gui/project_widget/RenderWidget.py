@@ -178,12 +178,6 @@ class RenderWidget(QOpenGLWidget):
     def initializeGL(self)->None:
         super().initializeGL()
         
-        self.fmt = QOpenGLVersionProfile()
-        self.fmt.setVersion(4, 3)
-        self.fmt.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
-        
-        OpenGLData.addShareContext(self.context())
-        
         # Shaders
         global_storage = RenderDataStorages.getGloablRenderDataStorage()
         self.global_shader_storage = global_storage.getShaders()
@@ -217,22 +211,18 @@ class RenderWidget(QOpenGLWidget):
         
         if not self.shader and self.global_shader_storage.has("framebuffer_image"):
             self.shader = OpenGLProgramm(self.global_shader_storage.get("framebuffer_image"))
-        else:
-            return
         
         if self.outputTexture == None:
             return
         
-        #self.thread.mutex_texture.lock()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         
-        self.shader.bind()
-        self.image_mesh.bind()
-        
-        self.shader.uniform("tex", self.outputTexture, 0)
-        self.image_mesh.draw()
-        
-        self.image_mesh.unbind()
-        self.shader.unbind()
-        
-        #self.thread.mutex_texture.unlock()
+        if self.shader:
+            self.shader.bind()
+            self.image_mesh.bind()
+            
+            self.shader.uniform("tex", self.outputTexture, 0)
+            self.image_mesh.draw()
+            
+            self.image_mesh.unbind()
+            self.shader.unbind()
