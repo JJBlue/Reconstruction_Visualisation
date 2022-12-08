@@ -57,7 +57,10 @@ class RenderWidget(QOpenGLWidget):
         self.camera_enable_movement_speed: bool = True
         
         self.thread = BackgroundRenderWidget(self)
+        self.thread.start()
+        
         QTimer.singleShot(1, self.runEmit)
+        #QTimer.singleShot(500, self.runEmit)
     
     def runEmit(self):
         self.showCoordinateSystemChanged.emit(self.setting_show_coordinate_system)
@@ -186,14 +189,7 @@ class RenderWidget(QOpenGLWidget):
         
         # Meshes
         self.image_mesh = OpenGLMesh(Pane())
-        
         self.outputTexture = None
-        
-        QTimer.singleShot(1, self.initBackground)
-        QTimer.singleShot(500, self.runEmit)
-        
-    def initBackground(self):
-        self.thread.start()
     
     def resizeGL(self, width, height):
         super().resizeGL(width, height)

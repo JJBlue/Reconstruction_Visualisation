@@ -97,7 +97,8 @@ class OpenGLData:
         if OpenGLData.__background_task == None:
             OpenGLData.__background_task = OpenGLBackgroundUploadData()
             OpenGLData.__background_task.start()
-            OpenGLData.load()
+            
+            OpenGLData.add(OpenGLData.__load)
     
     @staticmethod
     @synchronized
@@ -119,42 +120,27 @@ class OpenGLData:
         OpenGLData.__background_task.addShareContext(context)
     
     @staticmethod
-    @synchronized
-    def load():
-        if OpenGLData.__loaded:
-            return
-        
+    def __load():
         # Shaders
-        def upload_shader_point_cloud():
-            shader_vert = OpenGLShader(OpenGLData.getShaderFile(GL_VERTEX_SHADER, "point_cloud.vert"))
-            shader_frag = OpenGLShader(OpenGLData.getShaderFile(GL_FRAGMENT_SHADER, "point_cloud.frag"))
-            shader = ShaderGroup(shader_vert, shader_frag)
-            RenderDataStorages.getShaders().put("point_cloud", shader)
-        OpenGLData.__background_task.add(upload_shader_point_cloud)
+        shader_vert = OpenGLShader(OpenGLData.getShaderFile(GL_VERTEX_SHADER, "point_cloud.vert"))
+        shader_frag = OpenGLShader(OpenGLData.getShaderFile(GL_FRAGMENT_SHADER, "point_cloud.frag"))
+        shader = ShaderGroup(shader_vert, shader_frag)
+        RenderDataStorages.getShaders().put("point_cloud", shader)
         
-        def upload_shader_images():
-            shader_vert = OpenGLShader(OpenGLData.getShaderFile(GL_VERTEX_SHADER, "images.vert"))
-            shader_frag = OpenGLShader(OpenGLData.getShaderFile(GL_FRAGMENT_SHADER, "images.frag"))
-            shader = ShaderGroup(shader_vert, shader_frag)
-            RenderDataStorages.getShaders().put("images", shader)
-        OpenGLData.__background_task.add(upload_shader_images)
+        shader_vert = OpenGLShader(OpenGLData.getShaderFile(GL_VERTEX_SHADER, "images.vert"))
+        shader_frag = OpenGLShader(OpenGLData.getShaderFile(GL_FRAGMENT_SHADER, "images.frag"))
+        shader = ShaderGroup(shader_vert, shader_frag)
+        RenderDataStorages.getShaders().put("images", shader)
         
-        def upload_shader_coordinate_system():
-            shader_vert = OpenGLShader(OpenGLData.getShaderFile(GL_VERTEX_SHADER, "coordinate_system.vert"))
-            shader_frag = OpenGLShader(OpenGLData.getShaderFile(GL_FRAGMENT_SHADER, "coordinate_system.frag"))
-            shader = ShaderGroup(shader_vert, shader_frag)
-            RenderDataStorages.getShaders().put("coordinate_system", shader)
-        OpenGLData.__background_task.add(upload_shader_coordinate_system)
+        shader_vert = OpenGLShader(OpenGLData.getShaderFile(GL_VERTEX_SHADER, "coordinate_system.vert"))
+        shader_frag = OpenGLShader(OpenGLData.getShaderFile(GL_FRAGMENT_SHADER, "coordinate_system.frag"))
+        shader = ShaderGroup(shader_vert, shader_frag)
+        RenderDataStorages.getShaders().put("coordinate_system", shader)
 
-        def upload_shader_framebuffer_image():
-            shader_vert = OpenGLShader(OpenGLData.getShaderFile(GL_VERTEX_SHADER, "FrameBufferImage.vert"))
-            shader_frag = OpenGLShader(OpenGLData.getShaderFile(GL_FRAGMENT_SHADER, "FrameBufferImage.frag"))
-            shader = ShaderGroup(shader_vert, shader_frag)
-            RenderDataStorages.getShaders().put("framebuffer_image", shader)
-        OpenGLData.__background_task.add(upload_shader_framebuffer_image)
-        
-        # Finished
-        OpenGLData.__loaded = True
+        shader_vert = OpenGLShader(OpenGLData.getShaderFile(GL_VERTEX_SHADER, "FrameBufferImage.vert"))
+        shader_frag = OpenGLShader(OpenGLData.getShaderFile(GL_FRAGMENT_SHADER, "FrameBufferImage.frag"))
+        shader = ShaderGroup(shader_vert, shader_frag)
+        RenderDataStorages.getShaders().put("framebuffer_image", shader)
     
     @staticmethod
     def getShaderFile(shader_type, file: str) -> ShaderFile:

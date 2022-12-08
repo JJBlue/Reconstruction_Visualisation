@@ -35,7 +35,7 @@ class OpenGLProgramm(Programm):
     def uniform(self, name: str, value, arg0: int = 0):
         location: int = glGetUniformLocation(self.program, name)
         
-        if isinstance(value, int):
+        if isinstance(value, int) or isinstance(value, bool):
             glUniform1i(location, value)
             return
         #elif isinstance(value, np.iarray):

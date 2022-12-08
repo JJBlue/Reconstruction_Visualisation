@@ -143,9 +143,14 @@ class BackgroundRenderWidget(QThread):
             project = self.new_projects.pop()
             
             data: dict = {}
-        
-            point_cloud = OpenGLModel(project.getModel())
-            data["point_cloud"] = point_cloud
+            
+            point_cloud = OpenGLModel()
+            point_cloud.addGeometries(project.getDense())
+            data["point_cloud_dense"] = point_cloud
+            
+            point_cloud = OpenGLModel()
+            point_cloud.addGeometries(project.getSparse())
+            data["point_cloud_sparse"] = point_cloud
             
             #self.model_image = OpenGLModel(self.project.getImages()[0])
             
@@ -184,8 +189,14 @@ class BackgroundRenderWidget(QThread):
             self.camera.updateShaderUniform(self.shader_point_cloud)
             
             for data in self.opengl_project_data:
-                point_cloud = data["point_cloud"]
+                self.shader_point_cloud.uniform("mouse_picker", False)
+                point_cloud = data["point_cloud_sparse"]
+                point_cloud.bind(self.shader_point_cloud)
+                point_cloud.draw()
+                point_cloud.unbind()
                 
+                self.shader_point_cloud.uniform("mouse_picker", True)
+                point_cloud = data["point_cloud_dense"]
                 point_cloud.bind(self.shader_point_cloud)
                 point_cloud.draw()
                 point_cloud.unbind()

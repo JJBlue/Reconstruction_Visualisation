@@ -37,9 +37,8 @@ class ColmapProject(Project):
             return True
         
         # Load Geometry
-        self.model: ModelData = ModelData()
-        self.model.addGeometry(GeometryO3DPointCloud(self.reconstruction.get_sparse()))
-        self.model.addGeometry(GeometryO3DPointCloud(self.reconstruction.get_dense()))
+        self.sparse = GeometryO3DPointCloud(self.reconstruction.get_sparse())
+        self.dense = GeometryO3DPointCloud(self.reconstruction.get_dense())
         
         #camera = project.cameras
         #images = project.images
@@ -85,11 +84,17 @@ class ColmapProject(Project):
     def getColmapData(self) -> COLMAP:
         return self.reconstruction
     
-    def getModel(self) -> ModelData:
+    def getSparse(self) -> GeometryO3DPointCloud:
         if not self.loaded:
             return None
         
-        return self.model
+        return self.sparse
+    
+    def getDense(self) -> GeometryO3DPointCloud:
+        if not self.loaded:
+            return None
+        
+        return self.dense
     
     def getImages(self) -> list:
         return self.images
