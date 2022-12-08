@@ -9,7 +9,7 @@ from ba_trees.gui.project_widget import BackgroundRenderWidget
 from ba_trees.gui.project_widget.ControlStatus import ControlStatus
 from ba_trees.workspace import Project
 from render.data.GeometryStructures import Pane
-from render.functions import RenderDataStorages, MousePicking
+from render.functions import RenderDataStorages
 from render.opengl import OpenGLMesh, OpenGLProgramm
 from render.render import Texture
 
@@ -99,11 +99,6 @@ class RenderWidget(QOpenGLWidget):
             self.mouse_pressed = False
             self.mouse_x: float = -1
             self.mouse_y: float = -1
-        
-        if self.thread != None and self.thread.camera != None:
-            pass
-            # ray = MousePicking.getRayFromCamera(fvec2(event.position().x(), event.position().y()), fvec2(self.width(), self.height()), self.thread.camera)
-            # print(ray)
 
     def mouseMoveEvent(self, event):
         if self.thread.camera != None and self.camera_enable_movement_speed:
@@ -187,13 +182,13 @@ class RenderWidget(QOpenGLWidget):
         self.fmt.setVersion(4, 3)
         self.fmt.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
         
-        OpenGLData.load()
+        OpenGLData.addShareContext(self.context())
         
         # Shaders
         global_storage = RenderDataStorages.getGloablRenderDataStorage()
-        global_shader_storage = global_storage.getShaders()
-
-        self.shader = OpenGLProgramm(global_shader_storage.get("framebuffer_image"))
+        self.global_shader_storage = global_storage.getShaders()
+        
+        self.shader = None
         
         # Meshes
         self.image_mesh = OpenGLMesh(Pane())
@@ -219,6 +214,11 @@ class RenderWidget(QOpenGLWidget):
     
     def paintGL(self):
         super().paintGL()
+        
+        if not self.shader and self.global_shader_storage.has("framebuffer_image"):
+            self.shader = OpenGLProgramm(self.global_shader_storage.get("framebuffer_image"))
+        else:
+            return
         
         if self.outputTexture == None:
             return

@@ -48,11 +48,15 @@ class BackgroundRenderWidget(QThread):
         self.repaintSignal.wakeAll()
     
     def run(self):
+        # Create Context
         self.context = QOpenGLContext()
         self.context.setFormat(self.format)
         self.context.setShareContext(self.rw.context())
         self.context.create()
         
+        OpenGLData.addShareContext(self.context)
+        
+        # Initialize
         self.context.makeCurrent(self.surface)
         self.__initialize()
         self.context.doneCurrent()
@@ -75,17 +79,16 @@ class BackgroundRenderWidget(QThread):
     def __initialize(self):
         # OpenGL
         self.camera = OpenGLCamera()
-        OpenGLData.load()
         
         # Global storage
         global_storage = RenderDataStorages.getGloablRenderDataStorage()
-        global_shader_storage = global_storage.getShaders()
+        self.global_shader_storage = global_storage.getShaders()
         local_mesh_storage = RenderDataStorages.getLocalRenderDataStorage(self.context).getMeshes()
         
         # Shaders
-        self.shader_point_cloud = OpenGLProgramm(global_shader_storage.get("point_cloud"))
-        self.shader_images = OpenGLProgramm(global_shader_storage.get("images"))
-        self.shader_coordinate_system = OpenGLProgramm(global_shader_storage.get("coordinate_system"))
+        self.shader_point_cloud = None
+        self.shader_images = None
+        self.shader_coordinate_system = None
         
         # Meshes
         mesh = OpenGLMesh(CoordinateSystem())
@@ -100,6 +103,7 @@ class BackgroundRenderWidget(QThread):
         
         self.framebuffer.resize(self.width, self.height)
         
+        # Texture: Output of the (3D-)View
         texture_data: TextureData = TextureData(TextureInternalFormat.RGBA, TextureFormat.RGBA, TextureType.UNSIGNED_BYTE, self.width, self.height, None)
         texture_data.setUseMipmap(False)
         texture_data.setRepeatImage(False)
@@ -108,11 +112,26 @@ class BackgroundRenderWidget(QThread):
         
         self.outputTexture = OpenGLTexture(texture_data)
         self.framebuffer.addTexture(self.outputTexture)
-        self.framebuffer.setDrawBuffer(0)
+        
+        # Texture: Output of the MousePicking Color Texture
+        self.outputMousePickingTexture = OpenGLTexture(texture_data)
+        self.framebuffer.addTexture(self.outputMousePickingTexture)
+        
+        self.framebuffer.setDrawBuffer(0, 1)
         
         self.framebuffer.unbind()
     
     def __update(self):
+        # Initialize
+        if not self.shader_point_cloud and self.global_shader_storage.has("point_cloud"):
+            self.shader_point_cloud = OpenGLProgramm(self.global_shader_storage.get("point_cloud"))
+        
+        if not self.shader_images and self.global_shader_storage.has("images"):
+            self.shader_images = OpenGLProgramm(self.global_shader_storage.get("images"))
+        
+        if not self.shader_coordinate_system and self.global_shader_storage.has("coordinate_system"):
+            self.shader_coordinate_system = OpenGLProgramm(self.global_shader_storage.get("coordinate_system"))
+        
         # Update Objects
         self.camera.update()
         
@@ -144,7 +163,6 @@ class BackgroundRenderWidget(QThread):
         glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
         glEnable(GL_DEPTH_TEST);
         
-        #self.mutex_texture.lock()
         self.framebuffer.bind()
         glViewport(0, 0, self.width, self.height);
         
@@ -152,7 +170,7 @@ class BackgroundRenderWidget(QThread):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         
         # Draw Coordinate System
-        if self.rw.setting_show_coordinate_system:
+        if self.rw.setting_show_coordinate_system and self.shader_coordinate_system:
             self.shader_coordinate_system.bind()
             self.camera.updateShaderUniform(self.shader_coordinate_system)
             
@@ -163,37 +181,38 @@ class BackgroundRenderWidget(QThread):
             self.shader_coordinate_system.unbind()
         
         # Draw Point Cloud
-        self.shader_point_cloud.bind()
-        self.shader_point_cloud.uniform("point_size", self.rw.point_size)
-        self.camera.updateShaderUniform(self.shader_point_cloud)
-        
-        for data in self.opengl_project_data:
-            point_cloud = data["point_cloud"]
+        if self.shader_point_cloud:
+            self.shader_point_cloud.bind()
+            self.shader_point_cloud.uniform("point_size", self.rw.point_size)
+            self.camera.updateShaderUniform(self.shader_point_cloud)
             
-            point_cloud.bind(self.shader_point_cloud)
-            point_cloud.draw()
-            point_cloud.unbind()
-        
-        self.shader_point_cloud.unbind()
+            for data in self.opengl_project_data:
+                point_cloud = data["point_cloud"]
+                
+                point_cloud.bind(self.shader_point_cloud)
+                point_cloud.draw()
+                point_cloud.unbind()
+            
+            self.shader_point_cloud.unbind()
         
         
         # Draw Image
-        self.shader_images.bind()
-        self.camera.updateShaderUniform(self.shader_images)
-        
-        for data in self.opengl_project_data:
-            pass
-            #self.model_image.bind(self.shader_images)
-            #self.model_image.draw()
-            #self.model_image.unbind()
-        
-        self.shader_images.unbind()
+        if self.shader_images:
+            self.shader_images.bind()
+            self.camera.updateShaderUniform(self.shader_images)
+            
+            for data in self.opengl_project_data:
+                pass
+                #self.model_image.bind(self.shader_images)
+                #self.model_image.draw()
+                #self.model_image.unbind()
+            
+            self.shader_images.unbind()
         
         #self.saveImage()
         self.framebuffer.unbind()
         glFlush() # Start Rendering if it is not happend yet
         glFinish() # Wait for finished rendering
-        #self.mutex_texture.unlock()
         
         # Disable OpenGL Settings
         glDisable(GL_CULL_FACE)

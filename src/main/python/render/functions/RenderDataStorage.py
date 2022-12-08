@@ -1,9 +1,13 @@
+import threading
+
 from typing import TypeVar, Generic
+
+from render.render import Shader, Mesh, Model, Texture, Buffer
+
 
 K = TypeVar("K")
 V = TypeVar("V")
 
-from render.render import Shader, Mesh, Model, Texture, Buffer
 
 class RenderDataStorageElements(Generic[K, V]):
     def __init__(self):
@@ -19,6 +23,9 @@ class RenderDataStorageElements(Generic[K, V]):
             raise AssertionError(f"Name {str} already in use")
         
         self.storage[key] = value
+    
+    def has(self, key: K):
+        return key in self.storage
     
     def remove(self, key: K) -> bool:
         if not (key in self.storage):
@@ -66,7 +73,8 @@ class RenderDataStorage:
 
 class RenderDataStorages:
     __global_storage = RenderDataStorage(local = False)
-    __local_storages: dict = {}
+    __local_storages: dict = {} # Saved Storage from Context
+    __thread_context: dict = {}
     
     # Shareable
     @staticmethod
@@ -88,9 +96,30 @@ class RenderDataStorages:
         return RenderDataStorages.__global_storage
     
     @staticmethod
-    def getLocalRenderDataStorage(context) -> RenderDataStorage:
+    def makeCurrent(context):
+        thread_id = threading.current_thread().ident
+        RenderDataStorages.__thread_context[thread_id] = context
+    
+    @staticmethod
+    def doneCurrent():
+        thread_id = threading.current_thread().ident
+        
+        if thread_id in RenderDataStorages.__thread_context:
+            del RenderDataStorages.__thread_context[thread_id]
+    
+    @staticmethod
+    def getLocalRenderDataStorage(context = None) -> RenderDataStorage:
+        if context == None:
+            thread_id = threading.current_thread().ident
+            
+            if thread_id in RenderDataStorages.__thread_context:
+                context = RenderDataStorages.__thread_context[thread_id]
+            else:
+                raise AttributeError("No Context found")
+        
         if not (context in RenderDataStorages.__local_storages):
             RenderDataStorages.__local_storages[context] = RenderDataStorage(local = True)
+        
         return RenderDataStorages.__local_storages[context]
     
     @staticmethod
