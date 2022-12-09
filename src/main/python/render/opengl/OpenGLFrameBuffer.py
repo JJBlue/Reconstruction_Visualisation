@@ -1,3 +1,5 @@
+import numpy as np
+
 from typing import overload
 
 from OpenGL.GL import *
@@ -81,6 +83,8 @@ class OpenGLFrameBuffer(FrameBuffer):
     
     # GL_NONE, GL_FRONT_LEFT, GL_FRONT_RIGHT, GL_BACK_LEFT, GL_BACK_RIGHT, GL_COLOR_ATTACHMENT
     def setOpenGLDrawBuffer(self, draw_buffers: list):
+        #draw_buffers_np = np.array(draw_buffers,dtype='uint32')
+        #glDrawBuffers(len(draw_buffers), draw_buffers_np)
         glDrawBuffers(len(draw_buffers), draw_buffers)
     
     def resize(self, width, height):

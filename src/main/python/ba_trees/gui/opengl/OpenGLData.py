@@ -122,10 +122,15 @@ class OpenGLData:
     @staticmethod
     def __load():
         # Shaders
-        shader_vert = OpenGLShader(OpenGLData.getShaderFile(GL_VERTEX_SHADER, "point_cloud.vert"))
-        shader_frag = OpenGLShader(OpenGLData.getShaderFile(GL_FRAGMENT_SHADER, "point_cloud.frag"))
+        shader_vert = OpenGLShader(OpenGLData.getShaderFile(GL_VERTEX_SHADER, "point_cloud_sparse.vert"))
+        shader_frag = OpenGLShader(OpenGLData.getShaderFile(GL_FRAGMENT_SHADER, "point_cloud_sparse.frag"))
         shader = ShaderGroup(shader_vert, shader_frag)
-        RenderDataStorages.getShaders().put("point_cloud", shader)
+        RenderDataStorages.getShaders().put("point_cloud_sparse", shader)
+        
+        shader_vert = OpenGLShader(OpenGLData.getShaderFile(GL_VERTEX_SHADER, "point_cloud_dense.vert"))
+        shader_frag = OpenGLShader(OpenGLData.getShaderFile(GL_FRAGMENT_SHADER, "point_cloud_dense.frag"))
+        shader = ShaderGroup(shader_vert, shader_frag)
+        RenderDataStorages.getShaders().put("point_cloud_dense", shader)
         
         shader_vert = OpenGLShader(OpenGLData.getShaderFile(GL_VERTEX_SHADER, "images.vert"))
         shader_frag = OpenGLShader(OpenGLData.getShaderFile(GL_FRAGMENT_SHADER, "images.frag"))

@@ -15,17 +15,14 @@ class GeometryO3DPointCloud(Geometry):
         if self.point_cloud.has_points():
             self.vertices: GeometryData = GeometryData(3, np.asarray(self.point_cloud.points).astype('float32'), PrimitiveType.FLOAT)
             self.all_vertices.append(self.vertices)
-            print("Data")
         
         if self.point_cloud.has_normals():
             self.normales: GeometryData = GeometryData(3, np.asarray(self.point_cloud.normals).astype('float32'), PrimitiveType.FLOAT)
             self.all_vertices.append(self.normales)
-            print("Normal")
         
         if self.point_cloud.has_colors():
             self.colors: GeometryData = GeometryData(3, np.asarray(self.point_cloud.colors).astype('float32'), PrimitiveType.FLOAT)
             self.all_vertices.append(self.colors)
-            print("Color")
         
     def getPointCloud(self) -> o3d.geometry.PointCloud:
         return self.point_cloud

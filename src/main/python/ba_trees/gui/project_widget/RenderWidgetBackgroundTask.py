@@ -83,7 +83,8 @@ class BackgroundRenderWidget(QThread):
         local_mesh_storage = RenderDataStorages.getLocalRenderDataStorage(self.context).getMeshes()
         
         # Shaders
-        self.shader_point_cloud = None
+        self.shader_point_cloud_sparse = None
+        self.shader_point_cloud_dense = None
         self.shader_images = None
         self.shader_coordinate_system = None
         
@@ -120,8 +121,11 @@ class BackgroundRenderWidget(QThread):
     
     def __update(self):
         # Initialize
-        if not self.shader_point_cloud and self.global_shader_storage.has("point_cloud"):
-            self.shader_point_cloud = OpenGLProgramm(self.global_shader_storage.get("point_cloud"))
+        if not self.shader_point_cloud_sparse and self.global_shader_storage.has("point_cloud_sparse"):
+            self.shader_point_cloud_sparse = OpenGLProgramm(self.global_shader_storage.get("point_cloud_sparse"))
+        
+        if not self.shader_point_cloud_dense and self.global_shader_storage.has("point_cloud_dense"):
+            self.shader_point_cloud_dense = OpenGLProgramm(self.global_shader_storage.get("point_cloud_dense"))
         
         if not self.shader_images and self.global_shader_storage.has("images"):
             self.shader_images = OpenGLProgramm(self.global_shader_storage.get("images"))
@@ -185,24 +189,34 @@ class BackgroundRenderWidget(QThread):
             
             self.shader_coordinate_system.unbind()
         
-        # Draw Point Cloud
-        if self.shader_point_cloud:
-            self.shader_point_cloud.bind()
-            self.shader_point_cloud.uniform("point_size", self.rw.point_size)
-            self.camera.updateShaderUniform(self.shader_point_cloud)
+        
+        # Draw Point Sparse
+        if self.shader_point_cloud_sparse:
+            self.shader_point_cloud_sparse.bind()
+            self.shader_point_cloud_sparse.uniform("point_size", self.rw.point_size)
+            self.camera.updateShaderUniform(self.shader_point_cloud_sparse)
             
             for data in self.opengl_project_data:
                 point_cloud = data["point_cloud_sparse"]
-                point_cloud.bind(self.shader_point_cloud)
-                point_cloud.draw()
-                point_cloud.unbind()
-                
-                point_cloud = data["point_cloud_dense"]
-                point_cloud.bind(self.shader_point_cloud)
+                point_cloud.bind(self.shader_point_cloud_sparse)
                 point_cloud.draw()
                 point_cloud.unbind()
             
-            self.shader_point_cloud.unbind()
+            self.shader_point_cloud_sparse.unbind()
+        
+        # Draw Point Dense
+        if self.shader_point_cloud_dense:
+            self.shader_point_cloud_dense.bind()
+            self.shader_point_cloud_dense.uniform("point_size", self.rw.point_size)
+            self.camera.updateShaderUniform(self.shader_point_cloud_dense)
+            
+            for data in self.opengl_project_data:
+                point_cloud = data["point_cloud_dense"]
+                point_cloud.bind(self.shader_point_cloud_dense)
+                point_cloud.draw()
+                point_cloud.unbind()
+            
+            self.shader_point_cloud_dense.unbind()
         
         
         # Draw Image
@@ -218,21 +232,26 @@ class BackgroundRenderWidget(QThread):
             
             self.shader_images.unbind()
         
-        #self.saveImage()
         self.framebuffer.unbind()
         glFlush() # Start Rendering if it is not happend yet
         glFinish() # Wait for finished rendering
+        
+        #self.saveImage()
         
         # Disable OpenGL Settings
         glDisable(GL_CULL_FACE)
         glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
         glDisable(GL_DEPTH_TEST);
         
-        self.rw.repaintSignal.emit(self.outputTexture)
+        #self.rw.repaintSignal.emit(self.outputTexture)
+        self.rw.repaintSignal.emit(self.outputMousePickingTexture)
 
     def saveImage(self):
+        self.framebuffer.bind()
         glPixelStorei(GL_PACK_ALIGNMENT, 1)
         data = glReadPixels(0, 0, self.width, self.height, GL_RGBA, GL_UNSIGNED_BYTE)
+        self.framebuffer.unbind()
+        
         image = Image.frombytes("RGBA", (self.width, self.height), data)
         image = ImageOps.flip(image)
         image.save('J:\\Codes\\git\\BA_Trees\\config\\test.png', 'PNG')
