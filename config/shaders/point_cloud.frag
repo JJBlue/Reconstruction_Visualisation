@@ -2,7 +2,7 @@
 
 in vec3 normal;
 in vec3 color;
-in vec3 frag_pos;
+flat in int v_id;
 
 uniform bool mouse_picker;
 
@@ -30,12 +30,10 @@ void main() {
 	// out_color = vec4(result_color, 1.0);
 	
 	if(mouse_picker) {
-		int v_id = gl_VertexID;
-
-		int a = v_id & 0xFF
-		int b = (v_id >> 8) & 0xFF
-		int g = (v_id >> 16) & 0xFF
-		int r = (v_id >> 24) & 0xFF
+		float a = (v_id & 0xFF) / 255.0;
+		float b = ((v_id >> 8) & 0xFF) / 255.0;
+		float g = ((v_id >> 16) & 0xFF) / 255.0;
+		float r = ((v_id >> 24) & 0xFF) / 255.0;
 
 		out_color = vec4(r, g, b, a);
 	} else {

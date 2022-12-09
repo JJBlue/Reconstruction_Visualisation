@@ -107,6 +107,7 @@ class OpenGLProgramm(Programm):
         link_status: GLint = glGetProgramiv(self.program, GL_LINK_STATUS)
         if link_status != GL_TRUE:
             print("Error Link Status")
+            print(OpenGLProgramm.getLog(self.program))
             glDeleteProgram(self.program)
             return False
         

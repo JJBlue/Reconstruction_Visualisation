@@ -114,7 +114,7 @@ class BackgroundRenderWidget(QThread):
         self.outputMousePickingTexture = OpenGLTexture(texture_data)
         self.framebuffer.addTexture(self.outputMousePickingTexture)
         
-        self.framebuffer.setDrawBuffer(0, 1)
+        self.framebuffer.setDrawBuffer(0)
         
         self.framebuffer.unbind()
     
@@ -189,13 +189,13 @@ class BackgroundRenderWidget(QThread):
             self.camera.updateShaderUniform(self.shader_point_cloud)
             
             for data in self.opengl_project_data:
-                self.shader_point_cloud.uniform("mouse_picker", False)
+                self.shader_point_cloud.uniform("mouse_picker", True)
                 point_cloud = data["point_cloud_sparse"]
                 point_cloud.bind(self.shader_point_cloud)
                 point_cloud.draw()
                 point_cloud.unbind()
                 
-                self.shader_point_cloud.uniform("mouse_picker", True)
+                self.shader_point_cloud.uniform("mouse_picker", False)
                 point_cloud = data["point_cloud_dense"]
                 point_cloud.bind(self.shader_point_cloud)
                 point_cloud.draw()
