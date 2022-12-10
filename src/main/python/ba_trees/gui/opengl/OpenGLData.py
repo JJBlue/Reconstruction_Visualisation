@@ -24,11 +24,12 @@ class OpenGLBackgroundUploadData(QThread):
         self.queue_context = queue.Queue()
         
         surface_format = QSurfaceFormat()
-        surface_format.setVersion(4, 0)
+        surface_format.setVersion(4, 6)
         surface_format.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
         
         self.surface = QOffscreenSurface()
         self.surface.setFormat(surface_format)
+        self.surface.format()
         self.surface.create()
         
         self.context = None

@@ -1,7 +1,7 @@
 from OpenGL.GL import *
 from PIL import Image, ImageOps
 from PyQt6.QtCore import QThread, QWaitCondition, QMutex
-from PyQt6.QtGui import QOffscreenSurface, QOpenGLContext
+from PyQt6.QtGui import QOffscreenSurface, QOpenGLContext, QSurfaceFormat
 
 from ba_trees.workspace import Project
 from render.data import CoordinateSystem
@@ -19,7 +19,12 @@ class BackgroundRenderWidget(QThread):
         super().__init__()
         
         self.rw = rw
-        self.format = self.rw.format()
+        #self.format = self.rw.format()
+        
+        surface_format = QSurfaceFormat()
+        surface_format.setVersion(4, 6)
+        surface_format.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
+        self.format = surface_format
         
         self.surface = QOffscreenSurface()
         self.surface.setFormat(self.format)
@@ -99,7 +104,7 @@ class BackgroundRenderWidget(QThread):
         self.framebuffer: FrameBuffer = OpenGLFrameBuffer()
         self.framebuffer.bind()
         
-        self.framebuffer.resize(self.width, self.height)
+        #self.framebuffer.resize(self.width, self.height)
         
         # Texture: Output of the (3D-)View
         texture_data: TextureData = TextureData(TextureInternalFormat.RGBA, TextureFormat.RGBA, TextureType.UNSIGNED_BYTE, self.width, self.height, None)
@@ -112,6 +117,12 @@ class BackgroundRenderWidget(QThread):
         self.framebuffer.addTexture(self.outputTexture)
         
         # Texture: Output of the MousePicking Color Texture
+        texture_data: TextureData = TextureData(TextureInternalFormat.RGBA, TextureFormat.RGBA, TextureType.UNSIGNED_INT, self.width, self.height, None)
+        texture_data.setUseMipmap(False)
+        texture_data.setRepeatImage(False)
+        texture_data.setUnpackAlignment(False)
+        texture_data.setPoorFiltering(True)
+        
         self.outputMousePickingTexture = OpenGLTexture(texture_data)
         self.framebuffer.addTexture(self.outputMousePickingTexture)
         
@@ -169,7 +180,7 @@ class BackgroundRenderWidget(QThread):
         glEnable(GL_VERTEX_PROGRAM_POINT_SIZE)
         glEnable(GL_DEPTH_TEST)
         
-        glDisablei(GL_BLEND, 1) # Disable for ColorAttachment 1
+        glEnable(GL_BLEND)
         
         # Start Binding
         self.framebuffer.bind()
@@ -236,12 +247,13 @@ class BackgroundRenderWidget(QThread):
         glFlush() # Start Rendering if it is not happend yet
         glFinish() # Wait for finished rendering
         
-        #self.saveImage()
+        self.saveImage()
         
         # Disable OpenGL Settings
+        glDisable(GL_BLEND)
         glDisable(GL_CULL_FACE)
-        glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
-        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_VERTEX_PROGRAM_POINT_SIZE)
+        glDisable(GL_DEPTH_TEST)
         
         #self.rw.repaintSignal.emit(self.outputTexture)
         self.rw.repaintSignal.emit(self.outputMousePickingTexture)
@@ -249,7 +261,9 @@ class BackgroundRenderWidget(QThread):
     def saveImage(self):
         self.framebuffer.bind()
         glPixelStorei(GL_PACK_ALIGNMENT, 1)
+        glReadBuffer(GL_COLOR_ATTACHMENT1)
         data = glReadPixels(0, 0, self.width, self.height, GL_RGBA, GL_UNSIGNED_BYTE)
+        #data = glReadPixels(0, 0, self.width, self.height, GL_RGBA, GL_UNSIGNED_INT)
         self.framebuffer.unbind()
         
         image = Image.frombytes("RGBA", (self.width, self.height), data)

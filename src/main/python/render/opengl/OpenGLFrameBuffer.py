@@ -30,7 +30,9 @@ class OpenGLFrameBuffer(FrameBuffer):
         self.color_attachments.append(texture)
         self.textures.append(texture)
         
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + color_attachment_id, texture.getID(), 0)
+        attachment = GL_COLOR_ATTACHMENT0 + color_attachment_id
+        
+        glFramebufferTexture(GL_FRAMEBUFFER, attachment, texture.getID(), 0)
         
         if glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE:
             print("ERROR: addColorAttachment")
@@ -47,8 +49,6 @@ class OpenGLFrameBuffer(FrameBuffer):
             color_attachment_id = len(self.color_attachments)
             self.color_attachments.append(renderbuffer)
             attachment = GL_COLOR_ATTACHMENT0 + color_attachment_id
-        
-        self.render_buffers.append(renderbuffer)
         
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, renderbuffer.getID())
         

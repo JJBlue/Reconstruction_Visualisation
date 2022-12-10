@@ -1,10 +1,7 @@
 from OpenGL.GL import *
 from PyQt6.QtCore import Qt, QPoint, pyqtSignal, QTimer
-from PyQt6.QtGui import QSurfaceFormat
-from PyQt6.QtOpenGL import QOpenGLVersionProfile
 from PyQt6.QtOpenGLWidgets import QOpenGLWidget
 
-from ba_trees.gui.opengl.OpenGLData import OpenGLData
 from ba_trees.gui.project_widget import BackgroundRenderWidget
 from ba_trees.gui.project_widget.ControlStatus import ControlStatus
 from ba_trees.workspace import Project
