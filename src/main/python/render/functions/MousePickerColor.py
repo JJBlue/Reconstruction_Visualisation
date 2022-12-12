@@ -1,6 +1,4 @@
-import numpy as np
-
-from glm import vec4, fvec4
+from glm import vec4, u32vec4
 
 class MousePickInfo():
     def __init__(self, mesh_id = 0, primitive_id = 0, vertex_id = 0):
@@ -44,11 +42,11 @@ class MousePickerColor():
         vertex = vertex & MousePickerColor.getOneBits(MousePickerColor.vertex_id_size)
         value = value + vertex
         
-        b: float = (value & max_value) / float(max_value)
-        g: float = ((value >> MousePickerColor.bit_per_channel) & max_value) / float(max_value)
-        r: float = ((value >> (2*MousePickerColor.bit_per_channel)) & max_value) / float(max_value)
+        b: float = value & max_value
+        g: float = (value >> MousePickerColor.bit_per_channel) & max_value
+        r: float = (value >> (2*MousePickerColor.bit_per_channel)) & max_value
         
-        return fvec4(r, g, b, 1.0)
+        return u32vec4(r, g, b, 1.0)
     
     @staticmethod
     def colorToID(color: vec4):
@@ -59,16 +57,15 @@ class MousePickerColor():
         if color.w < 1.0:
             return None
         
-        max_value: int = MousePickerColor.getOneBits(MousePickerColor.bit_per_channel)
         bit_move = MousePickerColor.mesh_id_size + MousePickerColor.primitive_id_size + MousePickerColor.vertex_id_size
         
         mesh_id = 0
         primitive_id = 0
         vertex_id = 0
         
-        r: int = int(color.x * max_value)
-        g: int = int(color.y * max_value)
-        b: int = int(color.z * max_value)
+        r: int = int(color.x)
+        g: int = int(color.y)
+        b: int = int(color.z)
         
         value: int = r << MousePickerColor.bit_per_channel
         value = (value + g) << MousePickerColor.bit_per_channel
@@ -97,27 +94,3 @@ class MousePickerColor():
             value += 1
         
         return value
-
-if __name__ == "__main__":
-    print(MousePickerColor.getOneBits(MousePickerColor.bit_per_channel))
-    print()
-    
-    id = 2
-    color = MousePickerColor.createID(0, 0, id)
-    print(id)
-    print(color)
-    print(MousePickerColor.colorToID(color).vertex_id)
-    print()
-    
-    id = 4294967291
-    color = MousePickerColor.createID(0, 0, id)
-    print(id)
-    print(color)
-    print(MousePickerColor.colorToID(color).vertex_id)
-    print()
-    
-    id = 42949672955
-    color = MousePickerColor.createID(0, 0, id)
-    print(id)
-    print(color)
-    print(MousePickerColor.colorToID(color).vertex_id)

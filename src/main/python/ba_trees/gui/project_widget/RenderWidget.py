@@ -29,6 +29,7 @@ class RenderWidget(QOpenGLWidget):
     model_rotation_roll = pyqtSignal(float)
     
     repaintSignal = pyqtSignal(Texture)
+    mousePickingSignal = pyqtSignal(Texture)
     
     def __init__(self, parent = None):
         super().__init__(parent = parent)
@@ -38,6 +39,7 @@ class RenderWidget(QOpenGLWidget):
         self.setMouseTracking(True) # To track Mouse Move without click event
         
         self.repaintSignal.connect(self.repaintObject)
+        self.mousePickingSignal.connect(self.mousePickingTextureChanged)
         
         # Settings
         self.control_status = ControlStatus.CAMERA_MOVE
@@ -93,7 +95,10 @@ class RenderWidget(QOpenGLWidget):
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
             self.mouse_pressed = True
-
+    
+    def mouseDoubleClickEvent(self):
+        print("Double Click")
+    
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
             self.mouse_pressed = False
@@ -123,6 +128,9 @@ class RenderWidget(QOpenGLWidget):
         if self.thread.camera != None:
             self.thread.camera.forward(delta * self.camera_speed)
             self.repaintInBackground()
+    
+    def mousePickingTextureChanged(self, texture):
+        self.mousePickingTexture = texture
     
     ###########################
     ### QT Designer Methods ###

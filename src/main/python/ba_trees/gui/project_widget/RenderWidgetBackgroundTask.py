@@ -181,6 +181,8 @@ class BackgroundRenderWidget(QThread):
         glEnable(GL_DEPTH_TEST)
         
         glEnable(GL_BLEND)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO)
         
         # Start Binding
         self.framebuffer.bind()
@@ -201,19 +203,19 @@ class BackgroundRenderWidget(QThread):
             self.shader_coordinate_system.unbind()
         
         
-        # Draw Point Sparse
-        if self.shader_point_cloud_sparse:
-            self.shader_point_cloud_sparse.bind()
-            self.shader_point_cloud_sparse.uniform("point_size", self.rw.point_size)
-            self.camera.updateShaderUniform(self.shader_point_cloud_sparse)
+        # Draw Image
+        if self.shader_images:
+            self.shader_images.bind()
+            self.camera.updateShaderUniform(self.shader_images)
             
             for data in self.opengl_project_data:
-                point_cloud = data["point_cloud_sparse"]
-                point_cloud.bind(self.shader_point_cloud_sparse)
-                point_cloud.draw()
-                point_cloud.unbind()
+                pass
+                #self.model_image.bind(self.shader_images)
+                #self.model_image.draw()
+                #self.model_image.unbind()
             
-            self.shader_point_cloud_sparse.unbind()
+            self.shader_images.unbind()
+        
         
         # Draw Point Dense
         if self.shader_point_cloud_dense:
@@ -229,19 +231,19 @@ class BackgroundRenderWidget(QThread):
             
             self.shader_point_cloud_dense.unbind()
         
-        
-        # Draw Image
-        if self.shader_images:
-            self.shader_images.bind()
-            self.camera.updateShaderUniform(self.shader_images)
+        # Draw Point Sparse
+        if self.shader_point_cloud_sparse:
+            self.shader_point_cloud_sparse.bind()
+            self.shader_point_cloud_sparse.uniform("point_size", self.rw.point_size)
+            self.camera.updateShaderUniform(self.shader_point_cloud_sparse)
             
             for data in self.opengl_project_data:
-                pass
-                #self.model_image.bind(self.shader_images)
-                #self.model_image.draw()
-                #self.model_image.unbind()
+                point_cloud = data["point_cloud_sparse"]
+                point_cloud.bind(self.shader_point_cloud_sparse)
+                point_cloud.draw()
+                point_cloud.unbind()
             
-            self.shader_images.unbind()
+            self.shader_point_cloud_sparse.unbind()
         
         self.framebuffer.unbind()
         glFlush() # Start Rendering if it is not happend yet
@@ -256,15 +258,15 @@ class BackgroundRenderWidget(QThread):
         glDisable(GL_DEPTH_TEST)
         
         self.rw.repaintSignal.emit(self.outputTexture)
-        #self.rw.repaintSignal.emit(self.outputMousePickingTexture)
+        self.rw.mousePickingSignal.emit(self.outputMousePickingTexture)
 
     def saveImage(self):
         self.framebuffer.bind()
         glPixelStorei(GL_PACK_ALIGNMENT, 1)
-        glReadBuffer(GL_COLOR_ATTACHMENT0)
-        data = glReadPixels(0, 0, self.width, self.height, GL_RGBA, GL_UNSIGNED_BYTE)
-        #glReadBuffer(GL_COLOR_ATTACHMENT1)
-        #data = glReadPixels(0, 0, self.width, self.height, GL_RGBA, GL_UNSIGNED_INT)
+        #glReadBuffer(GL_COLOR_ATTACHMENT0)
+        #data = glReadPixels(0, 0, self.width, self.height, GL_RGBA, GL_UNSIGNED_BYTE)
+        glReadBuffer(GL_COLOR_ATTACHMENT1)
+        data = glReadPixels(0, 0, self.width, self.height, GL_RGBA_INTEGER, GL_UNSIGNED_INT)
         self.framebuffer.unbind()
         
         image = Image.frombytes("RGBA", (self.width, self.height), data)
