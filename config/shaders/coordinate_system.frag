@@ -7,8 +7,5 @@ in vec3 color;
 
 void main() {
 	out_color = vec4(color, 1.0);
-
-	float max_value = 4294967295.0;
-
-	mouse_picker = vec4(1.0);
+	mouse_picker = vec4(0, 0, 0, 0);
 }
