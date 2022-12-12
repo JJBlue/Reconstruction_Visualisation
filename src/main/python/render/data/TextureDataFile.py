@@ -1,7 +1,7 @@
 from PIL import Image
 
 import numpy as np
-from render.data import TextureData, TextureFormat, TextureType, TextureInternalFormat
+from render.data import TextureData, TextureFormat, TextureType, TextureInternalFormat, ImageFormat
 
 
 class TextureFile(TextureData):
@@ -20,62 +20,65 @@ class TextureFile(TextureData):
         width, height = img.size
         
         mode: str = img.mode
+        image_type: ImageFormat = None
         mode_type: TextureFormat = None
         img_type: TextureType = None
         img_internal_format: TextureInternalFormat = None
         dtype: np.dtype = None
         
         if mode == "1":
-            mode_type = TextureFormat.BLACK_WHITE_BIT
+            image_type = ImageFormat.BLACK_WHITE_BIT
             dtype = np.bit
             raise NotImplementedError()
         elif mode == "L":
-            mode_type = TextureFormat.BLACK_WHITE
+            image_type = ImageFormat.BLACK_WHITE
             dtype = np.int8
             img_type = TextureType.UNSIGNED_BYTE
             raise NotImplementedError()
         elif mode == "P":
-            mode_type = TextureFormat.MAPPED_COLOR_PALETTE
+            image_type = ImageFormat.MAPPED_COLOR_PALETTE
             dtype = np.int8
             img_type = TextureType.UNSIGNED_BYTE
             raise NotImplementedError()
         elif mode == "LA":
-            mode_type = TextureFormat.BLACK_WHITE_ALPHA
+            image_type = ImageFormat.BLACK_WHITE_ALPHA
             dtype = np.int8
             img_type = TextureType.UNSIGNED_BYTE
             raise NotImplementedError()
         elif mode == "PA":
-            mode_type = TextureFormat.MAPPED_COLOR_PALETTE_ALPHA
+            image_type = ImageFormat.MAPPED_COLOR_PALETTE_ALPHA
             dtype = np.int8
             img_type = TextureType.UNSIGNED_BYTE
             raise NotImplementedError()
         elif mode == "RGB":
+            image_type = ImageFormat.RGB
             mode_type = TextureFormat.RGB
             dtype = np.int8
             img_type = TextureType.UNSIGNED_BYTE
             img_internal_format = TextureInternalFormat.RGB8
         elif mode == "RGBA":
+            image_type = ImageFormat.RGBA
             mode_type = TextureFormat.RGBA
             dtype = np.int8
             img_type = TextureType.UNSIGNED_BYTE
             img_internal_format = TextureInternalFormat.RGBA8
         elif mode == "CMYK":
-            mode_type = TextureFormat.CMYK
+            image_type = ImageFormat.CMYK
             dtype = np.int8
             img_type = TextureType.UNSIGNED_BYTE
             raise NotImplementedError()
         elif mode == "YCbCr":
-            mode_type = TextureFormat.YCbCr
+            image_type = ImageFormat.YCbCr
             dtype = np.int8
             img_type = TextureType.UNSIGNED_BYTE
             raise NotImplementedError()
         elif mode == "LAB":
-            mode_type = TextureFormat.LAB
+            image_type = ImageFormat.LAB
             dtype = np.int8
             img_type = TextureType.UNSIGNED_BYTE
             raise NotImplementedError()
         elif mode == "HSV":
-            mode_type = TextureFormat.HSV
+            image_type = ImageFormat.HSV
             dtype = np.int8
             img_type = TextureType.UNSIGNED_BYTE
             raise NotImplementedError()

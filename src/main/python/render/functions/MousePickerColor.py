@@ -24,8 +24,7 @@ class MousePickerColor():
         if MousePickerColor.mesh_id_size + MousePickerColor.primitive_id_size + MousePickerColor.vertex_id_size > MousePickerColor.bit_per_channel * 3:
             raise AttributeError(f"id sizes > {MousePickerColor.max_size}")
         
-        max_value: float = np.power(2, MousePickerColor.bit_per_channel)
-        and_bits: int = MousePickerColor.getOneBits(MousePickerColor.bit_per_channel)
+        max_value: int = MousePickerColor.getOneBits(MousePickerColor.bit_per_channel)
         value: int = 0
         
         mesh = mesh & MousePickerColor.getOneBits(MousePickerColor.mesh_id_size)
@@ -45,9 +44,9 @@ class MousePickerColor():
         vertex = vertex & MousePickerColor.getOneBits(MousePickerColor.vertex_id_size)
         value = value + vertex
         
-        r: float = (value & and_bits) / max_value;
-        g: float = ((value >> 8) & and_bits) / max_value;
-        b: float = ((value >> 16) & and_bits) / max_value;
+        b: float = (value & max_value) / float(max_value)
+        g: float = ((value >> MousePickerColor.bit_per_channel) & max_value) / float(max_value)
+        r: float = ((value >> (2*MousePickerColor.bit_per_channel)) & max_value) / float(max_value)
         
         return fvec4(r, g, b, 1.0)
     
@@ -60,8 +59,8 @@ class MousePickerColor():
         if color.w < 1.0:
             return None
         
-        max_value: float = np.power(2, MousePickerColor.bit_per_channel)
-        and_bits: int = MousePickerColor.getOneBits(MousePickerColor.bit_per_channel)
+        max_value: int = MousePickerColor.getOneBits(MousePickerColor.bit_per_channel)
+        bit_move = MousePickerColor.mesh_id_size + MousePickerColor.primitive_id_size + MousePickerColor.vertex_id_size
         
         mesh_id = 0
         primitive_id = 0
@@ -76,7 +75,7 @@ class MousePickerColor():
         value = value + b
         
         if MousePickerColor.mesh_id_size > 0:
-            bit_move = MousePickerColor.max_size - MousePickerColor.mesh_id_size
+            bit_move -= MousePickerColor.mesh_id_size
             mesh_id = (value >> bit_move) & MousePickerColor.getOneBits(MousePickerColor.mesh_id_size)
         
         if MousePickerColor.primitive_id_size > 0:
@@ -100,5 +99,25 @@ class MousePickerColor():
         return value
 
 if __name__ == "__main__":
-    #id = 42949672955
-    #colorToID()
+    print(MousePickerColor.getOneBits(MousePickerColor.bit_per_channel))
+    print()
+    
+    id = 2
+    color = MousePickerColor.createID(0, 0, id)
+    print(id)
+    print(color)
+    print(MousePickerColor.colorToID(color).vertex_id)
+    print()
+    
+    id = 4294967291
+    color = MousePickerColor.createID(0, 0, id)
+    print(id)
+    print(color)
+    print(MousePickerColor.colorToID(color).vertex_id)
+    print()
+    
+    id = 42949672955
+    color = MousePickerColor.createID(0, 0, id)
+    print(id)
+    print(color)
+    print(MousePickerColor.colorToID(color).vertex_id)

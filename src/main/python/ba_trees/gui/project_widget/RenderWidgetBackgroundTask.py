@@ -117,7 +117,7 @@ class BackgroundRenderWidget(QThread):
         self.framebuffer.addTexture(self.outputTexture)
         
         # Texture: Output of the MousePicking Color Texture
-        texture_data: TextureData = TextureData(TextureInternalFormat.RGBA, TextureFormat.RGBA, TextureType.UNSIGNED_INT, self.width, self.height, None)
+        texture_data: TextureData = TextureData(TextureInternalFormat.RGBA32UI, TextureFormat.RGBA_INTEGER, TextureType.UNSIGNED_INT, self.width, self.height, None)
         texture_data.setUseMipmap(False)
         texture_data.setRepeatImage(False)
         texture_data.setUnpackAlignment(False)
@@ -247,7 +247,7 @@ class BackgroundRenderWidget(QThread):
         glFlush() # Start Rendering if it is not happend yet
         glFinish() # Wait for finished rendering
         
-        self.saveImage()
+        #self.saveImage()
         
         # Disable OpenGL Settings
         glDisable(GL_BLEND)
@@ -255,14 +255,15 @@ class BackgroundRenderWidget(QThread):
         glDisable(GL_VERTEX_PROGRAM_POINT_SIZE)
         glDisable(GL_DEPTH_TEST)
         
-        #self.rw.repaintSignal.emit(self.outputTexture)
-        self.rw.repaintSignal.emit(self.outputMousePickingTexture)
+        self.rw.repaintSignal.emit(self.outputTexture)
+        #self.rw.repaintSignal.emit(self.outputMousePickingTexture)
 
     def saveImage(self):
         self.framebuffer.bind()
         glPixelStorei(GL_PACK_ALIGNMENT, 1)
-        glReadBuffer(GL_COLOR_ATTACHMENT1)
+        glReadBuffer(GL_COLOR_ATTACHMENT0)
         data = glReadPixels(0, 0, self.width, self.height, GL_RGBA, GL_UNSIGNED_BYTE)
+        #glReadBuffer(GL_COLOR_ATTACHMENT1)
         #data = glReadPixels(0, 0, self.width, self.height, GL_RGBA, GL_UNSIGNED_INT)
         self.framebuffer.unbind()
         

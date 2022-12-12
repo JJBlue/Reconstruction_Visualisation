@@ -92,12 +92,37 @@ class OpenGLTexture(Texture):
         return self.id
     
     @staticmethod
-    def toOpenGLFormat(img_format: TextureFormat):
-        # Missing Formats: GL_RED, GL_RG, GL_BGR, GL_BGRA, GL_RED_INTEGER, GL_RG_INTEGER, GL_RGB_INTEGER, GL_BGR_INTEGER, GL_RGBA_INTEGER, GL_BGRA_INTEGER, GL_STENCIL_INDEX, GL_DEPTH_COMPONENT, GL_DEPTH_STENCIL.
-        if img_format == TextureFormat.RGB:
+    def toOpenGLFormat(tex_format: TextureFormat):
+        if tex_format == TextureFormat.RED:
+            return GL_RED
+        if tex_format == TextureFormat.RG:
+            return GL_RG
+        if tex_format == TextureFormat.RGB:
             return GL_RGB
-        elif img_format == TextureFormat.RGBA:
+        if tex_format == TextureFormat.BGR:
+            return GL_BGR
+        if tex_format == TextureFormat.RGBA:
             return GL_RGBA
+        if tex_format == TextureFormat.BGRA:
+            return GL_BGRA
+        if tex_format == TextureFormat.RED_INTEGER:
+            return GL_RED_INTEGER
+        if tex_format == TextureFormat.RG_INTEGER:
+            return GL_RG_INTEGER
+        if tex_format == TextureFormat.RGB_INTEGER:
+            return GL_RGB_INTEGER
+        if tex_format == TextureFormat.BGR_INTEGER:
+            return GL_BGR_INTEGER
+        if tex_format == TextureFormat.RGBA_INTEGER:
+            return GL_RGBA_INTEGER
+        if tex_format == TextureFormat.BGRA_INTEGER:
+            return GL_BGRA_INTEGER
+        if tex_format == TextureFormat.STENCIL_INDEX:
+            return GL_STENCIL_INDEX
+        if tex_format == TextureFormat.DEPTH_COMPONENT:
+            return GL_DEPTH_COMPONENT
+        if tex_format == TextureFormat.DEPTH_STENCIL:
+            return GL_DEPTH_STENCIL
         raise NotImplementedError()
     
     @staticmethod

@@ -78,7 +78,7 @@ class TextureData:
 # BGR;16 (16-bit reversed true colour)
 # BGR;24 (24-bit reversed true colour)
 # BGR;32 (32-bit reversed true colour)
-class TextureFormat(StrEnum):
+class ImageFormat(StrEnum):
     BLACK_WHITE_BIT = "1"
     BLACK_WHITE = "L"
     BLACK_WHITE_ALPHA = "LA"
@@ -90,6 +90,23 @@ class TextureFormat(StrEnum):
     YCbCr = "YCbCr"
     LAB = "LAB"
     HSV = "HSV"
+
+class TextureFormat(Enum):
+    RED = 0
+    RG = 1
+    RGB = 2
+    BGR = 3
+    RGBA = 4
+    BGRA = 5
+    RED_INTEGER = 6
+    RG_INTEGER = 7
+    RGB_INTEGER = 8
+    BGR_INTEGER = 9
+    RGBA_INTEGER = 10
+    BGRA_INTEGER = 11
+    STENCIL_INDEX = 12
+    DEPTH_COMPONENT = 13
+    DEPTH_STENCIL = 14
 
 class TextureInternalFormat(Enum):
     DEPTH_COMPONENT = 0
