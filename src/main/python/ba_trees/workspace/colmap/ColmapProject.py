@@ -6,8 +6,6 @@ from colmap_wrapper.colmap import COLMAP
 
 from ba_trees.workspace import Project
 from default.Synchronization import synchronized
-from render.data import ModelData
-from render.data.GeometryO3D import GeometryO3DPointCloud
 
 
 class ColmapProject(Project):
@@ -23,8 +21,7 @@ class ColmapProject(Project):
         
         self.reconstruction = COLMAP(
                                         project_path=self.folder.absolute(),
-                                        dense_pc='fused.ply',
-                                        load_depth=False,
+                                        load_images=True,
                                         image_resize=0.3
                                     )
         
@@ -36,36 +33,6 @@ class ColmapProject(Project):
         if self.loaded:
             return True
         
-        # Load Geometry
-        self.sparse = GeometryO3DPointCloud(self.reconstruction.get_sparse())
-        self.dense = GeometryO3DPointCloud(self.reconstruction.get_dense())
-        
-        #camera = project.cameras
-        #images = project.images
-        #sparse = project.get_sparse()
-        #dense = project.get_dense()
-        
-        # Load Cameras
-        self.cameras: list = []
-        for camera in self.reconstruction.cameras:
-            #camera = Camera()
-            #self.cameras.append(camera)
-            break
-        
-        # Load Images
-        self.images: list = []
-        for image in self.reconstruction.images:
-            break
-            #image_file: str = self.folder_images.joinpath(image.name).absolute()
-            #texture: TextureData = TextureFile(image_file)
-            
-            #model: ModelData = ModelData()
-            #model.addGeometry(Pane())
-            #model.addTexture(texture)
-            # TODO Move ModelData
-            
-            #self.images.append(model)
-        
         self.loaded = True
         return True
     
@@ -75,29 +42,15 @@ class ColmapProject(Project):
             return True
         
         self.reconstruction = None
-        self.geometry = None
-        self.cameras = None
         
         self.opened = False
         return True
     
-    def getColmapData(self) -> COLMAP:
+    def getReconstruction(self) -> COLMAP:
         return self.reconstruction
     
-    def getSparse(self) -> GeometryO3DPointCloud:
-        if not self.loaded:
-            return None
-        
-        return self.sparse
-    
-    def getDense(self) -> GeometryO3DPointCloud:
-        if not self.loaded:
-            return None
-        
-        return self.dense
-    
-    def getImages(self) -> list:
-        return self.images
+    def getProjects(self):
+        return self.reconstruction.projects
     
     def getProjectType(self) -> str:
         return "colmap"

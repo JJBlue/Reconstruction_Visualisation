@@ -9,6 +9,7 @@ from render.data.TextureData import TextureInternalFormat, TextureFormat, Textur
 from render.functions import RenderDataStorages
 from render.opengl import OpenGLCamera, OpenGLModel, OpenGLMesh, OpenGLTexture, OpenGLFrameBuffer, OpenGLProgramm
 from render.render import FrameBuffer
+from render.data.GeometryO3D import GeometryO3DPointCloud
 
 
 class BackgroundRenderWidget(QThread):
@@ -157,14 +158,18 @@ class BackgroundRenderWidget(QThread):
         while len(self.new_projects) > 0:
             project = self.new_projects.pop()
             
+            sub_project = project.getProjects()
+            if isinstance(sub_project, list):
+                sub_project = sub_project[0]
+            
             data: dict = {}
             
             point_cloud = OpenGLModel()
-            point_cloud.addGeometries(project.getDense())
+            point_cloud.addGeometries(GeometryO3DPointCloud(sub_project.get_dense()))
             data["point_cloud_dense"] = point_cloud
             
             point_cloud = OpenGLModel()
-            point_cloud.addGeometries(project.getSparse())
+            point_cloud.addGeometries(GeometryO3DPointCloud(sub_project.get_sparse()))
             data["point_cloud_sparse"] = point_cloud
             
             #self.model_image = OpenGLModel(self.project.getImages()[0])

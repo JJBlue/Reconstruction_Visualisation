@@ -4,16 +4,16 @@ from render.render import PrimitiveType, Primitves
 
 
 class GeometryData:
-    def __init__(self, dimension: int, data: np.ndarray, primitive_type: PrimitiveType = PrimitiveType.FLOAT):
+    def __init__(self, dimension: int, data, primitive_type: PrimitiveType = PrimitiveType.FLOAT):
         self.dimension: int = dimension
         self.primitive_type: PrimitiveType = primitive_type
-        self.data: np.ndarray = data
+        self.data = data
         self.size: int = int(len(self.data) / self.dimension)
     
     def getDimension(self) -> int:
         return self.dimension
     
-    def getData(self) -> np.ndarray:
+    def getData(self):
         return self.data
     
     def getSize(self) -> int:
