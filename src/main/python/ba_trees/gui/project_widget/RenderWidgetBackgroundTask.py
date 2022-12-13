@@ -5,11 +5,12 @@ from PyQt6.QtGui import QOffscreenSurface, QOpenGLContext, QSurfaceFormat
 
 from ba_trees.workspace import Project
 from render.data import CoordinateSystem
+from render.data.GeometryO3D import GeometryO3DPointCloud
 from render.data.TextureData import TextureInternalFormat, TextureFormat, TextureType, TextureData
 from render.functions import RenderDataStorages
 from render.opengl import OpenGLCamera, OpenGLModel, OpenGLMesh, OpenGLTexture, OpenGLFrameBuffer, OpenGLProgramm
 from render.render import FrameBuffer
-from render.data.GeometryO3D import GeometryO3DPointCloud
+from ba_trees.workspace.colmap.ColmapOpenGL import ColmapProjectOpenGL
 
 
 class BackgroundRenderWidget(QThread):
@@ -20,6 +21,9 @@ class BackgroundRenderWidget(QThread):
         super().__init__()
         
         self.rw = rw
+        self.running = False
+        self.width: int = 1080
+        self.height: int = 1920
         #self.format = self.rw.format()
         
         surface_format = QSurfaceFormat()
@@ -35,11 +39,12 @@ class BackgroundRenderWidget(QThread):
         self.opengl_project_data: list = []
         self.outputTexture = None
         
-        self.width: int = 1080
-        self.height: int = 1920
-        
         # OpenGL
         self.camera = None
+    
+    ######################
+    ### Global Methops ###
+    ######################
     
     def addProject(self, project: Project):
         self.new_projects.append(project)
@@ -52,24 +57,38 @@ class BackgroundRenderWidget(QThread):
     def repaint(self):
         self.repaintSignal.wakeAll()
     
+    ######################
+    ### Thread Methods ###
+    ######################
+    
+    def start(self):
+        self.running = True
+        QThread.start(self)
+    
+    def stop(self):
+        self.running = False
+        
+        self.mutex_repaintSignal.lock()
+        self.repaintSignal.wakeAll()
+        self.mutex_repaintSignal.unlock()
+    
     def run(self):
-        # Create Context
-        self.context = QOpenGLContext()
-        self.context.setFormat(self.format)
-        self.context.setShareContext(self.context.globalShareContext())
-        self.context.create()
-        
         # Initialize
-        self.context.makeCurrent(self.surface)
         self.__initialize()
-        self.context.doneCurrent()
         
-        while True: # Change True
+        while self.running:
             self.__render_steps()
             
             self.mutex_repaintSignal.lock()
-            self.repaintSignal.wait(self.mutex_repaintSignal)
+            if self.running:
+                self.repaintSignal.wait(self.mutex_repaintSignal)
             self.mutex_repaintSignal.unlock()
+        
+        self.__deinitialize()
+    
+    ##############
+    ### OpenGL ###
+    ##############
     
     def __render_steps(self, _ = None):
         self.context.makeCurrent(self.surface)
@@ -80,13 +99,20 @@ class BackgroundRenderWidget(QThread):
         self.context.doneCurrent()
     
     def __initialize(self):
+        # Create Context
+        self.context = QOpenGLContext()
+        self.context.setFormat(self.format)
+        self.context.setShareContext(self.context.globalShareContext())
+        self.context.create()
+        
+        self.context.makeCurrent(self.surface)
+        
         # OpenGL
         self.camera = OpenGLCamera()
         
         # Global storage
         global_storage = RenderDataStorages.getGloablRenderDataStorage()
         self.global_shader_storage = global_storage.getShaders()
-        local_mesh_storage = RenderDataStorages.getLocalRenderDataStorage(self.context).getMeshes()
         
         # Shaders
         self.shader_point_cloud_sparse = None
@@ -94,18 +120,12 @@ class BackgroundRenderWidget(QThread):
         self.shader_images = None
         self.shader_coordinate_system = None
         
-        # Meshes
-        mesh = OpenGLMesh(CoordinateSystem())
-        local_mesh_storage.put("coordinate_system", mesh)
-        
         # Geometries
-        self.coordinate_system = local_mesh_storage.get("coordinate_system")
+        self.coordinate_system = OpenGLMesh(CoordinateSystem()) # TODO store coordinate_system buffer: global
         
         # FrameBuffer
         self.framebuffer: FrameBuffer = OpenGLFrameBuffer()
         self.framebuffer.bind()
-        
-        #self.framebuffer.resize(self.width, self.height)
         
         # Texture: Output of the (3D-)View
         texture_data: TextureData = TextureData(TextureInternalFormat.RGBA, TextureFormat.RGBA, TextureType.UNSIGNED_BYTE, self.width, self.height, None)
@@ -128,8 +148,39 @@ class BackgroundRenderWidget(QThread):
         self.framebuffer.addTexture(self.outputMousePickingTexture)
         
         self.framebuffer.setDrawBuffer(0, 1)
-        
         self.framebuffer.unbind()
+        
+        # Done Context
+        self.context.doneCurrent()
+    
+    def __deinitialize(self):
+        self.context.makeCurrent(self.surface)
+        
+        # Delete Camera
+        camera = self.camera
+        self.camera = None
+        del camera
+        
+        # Delete Objects
+        del self.coordinate_system
+        self.coordinate_system = None
+        
+        del self.framebuffer
+        self.framebuffer = None
+        
+        del self.outputTexture
+        self.outputTexture = None#
+        
+        del self.outputMousePickingTexture
+        self.outputMousePickingTexture = None
+        
+        # Context Done
+        self.context.doneCurrent()
+        
+        # Delete Context
+        context = self.context
+        self.context = None
+        del context
     
     def __update(self):
         # Initialize
@@ -158,23 +209,9 @@ class BackgroundRenderWidget(QThread):
         while len(self.new_projects) > 0:
             project = self.new_projects.pop()
             
-            sub_project = project.getProjects()
-            if isinstance(sub_project, list):
-                sub_project = sub_project[0]
-            
-            data: dict = {}
-            
-            point_cloud = OpenGLModel()
-            point_cloud.addGeometries(GeometryO3DPointCloud(sub_project.get_dense()))
-            data["point_cloud_dense"] = point_cloud
-            
-            point_cloud = OpenGLModel()
-            point_cloud.addGeometries(GeometryO3DPointCloud(sub_project.get_sparse()))
-            data["point_cloud_sparse"] = point_cloud
-            
-            #self.model_image = OpenGLModel(self.project.getImages()[0])
-            
-            self.opengl_project_data.append(data)
+            cogl = ColmapProjectOpenGL(project)
+            cogl.create()
+            self.opengl_project_data.append(cogl)
     
     def __render(self):
         # Enable OpenGL Settings
@@ -208,45 +245,46 @@ class BackgroundRenderWidget(QThread):
             self.shader_coordinate_system.unbind()
         
         
-        # Draw Image
-        if self.shader_images:
-            self.shader_images.bind()
-            self.camera.updateShaderUniform(self.shader_images)
-            
-            for data in self.opengl_project_data:
-                pass
-                #self.model_image.bind(self.shader_images)
-                #self.model_image.draw()
-                #self.model_image.unbind()
-            
-            self.shader_images.unbind()
+        # Draw Projects
+        for project in self.opengl_project_data:
+            for sub_project in project.getSubProjects():
+                # Draw Image
+                if self.shader_images:
+                    self.shader_images.bind()
+                    self.camera.updateShaderUniform(self.shader_images)
+                    
+                    #self.model_image.bind(self.shader_images)
+                    #self.model_image.draw()
+                    #self.model_image.unbind()
+                    
+                    self.shader_images.unbind()
+                
+                # Draw Point Dense
+                if self.shader_point_cloud_dense:
+                    self.shader_point_cloud_dense.bind()
+                    self.shader_point_cloud_dense.uniform("point_size", self.rw.point_size)
+                    self.camera.updateShaderUniform(self.shader_point_cloud_dense)
+                    
+                    point_cloud = sub_project.point_cloud_dense
+                    point_cloud.bind(self.shader_point_cloud_dense)
+                    point_cloud.draw()
+                    point_cloud.unbind()
+                    
+                    self.shader_point_cloud_dense.unbind()
         
-        
-        # Draw Point Dense
-        if self.shader_point_cloud_dense:
-            self.shader_point_cloud_dense.bind()
-            self.shader_point_cloud_dense.uniform("point_size", self.rw.point_size)
-            self.camera.updateShaderUniform(self.shader_point_cloud_dense)
-            
-            for data in self.opengl_project_data:
-                point_cloud = data["point_cloud_dense"]
-                point_cloud.bind(self.shader_point_cloud_dense)
-                point_cloud.draw()
-                point_cloud.unbind()
-            
-            self.shader_point_cloud_dense.unbind()
-        
+        ### Clickable Objects
         # Draw Point Sparse
         if self.shader_point_cloud_sparse:
             self.shader_point_cloud_sparse.bind()
             self.shader_point_cloud_sparse.uniform("point_size", self.rw.point_size)
             self.camera.updateShaderUniform(self.shader_point_cloud_sparse)
             
-            for data in self.opengl_project_data:
-                point_cloud = data["point_cloud_sparse"]
-                point_cloud.bind(self.shader_point_cloud_sparse)
-                point_cloud.draw()
-                point_cloud.unbind()
+            for project in self.opengl_project_data:
+                for sub_project in project.getSubProjects():
+                    point_cloud = sub_project.point_cloud_sparse
+                    point_cloud.bind(self.shader_point_cloud_sparse)
+                    point_cloud.draw()
+                    point_cloud.unbind()
             
             self.shader_point_cloud_sparse.unbind()
         
