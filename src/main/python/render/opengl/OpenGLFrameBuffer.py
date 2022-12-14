@@ -19,6 +19,15 @@ class OpenGLFrameBuffer(FrameBuffer):
         
         self.fbo = glGenFramebuffers(1)
     
+    def __del__(self):
+        try:
+            self.delete()
+        except:
+            pass
+    
+    def delete(self):
+        glDeleteFramebuffers(1, self.fbo)
+    
     def bind(self):
         glBindFramebuffer(GL_FRAMEBUFFER, self.fbo)
     
@@ -34,6 +43,7 @@ class OpenGLFrameBuffer(FrameBuffer):
         
         glFramebufferTexture(GL_FRAMEBUFFER, attachment, texture.getID(), 0)
         
+        checked = False
         if glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE:
             print("ERROR: addColorAttachment")
             checked = False
@@ -43,6 +53,8 @@ class OpenGLFrameBuffer(FrameBuffer):
         return checked
     
     def addRenderBuffer(self, renderbuffer: RenderBuffer):
+        self.render_buffers.append(renderbuffer)
+        
         attachment = OpenGLFrameBuffer.toOpenGLAttachment(renderbuffer.getInternalFormat(), 0)
         
         if attachment == GL_COLOR_ATTACHMENT0:
@@ -53,7 +65,6 @@ class OpenGLFrameBuffer(FrameBuffer):
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, renderbuffer.getID())
         
         checked = False
-        
         if glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE:
             print("ERROR: addRenderBuffer")
             checked = False
@@ -83,8 +94,6 @@ class OpenGLFrameBuffer(FrameBuffer):
     
     # GL_NONE, GL_FRONT_LEFT, GL_FRONT_RIGHT, GL_BACK_LEFT, GL_BACK_RIGHT, GL_COLOR_ATTACHMENT
     def setOpenGLDrawBuffer(self, draw_buffers: list):
-        #draw_buffers_np = np.array(draw_buffers,dtype='uint32')
-        #glDrawBuffers(len(draw_buffers), draw_buffers_np)
         glDrawBuffers(len(draw_buffers), draw_buffers)
     
     def resize(self, width, height):

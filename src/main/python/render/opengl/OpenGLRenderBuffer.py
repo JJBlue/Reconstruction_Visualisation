@@ -1,19 +1,31 @@
 from OpenGL.GL import *
 
-from render.data.RenderBufferData import RenderBufferInternalFormat
+from render.data import RenderBufferInternalFormat
+from render.render import RenderBuffer
 
 
-class OpenGLRenderBuffer:
+class OpenGLRenderBuffer(RenderBuffer):
     def __init__(self, internal_format: RenderBufferInternalFormat, width = 10, height = 10):
-        super().__init__(internal_format, width, height)
+        super().__init__(internal_format, -1, -1)
         
         self.id = glGenRenderbuffers(1)
+        self.resize(width, height)
+    
+    def __del__(self):
+        print("Delete RenderBuffer")
+        try:
+            self.delete()
+        except:
+            pass
         
+    def delete(self):
+        glDeleteRenderbuffers(1, self.id)
+    
     def bind(self):
-        glBindRenderbuffer(self.id)
+        glBindRenderbuffer(GL_RENDERBUFFER, self.id)
     
     def unbind(self):
-        glBindRenderbuffer(0)
+        glBindRenderbuffer(GL_RENDERBUFFER, 0)
     
     def resize(self, width, height):
         if self.width == width and self.height == height:
@@ -22,8 +34,11 @@ class OpenGLRenderBuffer:
         super().resize(width, height)
         
         self.bind()
-        glRenderbufferStorage(GL_RENDERBUFFER, OpenGLRenderBuffer.toOpenGLInternalFormat(self.internal_format), width, height)
+        glRenderbufferStorage(GL_RENDERBUFFER, OpenGLRenderBuffer.toOpenGLInternalFormat(self.internal_format), self.width, self.height)
         self.unbind()
+    
+    def getID(self):
+        return self.id
     
     @staticmethod
     def toOpenGLInternalFormat(internal_format: RenderBufferInternalFormat):

@@ -4,12 +4,14 @@ from PyQt6.QtCore import QThread, QWaitCondition, QMutex
 from PyQt6.QtGui import QOffscreenSurface, QOpenGLContext, QSurfaceFormat
 
 from ba_trees.workspace import Project
+from ba_trees.workspace.colmap.ColmapOpenGL import ColmapProjectOpenGL
 from render.data import CoordinateSystem
+from render.data.RenderBufferData import RenderBufferInternalFormat
 from render.data.TextureData import TextureInternalFormat, TextureFormat, TextureType, TextureData
 from render.functions import RenderDataStorages
 from render.opengl import OpenGLCamera, OpenGLMesh, OpenGLTexture, OpenGLFrameBuffer, OpenGLProgramm
-from render.render import FrameBuffer
-from ba_trees.workspace.colmap.ColmapOpenGL import ColmapProjectOpenGL
+from render.opengl.OpenGLRenderBuffer import OpenGLRenderBuffer
+from render.render import FrameBuffer, RenderBuffer
 
 
 class BackgroundRenderWidget(QThread):
@@ -146,6 +148,11 @@ class BackgroundRenderWidget(QThread):
         self.outputMousePickingTexture = OpenGLTexture(texture_data)
         self.framebuffer.addTexture(self.outputMousePickingTexture)
         
+        # Add Depth Buffer
+        depth_buffer: RenderBuffer = OpenGLRenderBuffer(RenderBufferInternalFormat.DEPTH_COMPONENT, self.width, self.height)
+        self.framebuffer.addRenderBuffer(depth_buffer)
+        
+        # Done Framebuffer
         self.framebuffer.setDrawBuffer(0, 1)
         self.framebuffer.unbind()
         
@@ -213,6 +220,13 @@ class BackgroundRenderWidget(QThread):
             self.opengl_project_data.append(cogl)
     
     def __render(self):
+        # Start Binding
+        self.framebuffer.bind()
+        glViewport(0, 0, self.width, self.height);
+        
+        # Clear OpenGL Frame
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        
         # Enable OpenGL Settings
         glFrontFace(GL_CCW)
         glCullFace(GL_BACK)
@@ -220,17 +234,11 @@ class BackgroundRenderWidget(QThread):
         
         glEnable(GL_VERTEX_PROGRAM_POINT_SIZE)
         glEnable(GL_DEPTH_TEST)
+        glDepthFunc(GL_LESS)
         
-        #glEnable(GL_BLEND)
-        #glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        #glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO)
-        
-        # Start Binding
-        self.framebuffer.bind()
-        glViewport(0, 0, self.width, self.height);
-        
-        # Clear OpenGL Frame
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        glEnable(GL_BLEND)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO)
         
         # Draw Coordinate System
         if self.rw.setting_show_coordinate_system and self.shader_coordinate_system:
@@ -298,18 +306,20 @@ class BackgroundRenderWidget(QThread):
             
             self.shader_point_cloud_sparse.unbind()
         
+        # Disable OpenGL Settings
+        glDisable(GL_BLEND)
+        glDisable(GL_CULL_FACE)
+        glDisable(GL_VERTEX_PROGRAM_POINT_SIZE)
+        glDisable(GL_DEPTH_TEST)
+        
+        # Finish Draw
         self.framebuffer.unbind()
         glFlush() # Start Rendering if it is not happend yet
         glFinish() # Wait for finished rendering
         
         #self.saveImage()
         
-        # Disable OpenGL Settings
-        #glDisable(GL_BLEND)
-        glDisable(GL_CULL_FACE)
-        glDisable(GL_VERTEX_PROGRAM_POINT_SIZE)
-        glDisable(GL_DEPTH_TEST)
-        
+        # Send Signal for finishing
         self.rw.repaintSignal.emit(self.outputTexture)
         self.rw.mousePickingSignal.emit(self.outputMousePickingTexture)
 

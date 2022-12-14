@@ -1,5 +1,3 @@
-import numpy as np
-
 from render.render import PrimitiveType, Primitves
 
 

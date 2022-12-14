@@ -6,4 +6,5 @@ from render.render.Camera import *
 from render.render.Texture import *
 from render.render.Model import *
 from render.render.FrameBuffer import *
+from render.render.RenderBuffer import *
 from render.render.Programm import *

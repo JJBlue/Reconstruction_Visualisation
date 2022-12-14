@@ -13,9 +13,21 @@ class RenderBuffer:
     def unbind(self):
         pass
     
-    def getID(self):
-        return 0
-    
     def resize(self, width, height):
         self.width = width
         self.height = height
+    
+    def getInternalFormat(self):
+        return self.internal_format
+    
+    def getWidth(self):
+        return self.width
+    
+    def getHeight(self):
+        return self.height
+    
+    def getSize(self):
+        return [self.width, self.height]
+    
+    def getID(self):
+        return 0

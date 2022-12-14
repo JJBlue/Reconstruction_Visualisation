@@ -1,6 +1,7 @@
+import numpy as np
+
 from PIL import Image
 
-import numpy as np
 from render.data import TextureData, TextureFormat, TextureType, TextureInternalFormat, ImageFormat
 
 
