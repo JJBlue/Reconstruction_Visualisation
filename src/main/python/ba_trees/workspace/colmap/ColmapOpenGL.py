@@ -1,3 +1,5 @@
+import numpy as np
+
 from colmap_wrapper.visualization import draw_camera_viewport
 
 from ba_trees.workspace.colmap import ColmapProject
@@ -24,6 +26,11 @@ class ColmapProjectOpenGL:
             project.create()
             break # TODO
     
+    def delete(self):
+        for project in self.sub_projects:
+            project.delete()
+            break # TODO
+    
     def getSubProjects(self):
         return self.sub_projects
 
@@ -48,9 +55,12 @@ class ColmapSubProjectOpenGL:
         
         for image_idx in self.project.images.keys():
             image = self.project.images[image_idx]
-            #image = image.getData(self.project.image_resize)
-            image_data = None
+            #image_data = image.getData(self.project.image_resize)
+            image_data = np.asarray([]).astype('uint8')
             
+            # line_set: Camera Viewport Outline
+            # sphere: ?
+            # mesh: Image Plane
             line_set, sphere, mesh = draw_camera_viewport(
                                                             extrinsics=image.extrinsics,
                                                             intrinsics=image.intrinsics.K,
@@ -59,13 +69,24 @@ class ColmapSubProjectOpenGL:
                                                          )
             
             
-            #image_model = OpenGLModel()
-            #image_model.addGeometries(GeometryO3DTriangleMesh(mesh))
+            image_model = OpenGLModel()
+            image_model.addGeometries(GeometryO3DTriangleMesh(mesh))
             #image_model.addTexture(OpenGLTexture(TextureDataFile(image)))
-            #self.images.append(image_model)
+            self.images.append(image_model)
             
             camera = OpenGLModel()
             camera.addGeometries(GeometryO3DLineSet(line_set))
-            #camera.addGeometries(GeometryO3DTriangleMesh(sphere)) # is list
+            
+            for s in sphere:
+                camera.addGeometries(GeometryO3DTriangleMesh(s))
             
             self.cameras.append(camera)
+    
+    def delete(self):
+        # TODO delete buffers in Model
+        del self.images[:]
+        self.images.clear()
+        
+        # TODO delete buffers in Model
+        del self.cameras[:]
+        self.cameras.clear()

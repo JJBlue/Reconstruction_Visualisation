@@ -268,14 +268,17 @@ class BackgroundRenderWidget(QThread):
                 
                 # Draw Image
                 if self.shader_images:
+                    glDisable(GL_CULL_FACE)
                     self.shader_images.bind()
                     self.camera.updateShaderUniform(self.shader_images)
                     
-                    #self.model_image.bind(self.shader_images)
-                    #self.model_image.draw()
-                    #self.model_image.unbind()
+                    for img in sub_project.images:
+                        img.bind(self.shader_images)
+                        img.draw()
+                        img.unbind()
                     
                     self.shader_images.unbind()
+                    glEnable(GL_CULL_FACE)
                 
                 # Draw Point Dense
                 if self.shader_point_cloud_dense:

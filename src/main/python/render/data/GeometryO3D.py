@@ -13,15 +13,15 @@ class GeometryO3DPointCloud(Geometry):
         self.primtive = Primitves.POINTS
         
         if self.point_cloud.has_points():
-            self.vertices: GeometryData = GeometryData(3, np.asarray(self.point_cloud.points).astype('float32'), PrimitiveType.FLOAT)
+            self.vertices: GeometryData = GeometryData(3, np.asarray(self.point_cloud.points, dtype=np.float32).flatten(), PrimitiveType.FLOAT)
             self.all_vertices.append(self.vertices)
         
         if self.point_cloud.has_normals():
-            self.normales: GeometryData = GeometryData(3, np.asarray(self.point_cloud.normals).astype('float32'), PrimitiveType.FLOAT)
+            self.normales: GeometryData = GeometryData(3, np.asarray(self.point_cloud.normals, dtype=np.float32).flatten(), PrimitiveType.FLOAT)
             self.all_vertices.append(self.normales)
         
         if self.point_cloud.has_colors():
-            self.colors: GeometryData = GeometryData(3, np.asarray(self.point_cloud.colors).astype('float32'), PrimitiveType.FLOAT)
+            self.colors: GeometryData = GeometryData(3, np.asarray(self.point_cloud.colors, dtype=np.float32).flatten(), PrimitiveType.FLOAT)
             self.all_vertices.append(self.colors)
         
     def getPointCloud(self) -> o3d.geometry.PointCloud:
@@ -34,21 +34,35 @@ class GeometryO3DTriangleMesh(Geometry):
         self.triangle_mesh = triangle_mesh
         self.primtive = Primitves.TRIANGLES
         
+        #self.triangle_mesh.has_adjacency_list()
+        #self.triangle_mesh.has_textures()
+        #self.triangle_mesh.has_triangle_material_ids()
+        
         if self.triangle_mesh.has_vertices():
-            self.vertices: GeometryData = GeometryData(3, np.asarray(self.triangle_mesh.vertices).astype('float32'), PrimitiveType.FLOAT)
+            self.vertices: GeometryData = GeometryData(3, np.asarray(self.triangle_mesh.vertices, dtype=np.float32).flatten(), PrimitiveType.FLOAT)
             self.all_vertices.append(self.vertices)
         
+        
+        if self.triangle_mesh.has_vertex_normals():
+            self.vertex_normales: GeometryData = GeometryData(3, np.asarray(self.triangle_mesh.vertex_normals, dtype=np.float32).flatten(), PrimitiveType.FLOAT)
+            self.all_vertices.append(self.vertex_normales)
+        
         if self.triangle_mesh.has_triangle_normals():
-            self.normales: GeometryData = GeometryData(3, np.asarray(self.triangle_mesh.vertex_normals).astype('float32'), PrimitiveType.FLOAT)
-            self.all_vertices.append(self.normales)
+            self.triangle_normales: GeometryData = GeometryData(3, np.asarray(self.triangle_mesh.triangle_normals, dtype=np.float32).flatten(), PrimitiveType.FLOAT)
+            self.all_vertices.append(self.triangle_normales)
+        
         
         if self.triangle_mesh.has_vertex_colors():
-            self.colors: GeometryData = GeometryData(3, np.asarray(self.triangle_mesh.vertex_colors).astype('float32'), PrimitiveType.FLOAT)
+            self.colors: GeometryData = GeometryData(3, np.asarray(self.triangle_mesh.vertex_colors, dtype=np.float32).flatten(), PrimitiveType.FLOAT)
             self.all_vertices.append(self.colors)
         
         if self.triangle_mesh.has_triangle_uvs():
-            self.uvs: GeometryData = GeometryData(3, np.asarray(self.triangle_mesh.triangle_uvs).astype('float32'), PrimitiveType.FLOAT)
+            self.uvs: GeometryData = GeometryData(3, np.asarray(self.triangle_mesh.triangle_uvs, dtype=np.float32).flatten(), PrimitiveType.FLOAT)
             self.all_vertices.append(self.uvs)
+        
+        
+        if self.triangle_mesh.has_triangles():
+            self.indices: GeometryData = GeometryData(1, np.asarray(self.triangle_mesh.triangles, dtype=np.uint32).flatten(), PrimitiveType.INT)
 
 class GeometryO3DLineSet(Geometry):
     def __init__(self, line_set: o3d.geometry.LineSet = None):
@@ -58,12 +72,12 @@ class GeometryO3DLineSet(Geometry):
         self.primtive = Primitves.LINES
         
         if self.line_set.has_points():
-            self.vertices: GeometryData = GeometryData(3, np.asarray(self.line_set.points).astype('float32').flatten(), PrimitiveType.FLOAT)
+            self.vertices: GeometryData = GeometryData(3, np.asarray(self.line_set.points, np.float32).flatten(), PrimitiveType.FLOAT)
             self.all_vertices.append(self.vertices)
         
         if self.line_set.has_colors():
-            self.colors: GeometryData = GeometryData(3, np.asarray(self.line_set.colors).astype('float32').flatten(), PrimitiveType.FLOAT)
+            self.colors: GeometryData = GeometryData(3, np.asarray(self.line_set.colors, np.float32).flatten(), PrimitiveType.FLOAT)
             self.all_vertices.append(self.colors)
         
         if self.line_set.has_lines():
-            self.indices: GeometryData = GeometryData(1, np.asarray(self.line_set.lines).astype('uint32').flatten(), PrimitiveType.INT)
+            self.indices: GeometryData = GeometryData(1, np.asarray(self.line_set.lines, np.uint32).flatten(), PrimitiveType.INT)

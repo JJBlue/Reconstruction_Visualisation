@@ -12,7 +12,6 @@ class OpenGLRenderBuffer(RenderBuffer):
         self.resize(width, height)
     
     def __del__(self):
-        print("Delete RenderBuffer")
         try:
             self.delete()
         except:
