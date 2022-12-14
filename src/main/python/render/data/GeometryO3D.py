@@ -57,12 +57,13 @@ class GeometryO3DLineSet(Geometry):
         self.line_set = line_set
         self.primtive = Primitves.LINES
         
-        # TODO: has_points
-        
-        if self.line_set.has_lines():
-            self.vertices: GeometryData = GeometryData(3, np.asarray(self.line_set.lines).astype('float32'), PrimitiveType.FLOAT)
+        if self.line_set.has_points():
+            self.vertices: GeometryData = GeometryData(3, np.asarray(self.line_set.points).astype('float32').flatten(), PrimitiveType.FLOAT)
             self.all_vertices.append(self.vertices)
         
         if self.line_set.has_colors():
-            self.colors: GeometryData = GeometryData(3, np.asarray(self.line_set.colors).astype('float32'), PrimitiveType.FLOAT)
+            self.colors: GeometryData = GeometryData(3, np.asarray(self.line_set.colors).astype('float32').flatten(), PrimitiveType.FLOAT)
             self.all_vertices.append(self.colors)
+        
+        if self.line_set.has_lines():
+            self.indices: GeometryData = GeometryData(1, np.asarray(self.line_set.lines).astype('uint32').flatten(), PrimitiveType.INT)

@@ -61,6 +61,9 @@ class RenderWidget(QOpenGLWidget):
         QTimer.singleShot(1, self.runEmit)
         #QTimer.singleShot(500, self.runEmit)
     
+    def __del__(self):
+        self.thread.stop()
+    
     def runEmit(self):
         self.showCoordinateSystemChanged.emit(self.setting_show_coordinate_system)
         self.pointSizeChanged.emit(self.point_size)

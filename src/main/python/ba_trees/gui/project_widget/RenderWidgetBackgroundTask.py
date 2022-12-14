@@ -5,10 +5,9 @@ from PyQt6.QtGui import QOffscreenSurface, QOpenGLContext, QSurfaceFormat
 
 from ba_trees.workspace import Project
 from render.data import CoordinateSystem
-from render.data.GeometryO3D import GeometryO3DPointCloud
 from render.data.TextureData import TextureInternalFormat, TextureFormat, TextureType, TextureData
 from render.functions import RenderDataStorages
-from render.opengl import OpenGLCamera, OpenGLModel, OpenGLMesh, OpenGLTexture, OpenGLFrameBuffer, OpenGLProgramm
+from render.opengl import OpenGLCamera, OpenGLMesh, OpenGLTexture, OpenGLFrameBuffer, OpenGLProgramm
 from render.render import FrameBuffer
 from ba_trees.workspace.colmap.ColmapOpenGL import ColmapProjectOpenGL
 
@@ -222,9 +221,9 @@ class BackgroundRenderWidget(QThread):
         glEnable(GL_VERTEX_PROGRAM_POINT_SIZE)
         glEnable(GL_DEPTH_TEST)
         
-        glEnable(GL_BLEND)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO)
+        #glEnable(GL_BLEND)
+        #glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        #glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO)
         
         # Start Binding
         self.framebuffer.bind()
@@ -248,6 +247,17 @@ class BackgroundRenderWidget(QThread):
         # Draw Projects
         for project in self.opengl_project_data:
             for sub_project in project.getSubProjects():
+                if self.shader_coordinate_system:
+                    self.shader_coordinate_system.bind()
+                    self.camera.updateShaderUniform(self.shader_coordinate_system)
+                    
+                    for cam in sub_project.cameras:
+                        cam.bind()
+                        cam.draw()
+                        cam.unbind()
+                    
+                    self.shader_coordinate_system.unbind()
+                
                 # Draw Image
                 if self.shader_images:
                     self.shader_images.bind()
@@ -295,7 +305,7 @@ class BackgroundRenderWidget(QThread):
         #self.saveImage()
         
         # Disable OpenGL Settings
-        glDisable(GL_BLEND)
+        #glDisable(GL_BLEND)
         glDisable(GL_CULL_FACE)
         glDisable(GL_VERTEX_PROGRAM_POINT_SIZE)
         glDisable(GL_DEPTH_TEST)
