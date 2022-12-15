@@ -285,12 +285,12 @@ class CoordinateSystem(Geometry):
         self.vertices = GeometryData(
             3,
             np.array([
-                -100.0,    0.0,    0.0,
-                 100.0,    0.0,    0.0,
-                 0.0  ,  100.0,    0.0,
-                 0.0  , -100.0,    0.0,
-                 0.0  ,    0.0,  100.0,
-                 0.0  ,    0.0, -100.0,
+                -1.0,  0.0,  0.0,
+                 1.0,  0.0,  0.0,
+                 0.0,  1.0,  0.0,
+                 0.0, -1.0,  0.0,
+                 0.0,  0.0,  1.0,
+                 0.0,  0.0, -1.0,
             ], np.float32)
         )
         self.all_vertices.append(self.vertices)

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import glm
 
+from typing import overload
+
 class Position:
     def __init__(self, x = 0, y = 0, z = 0):
         self.position: glm.vec3 = glm.fvec3(x, y, z)
@@ -103,30 +105,42 @@ class Location(Position):
         
 class ModelMatrix(Location):
     def __init__(self, x = 0, y = 0, z = 0, pitch = 0, yaw = 0, roll = 0):
-        self.scale: glm.vec3 = glm.fvec3(1.0)
+        self.__scale: glm.vec3 = glm.fvec3(1.0)
         super().__init__(x, y, z, pitch, yaw, roll)
     
     def scaleX(self, x: float):
-        self.scale.x = x
+        self.__scale.x = x
         self.updateModel()
     
     def scaleY(self, y: float):
-        self.scale.y = y
+        self.__scale.y = y
         self.updateModel()
         
     def scaleZ(self, z: float):
-        self.scale.z = z
+        self.__scale.z = z
         self.updateModel()
     
+    @overload
+    def scale(self, scale: float):
+        pass
+    
+    @overload
     def scale(self, scale: glm.vec3):
-        self.scale = scale
+        pass
+    
+    def scale(self, scale):
+        if isinstance(scale, glm.vec3):
+            self.__scale = scale
+        elif isinstance(scale, float):
+            self.__scale *= scale
+        
         self.updateModel()
     
     def updateModel(self):
         super().updateModel()
         
         if self.scale != None:
-            self.model = glm.scale(self.model, self.scale)
+            self.model = glm.scale(self.model, self.__scale)
 
 
 

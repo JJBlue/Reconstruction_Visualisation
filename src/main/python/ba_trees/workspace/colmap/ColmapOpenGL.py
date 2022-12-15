@@ -3,9 +3,10 @@ import numpy as np
 from colmap_wrapper.visualization import draw_camera_viewport
 
 from ba_trees.workspace.colmap import ColmapProject
-from render.data import GeometryO3DPointCloud
-from render.data.GeometryO3D import GeometryO3DLineSet, GeometryO3DTriangleMesh
-from render.opengl import OpenGLModel
+
+from render.data import GeometryO3DPointCloud, GeometryO3DLineSet, GeometryO3DTriangleMesh
+from render.opengl import OpenGLMesh
+from render.render import Model
 
 
 class ColmapProjectOpenGL:
@@ -46,11 +47,11 @@ class ColmapSubProjectOpenGL:
         self.cameras: list = []
     
     def create(self):
-        self.point_cloud_dense = OpenGLModel()
-        self.point_cloud_dense.addGeometries(GeometryO3DPointCloud(self.project.get_dense()))
+        self.point_cloud_dense = Model()
+        self.point_cloud_dense.addMeshes(OpenGLMesh(GeometryO3DPointCloud(self.project.get_dense())))
         
-        self.point_cloud_sparse = OpenGLModel()
-        self.point_cloud_sparse.addGeometries(GeometryO3DPointCloud(self.project.get_sparse()))
+        self.point_cloud_sparse = Model()
+        self.point_cloud_sparse.addMeshes(OpenGLMesh(GeometryO3DPointCloud(self.project.get_sparse())))
         
         
         for image_idx in self.project.images.keys():
@@ -69,16 +70,16 @@ class ColmapSubProjectOpenGL:
                                                          )
             
             
-            image_model = OpenGLModel()
-            image_model.addGeometries(GeometryO3DTriangleMesh(mesh))
+            image_model = Model()
+            image_model.addMeshes(OpenGLMesh(GeometryO3DTriangleMesh(mesh)))
             #image_model.addTexture(OpenGLTexture(TextureDataFile(image)))
             self.images.append(image_model)
             
-            camera = OpenGLModel()
-            camera.addGeometries(GeometryO3DLineSet(line_set))
+            camera = Model()
+            camera.addMeshes(OpenGLMesh(GeometryO3DLineSet(line_set)))
             
             for s in sphere:
-                camera.addGeometries(GeometryO3DTriangleMesh(s))
+                camera.addMeshes(OpenGLMesh(GeometryO3DTriangleMesh(s)))
             
             self.cameras.append(camera)
     

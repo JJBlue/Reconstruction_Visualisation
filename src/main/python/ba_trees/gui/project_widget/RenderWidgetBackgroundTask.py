@@ -11,7 +11,7 @@ from render.data.TextureData import TextureInternalFormat, TextureFormat, Textur
 from render.functions import RenderDataStorages
 from render.opengl import OpenGLCamera, OpenGLMesh, OpenGLTexture, OpenGLFrameBuffer, OpenGLProgramm
 from render.opengl.OpenGLRenderBuffer import OpenGLRenderBuffer
-from render.render import FrameBuffer, RenderBuffer
+from render.render import FrameBuffer, RenderBuffer, Model
 
 
 class BackgroundRenderWidget(QThread):
@@ -122,7 +122,9 @@ class BackgroundRenderWidget(QThread):
         self.shader_coordinate_system = None
         
         # Geometries
-        self.coordinate_system = OpenGLMesh(CoordinateSystem()) # TODO store coordinate_system buffer: global
+        self.coordinate_system = Model()
+        self.coordinate_system.addMeshes(OpenGLMesh(CoordinateSystem())) # TODO store coordinate_system buffer: global
+        self.coordinate_system.getModelMatrix().scale(1000.0)
         
         # FrameBuffer
         self.framebuffer: FrameBuffer = OpenGLFrameBuffer()
@@ -245,7 +247,7 @@ class BackgroundRenderWidget(QThread):
             self.shader_coordinate_system.bind()
             self.camera.updateShaderUniform(self.shader_coordinate_system)
             
-            self.coordinate_system.bind()
+            self.coordinate_system.bind(self.shader_coordinate_system)
             self.coordinate_system.draw()
             self.coordinate_system.unbind()
             
@@ -260,7 +262,7 @@ class BackgroundRenderWidget(QThread):
                     self.camera.updateShaderUniform(self.shader_coordinate_system)
                     
                     for cam in sub_project.cameras:
-                        cam.bind()
+                        cam.bind(self.shader_coordinate_system)
                         cam.draw()
                         cam.unbind()
                     

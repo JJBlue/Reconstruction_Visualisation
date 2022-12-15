@@ -100,7 +100,16 @@ class RenderWidget(QOpenGLWidget):
             self.mouse_pressed = True
     
     def mouseDoubleClickEvent(self):
+        self.mouseDoubleClickRunnable()
+        
         print("Double Click")
+    
+    def mouseDoubleClickRunnable(self):
+        if not self.mouse_picker_current:
+            self.mouse_picker_current = True # Not Thread safe
+            # Run in seperate Thread
+            
+        
     
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:

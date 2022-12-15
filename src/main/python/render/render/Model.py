@@ -1,16 +1,17 @@
-from render.data import ModelData
+from render.data import ModelMatrix
 from render.render import Shader
 
 
 class Model:
-    def __init__(self, data: ModelData):
-        self.data = data
+    def __init__(self):
+        self.model_matrix = ModelMatrix()
+        
         self.meshes: list = []
         self.textures: list = []
     
     def bind(self, shader: Shader = None):
         if shader:
-            shader.uniform("model", self.data.position.getModel())
+            shader.uniform("model", self.model_matrix.getModel())
             
             i: int = 0
             for tex in self.textures:
@@ -36,14 +37,22 @@ class Model:
         if len(self.meshes) == 1:
             self.meshes[0].unbind()
     
-    def addMesh(self, mesh):
-        self.meshes.append(mesh)
+    def addMeshes(self, *meshes):
+        for mesh in meshes:
+            self.meshes.append(mesh)
     
     def getMeshes(self) -> list:
         return self.meshes
     
-    def addTexture(self, texture):
-        self.textures.append(texture)
+    def addTexture(self, *textures):
+        for texture in textures:
+            self.textures.append(texture)
     
     def getTextures(self) -> list:
         return self.textures
+    
+    def setModelMatrix(self, model_matrix):
+        self.model_matrix = model_matrix
+    
+    def getModelMatrix(self) -> ModelMatrix:
+        return self.model_matrix
