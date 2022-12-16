@@ -10,7 +10,7 @@ from ba_trees.workspace.colmap.ColmapOpenGL import ColmapProjectOpenGL
 from render.data import CoordinateSystem
 from render.data.RenderBufferData import RenderBufferInternalFormat
 from render.data.TextureData import TextureInternalFormat, TextureFormat, TextureType, TextureData
-from render.functions import RenderDataStorages
+from render.functions import RenderDataStorages, MousePickerColor
 from render.opengl import OpenGLCamera, OpenGLMesh, OpenGLTexture, OpenGLFrameBuffer, OpenGLProgramm
 from render.opengl.OpenGLRenderBuffer import OpenGLRenderBuffer
 from render.render import FrameBuffer, RenderBuffer, Model
@@ -51,6 +51,9 @@ class BackgroundRenderWidget(QThread):
     ######################
     
     def selectPixelCoord(self, x: int, y: int, radius: int = 10):
+        selected_pixels = []
+        
+        # Read Pixels and store in data
         self.framebuffer.bind()
         glPixelStorei(GL_PACK_ALIGNMENT, 1)
         glReadBuffer(GL_COLOR_ATTACHMENT1)
@@ -66,45 +69,69 @@ class BackgroundRenderWidget(QThread):
         
         self.framebuffer.unbind()
         
-        
+        # Search for nearest Pixel (begin center: clicked pixel and move outside in rectangles)
         size: int = 2 * radius + 1
         x_center: int = int((size - 1) / 2)
         y_center: int = int((size - 1) / 2)
         
         color_size = 4
+        width, height = size, size
         size: int = (size) * color_size
         
         for i in range(radius + 1):
             for xi in range(i * 2 + 1):
                 xt: int = x_center + i - xi
-                yt: int = y_center - i
                 
-                pixel: int = yt * size + xt * color_size
-                rgba = [data[pixel], data[pixel + 1], data[pixel + 2], data[pixel + 3]]
+                if xt < 0:
+                    break
+                if xt >= width:
+                    continue
+                
+                yt: int = y_center - i
+                if yt >= 0:
+                    pixel: int = yt * size + xt * color_size
+                    rgba = [data[pixel], data[pixel + 1], data[pixel + 2], data[pixel + 3]]
+                    
+                    if rgba[3] > 0:
+                        #selected_pixels.append(MousePickerColor.colorToID(data))
+                        pass # TODO add selected_pixels
                 
                 if i == 0:
                     continue
                 
-                xt: int = x_center + i - xi
                 yt: int = y_center + i
-                
-                pixel: int = yt * size + xt * color_size
-                rgba = [data[pixel], data[pixel + 1], data[pixel + 2], data[pixel + 3]]
+                if yt < height:
+                    pixel: int = yt * size + xt * color_size
+                    rgba = [data[pixel], data[pixel + 1], data[pixel + 2], data[pixel + 3]]
+                    
+                    if rgba[3] > 0:
+                        pass # TODO add selected_pixels
             
             for yi in range(1, i * 2):
-                    xt: int = x_center - i
-                    yt: int = y_center + i - yi
-                    
+                yt: int = y_center + i - yi
+                
+                if yt < 0:
+                    break
+                if yt >= height:
+                    continue
+                
+                xt: int = x_center - i
+                if xt >= 0:
                     pixel: int = yt * size + xt * color_size
                     rgba = [data[pixel], data[pixel + 1], data[pixel + 2], data[pixel + 3]]
                     
-                    
-                    xt: int = x_center + i
-                    yt: int = y_center + i - yi
-                    
+                    if rgba[3] > 0:
+                        pass # TODO add selected_pixels
+                
+                xt: int = x_center + i
+                if xt < width:
                     pixel: int = yt * size + xt * color_size
                     rgba = [data[pixel], data[pixel + 1], data[pixel + 2], data[pixel + 3]]
+                    
+                    if rgba[3] > 0:
+                        pass # TODO add selected_pixels
         
+        # Create OpenGL Lines
         pass
     
     def addProject(self, project: Project):
