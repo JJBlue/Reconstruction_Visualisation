@@ -1,3 +1,5 @@
+import glm
+
 from OpenGL.GL import *
 from PIL import Image, ImageOps
 from PyQt6.QtCore import QThread, QWaitCondition, QMutex
@@ -42,10 +44,68 @@ class BackgroundRenderWidget(QThread):
         
         # OpenGL
         self.camera = None
+        self.selected_pixel = None
     
     ######################
     ### Global Methops ###
     ######################
+    
+    def selectPixelCoord(self, x: int, y: int, radius: int = 10):
+        self.framebuffer.bind()
+        glPixelStorei(GL_PACK_ALIGNMENT, 1)
+        glReadBuffer(GL_COLOR_ATTACHMENT1)
+        
+        data = glReadPixels(
+                                glm.clamp(x - radius, 0, x),
+                                glm.clamp(y - radius, 0, y),
+                                glm.clamp(x + radius, x, self.width),
+                                glm.clamp(y + radius, y, self.height),
+                                GL_RGBA_INTEGER,
+                                GL_UNSIGNED_INT
+                            )
+        
+        self.framebuffer.unbind()
+        
+        
+        size: int = 2 * radius + 1
+        x_center: int = int((size - 1) / 2)
+        y_center: int = int((size - 1) / 2)
+        
+        color_size = 4
+        size: int = (size) * color_size
+        
+        for i in range(radius + 1):
+            for xi in range(i * 2 + 1):
+                xt: int = x_center + i - xi
+                yt: int = y_center - i
+                
+                pixel: int = yt * size + xt * color_size
+                rgba = [data[pixel], data[pixel + 1], data[pixel + 2], data[pixel + 3]]
+                
+                if i == 0:
+                    continue
+                
+                xt: int = x_center + i - xi
+                yt: int = y_center + i
+                
+                pixel: int = yt * size + xt * color_size
+                rgba = [data[pixel], data[pixel + 1], data[pixel + 2], data[pixel + 3]]
+            
+            for yi in range(1, i * 2):
+                    xt: int = x_center - i
+                    yt: int = y_center + i - yi
+                    
+                    pixel: int = yt * size + xt * color_size
+                    rgba = [data[pixel], data[pixel + 1], data[pixel + 2], data[pixel + 3]]
+                    
+                    
+                    xt: int = x_center + i
+                    yt: int = y_center + i - yi
+                    
+                    pixel: int = yt * size + xt * color_size
+                    rgba = [data[pixel], data[pixel + 1], data[pixel + 2], data[pixel + 3]]
+        
+        pass
     
     def addProject(self, project: Project):
         self.new_projects.append(project)
