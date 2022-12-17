@@ -21,6 +21,9 @@ class ColmapProjectOpenGL:
         for sproject in projs:
             self.sub_projects.append(ColmapSubProjectOpenGL(sproject))
     
+    def upload(self):
+        pass
+    
     def create(self):
         for project in self.sub_projects:
             project.create()
@@ -31,7 +34,7 @@ class ColmapProjectOpenGL:
             project.delete()
             break # TODO
     
-    def getSubProjects(self):
+    def getSubProjects(self) -> list:
         return self.sub_projects
 
 class ColmapSubProjectOpenGL:
@@ -45,6 +48,12 @@ class ColmapSubProjectOpenGL:
         self.images: list = []
         self.cameras: list = []
     
+    def __del__(self):
+        self.delete()
+    
+    def upload(self):
+        pass
+    
     def create(self):
         self.point_cloud_dense = Model()
         self.point_cloud_dense.getModelMatrix().scale(glm.fvec3(1, -1, -1))
@@ -57,9 +66,9 @@ class ColmapSubProjectOpenGL:
         for image_idx in self.project.images.keys():
             if image_idx % 10 == 0:
                 print(f"Load Image: {image_idx}")
+            
             image: ImageInformation = self.project.images[image_idx]
-            #image_data = image.getData(self.project.image_resize)
-            image_data = np.asarray([]).astype('uint8')
+            image_data = np.asarray([], dtype=np.uint8) #image.getData(self.project.image_resize)
             
             # line_set: Camera Viewport Outline
             # sphere: Camera Location

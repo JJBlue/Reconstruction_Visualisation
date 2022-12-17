@@ -70,7 +70,7 @@ class Shader:
 
 class ShaderGroup(Shader):
     def __init__(self, *shaders):
-        self.shaders: list = [] # dict: {type, shader}
+        self.shaders: list = []
         
         for shader in shaders:
             self.shaders.append(shader)

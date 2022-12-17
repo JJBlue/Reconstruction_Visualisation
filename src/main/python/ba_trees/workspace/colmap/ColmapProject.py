@@ -25,6 +25,15 @@ class ColmapProject(Project):
                                         image_resize=0.3
                                     )
         
+        self.projects_pycolmap: list = []
+        try:
+            import pycolmap
+            
+            for project in self.reconstruction.projects:
+                self.projects_pycolmap.append(pycolmap.Reconstruction(project._sparse_base_path))
+        except:
+            pass
+        
         self.opened = True
         return True
     
@@ -48,6 +57,9 @@ class ColmapProject(Project):
     
     def getReconstruction(self) -> COLMAP:
         return self.reconstruction
+    
+    def getPyColmapProjects(self) -> list:
+        return self.projects_pycolmap
     
     def getProjects(self):
         return self.reconstruction.projects

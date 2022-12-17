@@ -19,3 +19,17 @@ class Buffer:
     
     def setSubData(self, data: np.ndarray, offset_bytes: int):
         raise NotImplementedError
+
+class BufferGroup:
+    def __init__(self):
+        self.vertex_buffers: list = []
+        self.index_buffer: Buffer = None
+    
+    def __del__(self):
+        pass
+    
+    def addVertexBuffer(self, buffer: Buffer):
+        self.buffers.append(buffer)
+    
+    def addIndexBuffer(self, buffer: Buffer):
+        self.index_buffer = buffer

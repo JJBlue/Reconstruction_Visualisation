@@ -39,6 +39,7 @@ class BackgroundRenderWidget(QThread):
         self.surface.setFormat(self.format)
         self.surface.create()
         
+        self.projects: list = []
         self.new_projects: list = []
         self.opengl_project_data: list = []
         self.outputTexture = None
@@ -135,14 +136,42 @@ class BackgroundRenderWidget(QThread):
                     if pick_result != None:
                         selected_pixels.append(pick_result)
         
-        # World to Image
+        # TODO delete
+        for t in selected_pixels:
+            print(t.vertex_id)
         
-        #uv = camera.world_to_image(image.project(point3D.xyz))
+        # Vertices to Coordinates & World to Image
+        for mouse_pick in pick_result:
+            project_id = 0
+            sub_project_id = 0
+            point_id = mouse_pick.vertex_id
+            
+            point3D = glm.vec3(0)
+            
+            # Vertices to Coordinates
+            project = self.opengl_project_data[project_id]
+            sub_project = project.getSubProjects()[sub_project_id]
+            
+            
+            
+            # TODO
+            
+            # World to Image
+            project = self.projects[project_id]
+            sub_project = project.getPyColmapProjects()[sub_project_id]
+            
+            for _, image in sub_project.images.items():
+                camera_id = image.camera_id
+                
+                for _, camera in sub_project.cameras.items()[camera_id]:
+                    uv = camera.world_to_image(image.project(point3D.xyz))
+                    print(uv)
         
         # Create OpenGL Lines
         pass
     
     def addProject(self, project: Project):
+        self.projects.append(project)
         self.new_projects.append(project)
     
     def resize(self, width, height):
