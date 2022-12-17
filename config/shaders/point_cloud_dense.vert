@@ -13,7 +13,7 @@ uniform float point_size;
 out vec3 color;
 
 void main() {
-	gl_Position = proj * view * model * vec4(pos.x, -pos.y, -pos.z, 1.0);
+	gl_Position = proj * view * model * vec4(pos, 1.0);
 	gl_PointSize = point_size;
 
 	color = in_color;

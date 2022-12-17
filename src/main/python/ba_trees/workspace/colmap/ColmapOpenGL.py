@@ -1,4 +1,5 @@
 import numpy as np
+import glm
 
 from colmap_wrapper.colmap.camera import ImageInformation
 from colmap_wrapper.visualization import draw_camera_viewport
@@ -46,11 +47,12 @@ class ColmapSubProjectOpenGL:
     
     def create(self):
         self.point_cloud_dense = Model()
+        self.point_cloud_dense.getModelMatrix().scale(glm.fvec3(1, -1, -1))
         self.point_cloud_dense.addMeshes(OpenGLMesh(GeometryO3DPointCloud(self.project.get_dense())))
         
         self.point_cloud_sparse = Model()
         self.point_cloud_sparse.addMeshes(OpenGLMesh(GeometryO3DPointCloud(self.project.get_sparse())))
-        
+        self.point_cloud_sparse.getModelMatrix().scale(glm.fvec3(1, -1, -1))
         
         for image_idx in self.project.images.keys():
             if image_idx % 10 == 0:
@@ -72,11 +74,13 @@ class ColmapSubProjectOpenGL:
             texture: Texture = OpenGLTexture(TextureFile(image.path))
             
             image_model = Model()
+            image_model.getModelMatrix().scale(glm.fvec3(1, -1, -1))
             image_model.addMeshes(OpenGLMesh(GeometryO3DTriangleMesh(mesh)))
             image_model.addTexture(texture)
             self.images.append(image_model)
             
             camera = Model()
+            camera.getModelMatrix().scale(glm.fvec3(1, -1, -1))
             camera.addMeshes(OpenGLMesh(GeometryO3DLineSet(line_set)))
             
             for s in sphere:
