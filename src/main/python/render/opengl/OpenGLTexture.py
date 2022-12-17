@@ -16,6 +16,7 @@ class OpenGLTexture(Texture):
         self.img_internal_format = None
         self.img_type = None
         
+        self.id = glGenTextures(1)
         self.upload()
     
     def __del__(self):
@@ -36,8 +37,6 @@ class OpenGLTexture(Texture):
         glBindTexture(GL_TEXTURE_2D, 0)
     
     def upload(self):
-        self.id = glGenTextures(1)
-        
         if self.image.getUnpackAlignment():
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
         

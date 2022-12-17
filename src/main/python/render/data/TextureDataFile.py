@@ -1,15 +1,23 @@
 import numpy as np
 
+from pathlib import Path
 from PIL import Image
 
 from render.data import TextureData, TextureFormat, TextureType, TextureInternalFormat, ImageFormat
 
 
 class TextureFile(TextureData):
-    def __init__(self, file: str):
+    def __init__(self, file: Path):
         super().__init__(None, None, None, None, None, None)
         self.file = file
         self.file_loaded = False
+        
+        self.image_type: ImageFormat = None
+        
+        self.use_mipmap: bool = True
+        self.repeat_image: bool = True
+        self.unpack_alignment: bool = True
+        self.poor_filtering = False
     
     def load(self):
         if self.file_loaded:
@@ -54,13 +62,13 @@ class TextureFile(TextureData):
         elif mode == "RGB":
             image_type = ImageFormat.RGB
             mode_type = TextureFormat.RGB
-            dtype = np.int8
+            dtype = np.uint8
             img_type = TextureType.UNSIGNED_BYTE
             img_internal_format = TextureInternalFormat.RGB8
         elif mode == "RGBA":
             image_type = ImageFormat.RGBA
             mode_type = TextureFormat.RGBA
-            dtype = np.int8
+            dtype = np.uint8
             img_type = TextureType.UNSIGNED_BYTE
             img_internal_format = TextureInternalFormat.RGBA8
         elif mode == "CMYK":
@@ -88,6 +96,7 @@ class TextureFile(TextureData):
         
         self.dtype = dtype
         
+        self.image_type = image_type
         self.internal_format: TextureInternalFormat = img_internal_format
         self.img_format: TextureFormat = mode_type
         self.img_type: TextureType = img_type
@@ -106,15 +115,22 @@ class TextureFile(TextureData):
         self.load()
         return self.img_type
     
-    def getWidth(self) -> int:
+    def getWidth(self, resize=0.3) -> int:
         self.load()
-        return self.width
+        return super().getWidth(resize)
     
-    def getHeight(self) -> int:
+    def getHeight(self, resize=0.3) -> int:
         self.load()
-        return self.height
+        return super().getHeight(resize)
     
-    def getData(self) -> np.ndarray:
+    def getData(self, resize=0.3) -> np.ndarray:
         self.load()
-        img = Image.open(self.file)
-        return np.array(list(img.getdata()), self.dtype)
+        
+        with Image.open(self.file) as img:
+            img = img.resize((self.getWidth(resize), self.getHeight(resize)))
+            array = np.asarray(img, dtype=self.dtype).flatten()
+            return array
+        
+        return None
+        #img = Image.open(self.file)
+        #return np.array(list(img.getdata()), self.dtype)

@@ -49,12 +49,20 @@ class MousePickerColor():
         return u32vec4(r, g, b, 1.0)
     
     @staticmethod
-    def colorToID(color: vec4):
+    def colorToID_list(data: list, offset: int):
+        return MousePickerColor.colorToID(data[offset], data[offset + 1], data[offset + 2], data[offset + 3])
+    
+    @staticmethod
+    def colorToID_vec4(color: vec4):
+        return MousePickerColor.colorToID(int(color.x), int(color.y), int(color.z), int(color.w))
+    
+    @staticmethod
+    def colorToID(r: int, g: int, b: int, a: int):
         if MousePickerColor.mesh_id_size + MousePickerColor.primitive_id_size + MousePickerColor.vertex_id_size > MousePickerColor.bit_per_channel * 3:
             raise AttributeError(f"id sizes > {MousePickerColor.max_size}")
         
         # Alpha < 0. No Data found
-        if color.w < 1.0:
+        if a < 1.0:
             return None
         
         bit_move = MousePickerColor.mesh_id_size + MousePickerColor.primitive_id_size + MousePickerColor.vertex_id_size
@@ -62,10 +70,6 @@ class MousePickerColor():
         mesh_id = 0
         primitive_id = 0
         vertex_id = 0
-        
-        r: int = int(color.x)
-        g: int = int(color.y)
-        b: int = int(color.z)
         
         value: int = r << MousePickerColor.bit_per_channel
         value = (value + g) << MousePickerColor.bit_per_channel

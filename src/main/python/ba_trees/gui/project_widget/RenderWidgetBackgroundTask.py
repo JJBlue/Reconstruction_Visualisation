@@ -1,3 +1,4 @@
+import time
 import glm
 
 from OpenGL.GL import *
@@ -41,6 +42,10 @@ class BackgroundRenderWidget(QThread):
         self.new_projects: list = []
         self.opengl_project_data: list = []
         self.outputTexture = None
+        
+        # Events
+        self.sizeChanged = True
+        self.should_repaint = False
         
         # OpenGL
         self.camera = None
@@ -90,11 +95,10 @@ class BackgroundRenderWidget(QThread):
                 yt: int = y_center - i
                 if yt >= 0:
                     pixel: int = yt * size + xt * color_size
-                    rgba = [data[pixel], data[pixel + 1], data[pixel + 2], data[pixel + 3]]
+                    pick_result = MousePickerColor.colorToID_list(data, pixel)
                     
-                    if rgba[3] > 0:
-                        #selected_pixels.append(MousePickerColor.colorToID(data))
-                        pass # TODO add selected_pixels
+                    if pick_result != None:
+                        selected_pixels.append(pick_result)
                 
                 if i == 0:
                     continue
@@ -102,10 +106,10 @@ class BackgroundRenderWidget(QThread):
                 yt: int = y_center + i
                 if yt < height:
                     pixel: int = yt * size + xt * color_size
-                    rgba = [data[pixel], data[pixel + 1], data[pixel + 2], data[pixel + 3]]
+                    pick_result = MousePickerColor.colorToID_list(data, pixel)
                     
-                    if rgba[3] > 0:
-                        pass # TODO add selected_pixels
+                    if pick_result != None:
+                        selected_pixels.append(pick_result)
             
             for yi in range(1, i * 2):
                 yt: int = y_center + i - yi
@@ -118,18 +122,22 @@ class BackgroundRenderWidget(QThread):
                 xt: int = x_center - i
                 if xt >= 0:
                     pixel: int = yt * size + xt * color_size
-                    rgba = [data[pixel], data[pixel + 1], data[pixel + 2], data[pixel + 3]]
+                    pick_result = MousePickerColor.colorToID_list(data, pixel)
                     
-                    if rgba[3] > 0:
-                        pass # TODO add selected_pixels
+                    if pick_result != None:
+                        selected_pixels.append(pick_result)
                 
                 xt: int = x_center + i
                 if xt < width:
                     pixel: int = yt * size + xt * color_size
-                    rgba = [data[pixel], data[pixel + 1], data[pixel + 2], data[pixel + 3]]
+                    pick_result = MousePickerColor.colorToID_list(data, pixel)
                     
-                    if rgba[3] > 0:
-                        pass # TODO add selected_pixels
+                    if pick_result != None:
+                        selected_pixels.append(pick_result)
+        
+        # World to Image
+        
+        #uv = camera.world_to_image(image.project(point3D.xyz))
         
         # Create OpenGL Lines
         pass
@@ -143,6 +151,7 @@ class BackgroundRenderWidget(QThread):
         self.sizeChanged = True
     
     def repaint(self):
+        self.should_repaint = True
         self.repaintSignal.wakeAll()
     
     ######################
@@ -163,14 +172,27 @@ class BackgroundRenderWidget(QThread):
     def run(self):
         # Initialize
         self.__initialize()
+        sleep_count = 0
         
         while self.running:
+            self.should_repaint = False
+            sleep_count = 0
+            
             self.__render_steps()
             
-            self.mutex_repaintSignal.lock()
-            if self.running:
-                self.repaintSignal.wait(self.mutex_repaintSignal)
-            self.mutex_repaintSignal.unlock()
+            # wait is long sleep, so only go to wait if nessecary
+            if not self.should_repaint:
+                while sleep_count < 1000 and not self.should_repaint:
+                    time.sleep(0.001)
+                    sleep_count += 1
+                
+                if self.should_repaint:
+                    continue
+                
+                self.mutex_repaintSignal.lock()
+                if self.running:
+                    self.repaintSignal.wait(self.mutex_repaintSignal)
+                self.mutex_repaintSignal.unlock()
         
         self.__deinitialize()
     

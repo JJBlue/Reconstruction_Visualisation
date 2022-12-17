@@ -55,13 +55,13 @@ class TextureData:
     def getType(self) -> TextureType:
         return self.img_type
     
-    def getWidth(self) -> int:
-        return self.width
+    def getWidth(self, resize: float = 1.0) -> int:
+        return int(self.width * resize)
     
-    def getHeight(self) -> int:
-        return self.height
+    def getHeight(self, resize: float = 1.0) -> int:
+        return int(self.height * resize)
     
-    def getData(self) -> object:
+    def getData(self, resize: float = 1.0) -> object:
         return self.data
 
 # Missing modes from Pillow

@@ -1,12 +1,13 @@
 import numpy as np
 
+from colmap_wrapper.colmap.camera import ImageInformation
 from colmap_wrapper.visualization import draw_camera_viewport
 
 from ba_trees.workspace.colmap import ColmapProject
 
-from render.data import GeometryO3DPointCloud, GeometryO3DLineSet, GeometryO3DTriangleMesh
-from render.opengl import OpenGLMesh
-from render.render import Model
+from render.data import (GeometryO3DPointCloud, GeometryO3DLineSet, GeometryO3DTriangleMesh, TextureFile)
+from render.opengl import OpenGLMesh, OpenGLTexture
+from render.render import Model, Texture
 
 
 class ColmapProjectOpenGL:
@@ -15,9 +16,6 @@ class ColmapProjectOpenGL:
         self.sub_projects: list = []
         
         projs = self.project.getProjects()
-        if not isinstance(projs, list):
-            projs = []
-            projs.append(self.project.getProjects())
         
         for sproject in projs:
             self.sub_projects.append(ColmapSubProjectOpenGL(sproject))
@@ -55,12 +53,14 @@ class ColmapSubProjectOpenGL:
         
         
         for image_idx in self.project.images.keys():
-            image = self.project.images[image_idx]
+            if image_idx % 10 == 0:
+                print(f"Load Image: {image_idx}")
+            image: ImageInformation = self.project.images[image_idx]
             #image_data = image.getData(self.project.image_resize)
             image_data = np.asarray([]).astype('uint8')
             
             # line_set: Camera Viewport Outline
-            # sphere: ?
+            # sphere: Camera Location
             # mesh: Image Plane
             line_set, sphere, mesh = draw_camera_viewport(
                                                             extrinsics=image.extrinsics,
@@ -69,10 +69,11 @@ class ColmapSubProjectOpenGL:
                                                             scale=1
                                                          )
             
+            texture: Texture = OpenGLTexture(TextureFile(image.path))
             
             image_model = Model()
             image_model.addMeshes(OpenGLMesh(GeometryO3DTriangleMesh(mesh)))
-            #image_model.addTexture(OpenGLTexture(TextureDataFile(image)))
+            image_model.addTexture(texture)
             self.images.append(image_model)
             
             camera = Model()

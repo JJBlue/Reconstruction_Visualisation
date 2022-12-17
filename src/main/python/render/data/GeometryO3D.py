@@ -47,19 +47,31 @@ class GeometryO3DTriangleMesh(Geometry):
             self.vertex_normales: GeometryData = GeometryData(3, np.asarray(self.triangle_mesh.vertex_normals, dtype=np.float32).flatten(), PrimitiveType.FLOAT)
             self.all_vertices.append(self.vertex_normales)
         
-        if self.triangle_mesh.has_triangle_normals():
-            self.triangle_normales: GeometryData = GeometryData(3, np.asarray(self.triangle_mesh.triangle_normals, dtype=np.float32).flatten(), PrimitiveType.FLOAT)
-            self.all_vertices.append(self.triangle_normales)
+        #if self.triangle_mesh.has_triangle_normals():
+        #    self.triangle_normales: GeometryData = GeometryData(3, np.asarray(self.triangle_mesh.triangle_normals, dtype=np.float32).flatten(), PrimitiveType.FLOAT)
+        #    self.all_vertices.append(self.triangle_normales)
         
         
         if self.triangle_mesh.has_vertex_colors():
             self.colors: GeometryData = GeometryData(3, np.asarray(self.triangle_mesh.vertex_colors, dtype=np.float32).flatten(), PrimitiveType.FLOAT)
             self.all_vertices.append(self.colors)
         
-        if self.triangle_mesh.has_triangle_uvs():
-            self.uvs: GeometryData = GeometryData(3, np.asarray(self.triangle_mesh.triangle_uvs, dtype=np.float32).flatten(), PrimitiveType.FLOAT)
+        # Convert Triangle UVS to Vertices UVS. TODO not always correct (Vertices must be duplicated for every duplicated UV)
+        if self.triangle_mesh.has_triangle_uvs() and self.triangle_mesh.has_triangles():
+            uvs: list = []
+            for _ in range(self.vertices.getSize()):
+                uvs.append(None)
+            
+            ti = 0
+            for t in self.triangle_mesh.triangles:
+                for i in range(3):
+                    vertex = t[i]
+                    uvs[vertex] = self.triangle_mesh.triangle_uvs[ti]
+                    ti += 1
+            
+            #self.uvs: GeometryData = GeometryData(2, np.asarray(self.triangle_mesh.triangle_uvs, dtype=np.uint32).flatten(), PrimitiveType.INT)
+            self.uvs: GeometryData = GeometryData(2, np.asarray(uvs, dtype=np.float32).flatten(), PrimitiveType.FLOAT)
             self.all_vertices.append(self.uvs)
-        
         
         if self.triangle_mesh.has_triangles():
             self.indices: GeometryData = GeometryData(1, np.asarray(self.triangle_mesh.triangles, dtype=np.uint32).flatten(), PrimitiveType.INT)
