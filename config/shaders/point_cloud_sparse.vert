@@ -10,7 +10,7 @@ uniform mat4 proj;
 uniform float point_size;
 
 out vec3 color;
-flat out int v_id;
+flat out unsigned int v_id;
 
 void main() {
 	gl_Position = proj * view * model * vec4(pos, 1.0);

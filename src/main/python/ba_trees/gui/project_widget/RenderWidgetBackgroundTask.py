@@ -1,4 +1,5 @@
 import time
+import numpy as np
 
 from OpenGL.GL import *
 from PIL import Image, ImageOps
@@ -11,12 +12,12 @@ from ba_trees.workspace.colmap.ColmapOpenGL import ColmapProjectOpenGL
 from render.data import CoordinateSystem
 from render.data.RenderBufferData import RenderBufferInternalFormat
 from render.data.TextureData import TextureInternalFormat, TextureFormat, TextureType, TextureData
-from render.functions import RenderDataStorages, MousePickerColor
+from render.functions import RenderDataStorages
+from render.functions.MousePickerColor import MousePickerColor
 from render.opengl import OpenGLCamera, OpenGLMesh, OpenGLTexture, OpenGLFrameBuffer, OpenGLProgramm
 from render.opengl.OpenGLBuffer import OpenGLBufferGroup
 from render.opengl.OpenGLRenderBuffer import OpenGLRenderBuffer
 from render.render import FrameBuffer, RenderBuffer, Model
-from render.render.Buffer import BufferGroup
 
 
 class BackgroundRenderWidget(QThread):
@@ -52,14 +53,21 @@ class BackgroundRenderWidget(QThread):
         
         # OpenGL
         self.camera = None
-        self.selected_pixel = None
+        self.runnables = []
     
     ######################
     ### Global Methops ###
     ######################
     
     def selectPixelCoord(self, x: int, y: int, radius: int = 10):
+        def run(x: int = x, y: int = y, radius: int = radius):
+            self.__selectPixelCoordGL(x, y, radius)
+        
+        self.runnables.append(run)
+    
+    def __selectPixelCoordGL(self, x: int, y: int, radius: int = 30):
         selected_pixels = []
+        y = self.height - y # Flip (OpenGL)
         
         # Read Pixels and store in data
         self.framebuffer.bind()
@@ -76,6 +84,7 @@ class BackgroundRenderWidget(QThread):
                             )
         
         self.framebuffer.unbind()
+        data = np.asarray(data, np.uint32).flatten()
         
         # Search for nearest Pixel (begin center: clicked pixel and move outside in rectangles)
         size: int = 2 * radius + 1
@@ -86,7 +95,11 @@ class BackgroundRenderWidget(QThread):
         width, height = size, size
         size: int = (size) * color_size
         
+        print("Search")
         for i in range(radius + 1):
+            if len(selected_pixels) > 0:
+                break
+            
             for xi in range(i * 2 + 1):
                 xt: int = x_center + i - xi
                 
@@ -102,6 +115,7 @@ class BackgroundRenderWidget(QThread):
                     
                     if pick_result != None:
                         selected_pixels.append(pick_result)
+                        break
                 
                 if i == 0:
                     continue
@@ -113,6 +127,7 @@ class BackgroundRenderWidget(QThread):
                     
                     if pick_result != None:
                         selected_pixels.append(pick_result)
+                        break
             
             for yi in range(1, i * 2):
                 yt: int = y_center + i - yi
@@ -129,6 +144,7 @@ class BackgroundRenderWidget(QThread):
                     
                     if pick_result != None:
                         selected_pixels.append(pick_result)
+                        break
                 
                 xt: int = x_center + i
                 if xt < width:
@@ -137,26 +153,31 @@ class BackgroundRenderWidget(QThread):
                     
                     if pick_result != None:
                         selected_pixels.append(pick_result)
+                        break
         
-        # TODO delete
-        for t in selected_pixels:
-            print(t.vertex_id)
+        print("Search end")
+        
+        if len(selected_pixels) <= 0:
+            print("nothing found")
+            return # TODO unselect
+        
+        print("Search coords")
         
         # Vertices to Coordinates & World to Image
-        for mouse_pick in pick_result:
+        for mouse_pick in selected_pixels:
             project_id = 0
             sub_project_id = 0
             point_id = mouse_pick.vertex_id
             
-            point3D = glm.vec3(0)
+            print(point_id)
             
             # Vertices to Coordinates
             project = self.opengl_project_data[project_id]
             sub_project = project.getSubProjects()[sub_project_id]
             
-            
-            
-            # TODO
+            vertices = sub_project.geometry_sparse.vertices.data
+            point3D = glm.vec3(vertices[point_id * 3], vertices[point_id * 3 + 1], vertices[point_id * 3 + 2])
+            print(point3D)
             
             # World to Image
             project = self.projects[project_id]
@@ -164,10 +185,9 @@ class BackgroundRenderWidget(QThread):
             
             for _, image in sub_project.images.items():
                 camera_id = image.camera_id
-                
-                for _, camera in sub_project.cameras.items()[camera_id]:
-                    uv = camera.world_to_image(image.project(point3D.xyz))
-                    print(uv)
+                camera = sub_project.cameras[camera_id]
+                uv = camera.world_to_image(image.project(point3D.xyz))
+                print(uv)
         
         # Create OpenGL Lines
         pass
@@ -361,6 +381,11 @@ class BackgroundRenderWidget(QThread):
             cogl = ColmapProjectOpenGL(project)
             cogl.create()
             self.opengl_project_data.append(cogl)
+        
+        # Run Runnables
+        while len(self.runnables) > 0:
+            run = self.runnables.pop()
+            run()
     
     def __render(self):
         # Start Binding
@@ -463,21 +488,33 @@ class BackgroundRenderWidget(QThread):
         glFlush() # Start Rendering if it is not happend yet
         glFinish() # Wait for finished rendering
         
-        #self.saveImage()
+        #self.saveImage(GL_COLOR_ATTACHMENT0, 0)
+        #self.saveImage(GL_COLOR_ATTACHMENT1, 1)
         
         # Send Signal for finishing
         self.rw.repaintSignal.emit(self.outputTexture)
         self.rw.mousePickingSignal.emit(self.outputMousePickingTexture)
 
-    def saveImage(self):
+    def saveImage(self, store = GL_COLOR_ATTACHMENT0, index = 0):
         self.framebuffer.bind()
         glPixelStorei(GL_PACK_ALIGNMENT, 1)
-        #glReadBuffer(GL_COLOR_ATTACHMENT0)
-        #data = glReadPixels(0, 0, self.width, self.height, GL_RGBA, GL_UNSIGNED_BYTE)
-        glReadBuffer(GL_COLOR_ATTACHMENT1)
-        data = glReadPixels(0, 0, self.width, self.height, GL_RGBA_INTEGER, GL_UNSIGNED_INT)
+        
+        if store == GL_COLOR_ATTACHMENT0:
+            glReadBuffer(GL_COLOR_ATTACHMENT0)
+            data = glReadPixels(0, 0, self.width, self.height, GL_RGBA, GL_UNSIGNED_BYTE)
+        else:
+            glReadBuffer(GL_COLOR_ATTACHMENT1)
+            data = glReadPixels(0, 0, self.width, self.height, GL_RGBA_INTEGER, GL_UNSIGNED_INT)
+            data = np.asarray(data)
+        
+            with np.nditer(data, op_flags=['readwrite']) as it:
+                for x in it:
+                    x[...] = x % 255
+            
+            data = data.astype(np.ubyte)
+        
         self.framebuffer.unbind()
         
         image = Image.frombytes("RGBA", (self.width, self.height), data)
         image = ImageOps.flip(image)
-        image.save('J:\\Codes\\git\\BA_Trees\\config\\test.png', 'PNG')
+        image.save(f"J:\\Codes\\git\\BA_Trees\\config\\test{index}.png", 'PNG')

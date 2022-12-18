@@ -46,7 +46,7 @@ class MousePickerColor():
         g: float = (value >> MousePickerColor.bit_per_channel) & max_value
         r: float = (value >> (2*MousePickerColor.bit_per_channel)) & max_value
         
-        return u32vec4(r, g, b, 1.0)
+        return u32vec4(r, g, b, max_value)
     
     @staticmethod
     def colorToID_list(data: list, offset: int):

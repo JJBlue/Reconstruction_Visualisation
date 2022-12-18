@@ -101,9 +101,9 @@ class RenderWidget(QOpenGLWidget):
             self.mouse_pressed = True
     
     def mouseDoubleClickEvent(self, event):
-        self.mouseDoubleClickRunnable()
-        
-        print("Double Click")
+        pos: QPoint = event.position()
+        self.thread.selectPixelCoord(pos.x(), pos.y())
+        self.thread.repaint()
     
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:

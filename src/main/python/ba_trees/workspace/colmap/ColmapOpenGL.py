@@ -48,6 +48,9 @@ class ColmapSubProjectOpenGL:
         
         self.images: list = []
         self.cameras: list = []
+        
+        self.geometry_sparse = None
+        self.geometry_cameras = []
     
     def __del__(self):
         self.delete()
@@ -63,8 +66,8 @@ class ColmapSubProjectOpenGL:
         
         self.point_cloud_sparse = Model()
         self.point_cloud_sparse.getModelMatrix().scale(glm.fvec3(1, -1, -1))
-        geometry_sparse = GeometryO3DPointCloud(self.project.get_sparse())
-        point_cloud_mesh = OpenGLMesh(OpenGLBufferGroup.createBufferGroup(geometry_sparse))
+        self.geometry_sparse = GeometryO3DPointCloud(self.project.get_sparse()) # Saved for later usage (for example: Information for MouseClick)
+        point_cloud_mesh = OpenGLMesh(OpenGLBufferGroup.createBufferGroup(self.geometry_sparse))
         self.point_cloud_sparse.addMeshes(point_cloud_mesh)
         
         
@@ -95,7 +98,9 @@ class ColmapSubProjectOpenGL:
             
             camera = Model()
             camera.getModelMatrix().scale(glm.fvec3(1, -1, -1))
-            camera.addMeshes(OpenGLMesh(OpenGLBufferGroup.createBufferGroup(GeometryO3DLineSet(line_set))))
+            geometry_lines = GeometryO3DLineSet(line_set)
+            self.geometry_cameras.append(geometry_lines)
+            camera.addMeshes(OpenGLMesh(OpenGLBufferGroup.createBufferGroup(geometry_lines)))
             
             for s in sphere:
                 camera.addMeshes(OpenGLMesh(OpenGLBufferGroup.createBufferGroup(GeometryO3DTriangleMesh(s))))
