@@ -1,4 +1,3 @@
-from render.render.types import *
 from render.render.Buffer import *
 from render.render.Shader import *
 from render.render.Mesh import *

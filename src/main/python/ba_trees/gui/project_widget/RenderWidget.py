@@ -9,6 +9,7 @@ from render.data.GeometryStructures import Pane
 from render.functions import RenderDataStorages
 from render.opengl import OpenGLMesh, OpenGLProgramm
 from render.render import Texture
+from render.opengl.OpenGLBuffer import OpenGLBufferGroup
 
 
 class RenderWidget(QOpenGLWidget):
@@ -198,7 +199,8 @@ class RenderWidget(QOpenGLWidget):
         self.shader = None
         
         # Meshes
-        self.image_mesh = OpenGLMesh(Pane())
+        buffer_group = OpenGLBufferGroup.createBufferGroup(Pane()) # TODO global
+        self.image_mesh = OpenGLMesh(buffer_group)
         self.outputTexture = None
     
     def resizeGL(self, width, height):

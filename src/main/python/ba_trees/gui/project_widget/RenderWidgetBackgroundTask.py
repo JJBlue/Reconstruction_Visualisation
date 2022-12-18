@@ -1,10 +1,10 @@
 import time
-import glm
 
 from OpenGL.GL import *
 from PIL import Image, ImageOps
 from PyQt6.QtCore import QThread, QWaitCondition, QMutex
 from PyQt6.QtGui import QOffscreenSurface, QOpenGLContext, QSurfaceFormat
+import glm
 
 from ba_trees.workspace import Project
 from ba_trees.workspace.colmap.ColmapOpenGL import ColmapProjectOpenGL
@@ -13,8 +13,10 @@ from render.data.RenderBufferData import RenderBufferInternalFormat
 from render.data.TextureData import TextureInternalFormat, TextureFormat, TextureType, TextureData
 from render.functions import RenderDataStorages, MousePickerColor
 from render.opengl import OpenGLCamera, OpenGLMesh, OpenGLTexture, OpenGLFrameBuffer, OpenGLProgramm
+from render.opengl.OpenGLBuffer import OpenGLBufferGroup
 from render.opengl.OpenGLRenderBuffer import OpenGLRenderBuffer
 from render.render import FrameBuffer, RenderBuffer, Model
+from render.render.Buffer import BufferGroup
 
 
 class BackgroundRenderWidget(QThread):
@@ -261,7 +263,8 @@ class BackgroundRenderWidget(QThread):
         
         # Geometries
         self.coordinate_system = Model()
-        self.coordinate_system.addMeshes(OpenGLMesh(CoordinateSystem())) # TODO store coordinate_system buffer: global
+        buffer_group = OpenGLBufferGroup.createBufferGroup(CoordinateSystem()) # TODO store coordinate_system buffer: global
+        self.coordinate_system.addMeshes(OpenGLMesh(buffer_group))
         self.coordinate_system.getModelMatrix().scale(1000.0)
         
         # FrameBuffer

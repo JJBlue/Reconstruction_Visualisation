@@ -1,7 +1,7 @@
 import numpy as np
 
 from render.data.Geometry import Geometry, GeometryData
-from render.render import Primitves, PrimitiveType
+from render.data import Primitves, PrimitiveType
 
 class Cube(Geometry):
     def __init__(self):

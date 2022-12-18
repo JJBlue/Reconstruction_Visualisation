@@ -1,8 +1,7 @@
 import numpy as np
 import open3d as o3d
 
-from render.data import Geometry, GeometryData
-from render.render import PrimitiveType, Primitves
+from render.data import Geometry, GeometryData, PrimitiveType, Primitves
 
 
 class GeometryO3DPointCloud(Geometry):
@@ -69,12 +68,12 @@ class GeometryO3DTriangleMesh(Geometry):
                     uvs[vertex] = self.triangle_mesh.triangle_uvs[ti]
                     ti += 1
             
-            #self.uvs: GeometryData = GeometryData(2, np.asarray(self.triangle_mesh.triangle_uvs, dtype=np.uint32).flatten(), PrimitiveType.INT)
+            #self.uvs: GeometryData = GeometryData(2, np.asarray(self.triangle_mesh.triangle_uvs, dtype=np.uint32).flatten(), PrimitiveType.UNSIGNED_INT)
             self.uvs: GeometryData = GeometryData(2, np.asarray(uvs, dtype=np.float32).flatten(), PrimitiveType.FLOAT)
             self.all_vertices.append(self.uvs)
         
         if self.triangle_mesh.has_triangles():
-            self.indices: GeometryData = GeometryData(1, np.asarray(self.triangle_mesh.triangles, dtype=np.uint32).flatten(), PrimitiveType.INT)
+            self.indices: GeometryData = GeometryData(1, np.asarray(self.triangle_mesh.triangles, dtype=np.uint32).flatten(), PrimitiveType.UNSIGNED_INT)
 
 class GeometryO3DLineSet(Geometry):
     def __init__(self, line_set: o3d.geometry.LineSet = None):
@@ -92,4 +91,4 @@ class GeometryO3DLineSet(Geometry):
             self.all_vertices.append(self.colors)
         
         if self.line_set.has_lines():
-            self.indices: GeometryData = GeometryData(1, np.asarray(self.line_set.lines, np.uint32).flatten(), PrimitiveType.INT)
+            self.indices: GeometryData = GeometryData(1, np.asarray(self.line_set.lines, np.uint32).flatten(), PrimitiveType.UNSIGNED_INT)

@@ -1,3 +1,4 @@
+from .PrimitiveTypes import *
 from .Location import *
 from .Geometry import *
 from .TextureData import *

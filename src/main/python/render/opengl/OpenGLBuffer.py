@@ -1,8 +1,12 @@
-import numpy as np
+from __future__ import annotations
 
 from OpenGL.GL import *
 
-from render.render import Buffer
+import numpy as np
+from render.data import Geometry
+from render.opengl import Types
+from render.render import Buffer, BufferGroup
+from render.data.PrimitiveTypes import PrimitiveType
 
 
 class OpenGLBuffer(Buffer):
@@ -19,12 +23,12 @@ class OpenGLBuffer(Buffer):
             pass
         
     def delete(self):
-        glDeleteBuffers(1, self.buffer_id)
+        glDeleteBuffers(1, [self.buffer_id])
     
     def bind(self):
         glBindBuffer(self.buffer_type, self.buffer_id)
     
-    def unbind(self):
+    def unbind(self):   
         glBindBuffer(self.buffer_type, 0)
     
     def setData(self, data: np.ndarray, hint = GL_STATIC_DRAW):
@@ -36,6 +40,51 @@ class OpenGLBuffer(Buffer):
         self.bind()
         glBufferSubData(self.buffer_type, data.nbytes, offset_bytes, data)
         self.unbind()
+    
+    def clone(self) -> OpenGLBuffer:
+        buffer = OpenGLBuffer()
+        buffer.buffer_type = self.buffer_type
+        buffer.buffer_id = self.buffer_id
+        return buffer
+
+class OpenGLBufferGroup:
+    @staticmethod
+    def createVertexBuffer(primitive_type: PrimitiveType, dimension: int, count_vertices: int, vertices: np.ndarray) -> Buffer:
+        buffer: Buffer = OpenGLBufferFactory.VBO()
+        buffer.setMetaData(primitive_type, dimension, count_vertices)
+        buffer.setData(vertices)
+        
+        return buffer
+    
+    @staticmethod
+    def createIndexBuffer(primitive_type: PrimitiveType, dimension: int, count_indices: int, indicies: np.ndarray) -> Buffer:
+        index_buffer = OpenGLBufferFactory.IBO()
+        index_buffer.setMetaData(primitive_type, dimension, count_indices)
+        index_buffer.setData(indicies)
+        
+        return index_buffer
+    
+    @staticmethod
+    def createBufferGroup(geometry: Geometry) -> BufferGroup:
+        if geometry == None:
+            return
+        
+        buffers: BufferGroup = BufferGroup()
+        
+        # Verticies
+        for geo_data in geometry.getAllVertices():
+            buffer = OpenGLBufferGroup.createVertexBuffer(geo_data.getPrimitiveType(), geo_data.getDimension(), geo_data.getSize(), geo_data.getData())
+            buffers.addVertexBuffer(buffer)
+        
+        # Indicies
+        indices = geometry.indices
+        if indices != None:
+            buffer = OpenGLBufferGroup.createIndexBuffer(indices.getPrimitiveType(), indices.getDimension(), indices.getSize(), indices.getData())
+            buffers.setIndexBuffer(buffer)
+        
+        buffers.geometry_primitive_type = Types.PrimitivesToOpenGL(geometry.getPrimitive())
+        
+        return buffers
 
 class OpenGLBufferFactory:
     @staticmethod

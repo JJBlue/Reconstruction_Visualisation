@@ -9,6 +9,7 @@ from ba_trees.workspace.colmap import ColmapProject
 from render.data import (GeometryO3DPointCloud, GeometryO3DLineSet, GeometryO3DTriangleMesh, TextureFile)
 from render.opengl import OpenGLMesh, OpenGLTexture
 from render.render import Model, Texture
+from render.opengl.OpenGLBuffer import OpenGLBufferGroup
 
 
 class ColmapProjectOpenGL:
@@ -57,11 +58,15 @@ class ColmapSubProjectOpenGL:
     def create(self):
         self.point_cloud_dense = Model()
         self.point_cloud_dense.getModelMatrix().scale(glm.fvec3(1, -1, -1))
-        self.point_cloud_dense.addMeshes(OpenGLMesh(GeometryO3DPointCloud(self.project.get_dense())))
+        point_cloud_mesh = OpenGLMesh(OpenGLBufferGroup.createBufferGroup(GeometryO3DPointCloud(self.project.get_dense())))
+        self.point_cloud_dense.addMeshes(point_cloud_mesh)
         
         self.point_cloud_sparse = Model()
-        self.point_cloud_sparse.addMeshes(OpenGLMesh(GeometryO3DPointCloud(self.project.get_sparse())))
         self.point_cloud_sparse.getModelMatrix().scale(glm.fvec3(1, -1, -1))
+        geometry_sparse = GeometryO3DPointCloud(self.project.get_sparse())
+        point_cloud_mesh = OpenGLMesh(OpenGLBufferGroup.createBufferGroup(geometry_sparse))
+        self.point_cloud_sparse.addMeshes(point_cloud_mesh)
+        
         
         for image_idx in self.project.images.keys():
             if image_idx % 10 == 0:
@@ -84,16 +89,16 @@ class ColmapSubProjectOpenGL:
             
             image_model = Model()
             image_model.getModelMatrix().scale(glm.fvec3(1, -1, -1))
-            image_model.addMeshes(OpenGLMesh(GeometryO3DTriangleMesh(mesh)))
+            image_model.addMeshes(OpenGLMesh(OpenGLBufferGroup.createBufferGroup(GeometryO3DTriangleMesh(mesh))))
             image_model.addTexture(texture)
             self.images.append(image_model)
             
             camera = Model()
             camera.getModelMatrix().scale(glm.fvec3(1, -1, -1))
-            camera.addMeshes(OpenGLMesh(GeometryO3DLineSet(line_set)))
+            camera.addMeshes(OpenGLMesh(OpenGLBufferGroup.createBufferGroup(GeometryO3DLineSet(line_set))))
             
             for s in sphere:
-                camera.addMeshes(OpenGLMesh(GeometryO3DTriangleMesh(s)))
+                camera.addMeshes(OpenGLMesh(OpenGLBufferGroup.createBufferGroup(GeometryO3DTriangleMesh(s))))
             
             self.cameras.append(camera)
     

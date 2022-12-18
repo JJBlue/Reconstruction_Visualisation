@@ -1,6 +1,6 @@
 from OpenGL.GL import *
 
-from render.render import PrimitiveType, Primitves
+from render.data import PrimitiveType, Primitves
 
 
 class Types:
