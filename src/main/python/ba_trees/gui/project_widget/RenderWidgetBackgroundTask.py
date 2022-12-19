@@ -1,20 +1,19 @@
 import time
-import glm
-import numpy as np
 
 from OpenGL.GL import *
 from PIL import Image, ImageOps
 from PyQt6.QtCore import QThread, QWaitCondition, QMutex
 from PyQt6.QtGui import QOffscreenSurface, QOpenGLContext, QSurfaceFormat
+import glm
 
 from ba_trees.workspace import Project
 from ba_trees.workspace.colmap.ColmapOpenGL import ColmapProjectOpenGL
-
+import numpy as np
 from render.data import CoordinateSystem, Primitves, PrimitiveType
 from render.data.RenderBufferData import RenderBufferInternalFormat
 from render.data.TextureData import TextureInternalFormat, TextureFormat, TextureType, TextureData
 from render.functions import RenderDataStorages
-from render.functions.MousePickerColor import MousePickerColor
+from render.functions.MousePickerColor import MousePickerColor, MousePickInfo
 from render.opengl import OpenGLCamera, OpenGLMesh, OpenGLTexture, OpenGLFrameBuffer, OpenGLProgramm
 from render.opengl.OpenGLBuffer import OpenGLBufferGroup, OpenGLBufferFactory
 from render.opengl.OpenGLRenderBuffer import OpenGLRenderBuffer
@@ -59,6 +58,12 @@ class SelectionLines():
         self.vbo_colors.setMetaData(PrimitiveType.FLOAT, 3, self.amount)
         
         self.buffer_lines.count_vertices = self.amount
+    
+    def clearLines(self):
+        self.amount = 0
+        self.lines = np.resize(self.lines, 0)
+        self.colors = np.resize(self.colors, 0)
+        # Maybe clear Buffer on GPU
     
     def getModel(self):
         return self.model
@@ -136,7 +141,6 @@ class BackgroundRenderWidget(QThread):
         width, height = size, size
         size: int = (size) * color_size
         
-        print("Search")
         for i in range(radius + 1):
             if len(selected_pixels) > 0:
                 break
@@ -196,13 +200,13 @@ class BackgroundRenderWidget(QThread):
                         selected_pixels.append(pick_result)
                         break
         
-        print("Search end")
-        
         if len(selected_pixels) <= 0:
             print("nothing found")
-            return # TODO unselect
+            self.lines.clearLines()
+            return
         
-        print("Search coords")
+        selected_pixels = [MousePickInfo(0, 0, 578)] # 14806
+        self.lines.clearLines()
         
         # Vertices to Coordinates & World to Image
         for mouse_pick in selected_pixels:
@@ -210,28 +214,49 @@ class BackgroundRenderWidget(QThread):
             sub_project_id = 0
             point_id = mouse_pick.vertex_id
             
-            print(point_id)
-            
             # Vertices to Coordinates
-            project = self.opengl_project_data[project_id]
-            sub_project = project.getSubProjects()[sub_project_id]
+            project_opengl = self.opengl_project_data[project_id]
+            sub_project_opengl = project_opengl.getSubProjects()[sub_project_id]
             
-            vertices = sub_project.geometry_sparse.vertices.data
+            vertices = sub_project_opengl.geometry_sparse.vertices.data
             point3D = glm.vec3(vertices[point_id * 3], vertices[point_id * 3 + 1], vertices[point_id * 3 + 2])
-            print(point3D)
             
             # World to Image
             project = self.projects[project_id]
             sub_project = project.getPyColmapProjects()[sub_project_id]
             
+            point3d_id = None
+            point3d_point = None
+            for i, p in sub_project.points3D.items():
+                pf = np.asarray(p.xyz, dtype=np.float32)
+                if pf[0] == point3D.x and pf[1] == point3D.y and pf[2] == point3D.z:
+                    point3d_id = i
+                    point3d_point = p
+            
+            print(f"here {point3d_id}")
+            if point3d_id == None:
+                print("point3d_id not found")
+                self.lines.clearLines()
+                return
+            
             for _, image in sub_project.images.items():
+                if not image.has_point3D(point3d_id):
+                #if not (point3d_id in image.get_valid_point2D_ids()):
+                    print("not here")
+                    continue
+                
+                image_id = image.image_id
                 camera_id = image.camera_id
+                
                 camera = sub_project.cameras[camera_id]
                 uv = camera.world_to_image(image.project(point3D.xyz))
-                print(uv)
+                #print(uv)
+                
+                vertices = sub_project_opengl.geometry_cameras[image_id].vertices.data
+                point3D_camera = glm.vec3(vertices[0], vertices[1], vertices[2])
         
-            # Create OpenGL Lines
-            self.lines.addLine(glm.vec3(point3D.x, -point3D.y, -point3D.z), [0, 0, 0])
+                # Create OpenGL Lines
+                self.lines.addLine(glm.vec3(point3D.x, -point3D.y, -point3D.z), glm.vec3(point3D_camera.x, -point3D_camera.y, -point3D_camera.z))
             
         pass
     

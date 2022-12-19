@@ -50,7 +50,7 @@ class ColmapSubProjectOpenGL:
         self.cameras: list = []
         
         self.geometry_sparse = None
-        self.geometry_cameras = []
+        self.geometry_cameras = {}
     
     def __del__(self):
         self.delete()
@@ -76,7 +76,7 @@ class ColmapSubProjectOpenGL:
                 print(f"Load Image: {image_idx}")
             
             image: ImageInformation = self.project.images[image_idx]
-            image_data = np.asarray([], dtype=np.uint8) #image.getData(self.project.image_resize)
+            image_data = np.asarray([], dtype=np.uint8)
             
             # line_set: Camera Viewport Outline
             # sphere: Camera Location
@@ -99,7 +99,7 @@ class ColmapSubProjectOpenGL:
             camera = Model()
             camera.getModelMatrix().scale(glm.fvec3(1, -1, -1))
             geometry_lines = GeometryO3DLineSet(line_set)
-            self.geometry_cameras.append(geometry_lines)
+            self.geometry_cameras[image_idx] = geometry_lines
             camera.addMeshes(OpenGLMesh(OpenGLBufferGroup.createBufferGroup(geometry_lines)))
             
             for s in sphere:
