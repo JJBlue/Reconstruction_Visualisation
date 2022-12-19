@@ -108,7 +108,7 @@ class BackgroundRenderWidget(QThread):
         
         self.runnables.append(run)
     
-    def __selectPixelCoordGL(self, x: int, y: int, radius: int = 10):
+    def __selectPixelCoordGL(self, x: int, y: int, radius: int = 10): # TODO failed near border
         selected_pixels = []
         y = self.height - y # Flip (OpenGL)
         
@@ -117,14 +117,12 @@ class BackgroundRenderWidget(QThread):
         glPixelStorei(GL_PACK_ALIGNMENT, 1)
         glReadBuffer(GL_COLOR_ATTACHMENT1)
         
-        data = glReadPixels(
-                                int(glm.clamp(x - radius, 0, x)),
-                                int(glm.clamp(y - radius, 0, y)),
-                                int(2 * radius),
-                                int(2 * radius),
-                                GL_RGBA_INTEGER,
-                                GL_UNSIGNED_INT
-                            )
+        image_x = int(glm.clamp(x - radius, 0, x))
+        image_y = int(glm.clamp(y - radius, 0, y))
+        image_width = int(glm.clamp(2 * radius + 1, x - image_x + 1, self.width - x))
+        image_height = int(glm.clamp(2 * radius + 1, y - image_y + 1, self.height - y))
+        
+        data = glReadPixels(image_x, image_y, image_width, image_height, GL_RGBA_INTEGER, GL_UNSIGNED_INT)
         
         self.framebuffer.unbind()
         data = np.asarray(data, np.uint32).flatten()
