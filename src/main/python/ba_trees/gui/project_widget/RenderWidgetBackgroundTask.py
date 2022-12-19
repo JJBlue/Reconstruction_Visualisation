@@ -1,25 +1,68 @@
 import time
+import glm
 import numpy as np
 
 from OpenGL.GL import *
 from PIL import Image, ImageOps
 from PyQt6.QtCore import QThread, QWaitCondition, QMutex
 from PyQt6.QtGui import QOffscreenSurface, QOpenGLContext, QSurfaceFormat
-import glm
 
 from ba_trees.workspace import Project
 from ba_trees.workspace.colmap.ColmapOpenGL import ColmapProjectOpenGL
-from render.data import CoordinateSystem
+
+from render.data import CoordinateSystem, Primitves, PrimitiveType
 from render.data.RenderBufferData import RenderBufferInternalFormat
 from render.data.TextureData import TextureInternalFormat, TextureFormat, TextureType, TextureData
 from render.functions import RenderDataStorages
 from render.functions.MousePickerColor import MousePickerColor
 from render.opengl import OpenGLCamera, OpenGLMesh, OpenGLTexture, OpenGLFrameBuffer, OpenGLProgramm
-from render.opengl.OpenGLBuffer import OpenGLBufferGroup
+from render.opengl.OpenGLBuffer import OpenGLBufferGroup, OpenGLBufferFactory
 from render.opengl.OpenGLRenderBuffer import OpenGLRenderBuffer
 from render.render import FrameBuffer, RenderBuffer, Model
+from render.render.Buffer import BufferGroup
 
 
+class SelectionLines():
+    def __init__(self):
+        self.amount = 0
+        self.lines: np.ndarray = np.array([], dtype=np.float32)
+        self.colors: np.ndarray = np.array([], dtype=np.float32)
+        
+        self.model = Model()
+        self.buffer_lines = BufferGroup()
+        self.buffer_lines.geometry_primitive_type = Primitves.LINES
+        
+        self.vbo_lines = OpenGLBufferFactory.VBO()
+        self.vbo_lines.setMetaData(PrimitiveType.FLOAT, 3, self.amount)
+        
+        self.vbo_colors = OpenGLBufferFactory.VBO()
+        self.vbo_colors.setMetaData(PrimitiveType.FLOAT, 3, self.amount)
+        
+        self.buffer_lines.addVertexBuffer(self.vbo_lines)
+        self.buffer_lines.addVertexBuffer(self.vbo_colors)
+        self.model.addMeshes(OpenGLMesh(self.buffer_lines))
+    
+    def addLine(self, x: list, y: list):
+        self.amount += 1
+        self.lines = np.append(self.lines, x).astype(np.float32)
+        self.colors = np.append(self.colors, [0.0, 1.0, 1.0]).astype(np.float32)
+        
+        self.amount += 1
+        self.lines = np.append(self.lines, y).astype(np.float32)
+        self.colors = np.append(self.colors, [1.0, 1.0, 0.0]).astype(np.float32)
+        
+        
+        self.vbo_lines.setData(self.lines)
+        self.vbo_lines.setMetaData(PrimitiveType.FLOAT, 3, self.amount)
+        
+        self.vbo_colors.setData(self.colors)
+        self.vbo_colors.setMetaData(PrimitiveType.FLOAT, 3, self.amount)
+        
+        self.buffer_lines.count_vertices = self.amount
+    
+    def getModel(self):
+        return self.model
+    
 class BackgroundRenderWidget(QThread):
     repaintSignal = QWaitCondition()
     mutex_repaintSignal = QMutex()
@@ -65,7 +108,7 @@ class BackgroundRenderWidget(QThread):
         
         self.runnables.append(run)
     
-    def __selectPixelCoordGL(self, x: int, y: int, radius: int = 30):
+    def __selectPixelCoordGL(self, x: int, y: int, radius: int = 10):
         selected_pixels = []
         y = self.height - y # Flip (OpenGL)
         
@@ -189,7 +232,9 @@ class BackgroundRenderWidget(QThread):
                 uv = camera.world_to_image(image.project(point3D.xyz))
                 print(uv)
         
-        # Create OpenGL Lines
+            # Create OpenGL Lines
+            self.lines.addLine(glm.vec3(point3D.x, -point3D.y, -point3D.z), [0, 0, 0])
+            
         pass
     
     def addProject(self, project: Project):
@@ -286,6 +331,9 @@ class BackgroundRenderWidget(QThread):
         buffer_group = OpenGLBufferGroup.createBufferGroup(CoordinateSystem()) # TODO store coordinate_system buffer: global
         self.coordinate_system.addMeshes(OpenGLMesh(buffer_group))
         self.coordinate_system.getModelMatrix().scale(1000.0)
+        
+        # Point3D to Camera Lines
+        self.lines = SelectionLines()
         
         # FrameBuffer
         self.framebuffer: FrameBuffer = OpenGLFrameBuffer()
@@ -419,6 +467,17 @@ class BackgroundRenderWidget(QThread):
             
             self.shader_coordinate_system.unbind()
         
+        # Draw Lines (Point3D to Camera)
+        if self.shader_coordinate_system:
+            self.shader_coordinate_system.bind()
+            self.camera.updateShaderUniform(self.shader_coordinate_system)
+            
+            model = self.lines.getModel()
+            model.bind(self.shader_coordinate_system)
+            model.draw()
+            model.unbind()
+            
+            self.shader_coordinate_system.unbind()
         
         # Draw Projects
         for project in self.opengl_project_data:

@@ -27,12 +27,13 @@ class OpenGLMesh(Mesh):
         
     def draw(self):
         index_buffer = self.buffer_group.getIndexBuffer()
+        primitive = Types.PrimitivesToOpenGL(self.buffer_group.geometry_primitive_type)
         
         if index_buffer != None:
             primitive_type = Types.PrimitiveTypeToOpenGL(index_buffer.getPrimitiveType())
-            glDrawElements(self.buffer_group.geometry_primitive_type, self.buffer_group.count_indices, primitive_type, None)
+            glDrawElements(primitive, self.buffer_group.count_indices, primitive_type, None)
         else:
-            glDrawArrays(self.buffer_group.geometry_primitive_type, 0, self.buffer_group.count_vertices)
+            glDrawArrays(primitive, 0, self.buffer_group.count_vertices)
     
     def update(self):
         # Vertex Buffer

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
-from render.data import PrimitiveType
+from render.data import PrimitiveType, Primitves
 
 
 class Buffer:
@@ -48,7 +48,7 @@ class BufferGroup:
         self.vertex_buffers: list = []
         self.index_buffer: Buffer = None
         
-        self.geometry_primitive_type = None
+        self.geometry_primitive_type: Primitves = None
         self.count_indices = 0
         self.count_vertices = 0
     

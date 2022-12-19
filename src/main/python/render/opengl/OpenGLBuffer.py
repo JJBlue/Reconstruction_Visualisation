@@ -1,18 +1,18 @@
 from __future__ import annotations
 
+import numpy as np
+
 from OpenGL.GL import *
 
-import numpy as np
-from render.data import Geometry
-from render.opengl import Types
+from render.data import Geometry, PrimitiveType
 from render.render import Buffer, BufferGroup
-from render.data.PrimitiveTypes import PrimitiveType
 
 
 class OpenGLBuffer(Buffer):
     def __init__(self, buffer_type):
         super().__init__()
         
+        self.primitive_type = PrimitiveType.FLOAT
         self.buffer_type = buffer_type
         self.buffer_id = glGenBuffers(1)
     
@@ -82,7 +82,7 @@ class OpenGLBufferGroup:
             buffer = OpenGLBufferGroup.createIndexBuffer(indices.getPrimitiveType(), indices.getDimension(), indices.getSize(), indices.getData())
             buffers.setIndexBuffer(buffer)
         
-        buffers.geometry_primitive_type = Types.PrimitivesToOpenGL(geometry.getPrimitive())
+        buffers.geometry_primitive_type = geometry.getPrimitive()
         
         return buffers
 
