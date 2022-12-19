@@ -118,10 +118,10 @@ class BackgroundRenderWidget(QThread):
         glReadBuffer(GL_COLOR_ATTACHMENT1)
         
         data = glReadPixels(
-                                glm.clamp(x - radius, 0, x),
-                                glm.clamp(y - radius, 0, y),
-                                glm.clamp(x + radius, x, self.width),
-                                glm.clamp(y + radius, y, self.height),
+                                int(glm.clamp(x - radius, 0, x)),
+                                int(glm.clamp(y - radius, 0, y)),
+                                int(2 * radius),
+                                int(2 * radius),
                                 GL_RGBA_INTEGER,
                                 GL_UNSIGNED_INT
                             )
