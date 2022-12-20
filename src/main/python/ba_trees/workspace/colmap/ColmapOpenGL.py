@@ -1,5 +1,7 @@
-import numpy as np
 import glm
+import numpy as np
+
+import open3d as o3d
 
 from colmap_wrapper.colmap.camera import ImageInformation
 from colmap_wrapper.visualization import draw_camera_viewport
@@ -8,8 +10,8 @@ from ba_trees.workspace.colmap import ColmapProject
 
 from render.data import (GeometryO3DPointCloud, GeometryO3DLineSet, GeometryO3DTriangleMesh, TextureFile)
 from render.opengl import OpenGLMesh, OpenGLTexture
-from render.render import Model, Texture
 from render.opengl.OpenGLBuffer import OpenGLBufferGroup
+from render.render import Model, Texture
 
 
 class ColmapProjectOpenGL:
@@ -63,6 +65,17 @@ class ColmapSubProjectOpenGL:
         self.point_cloud_dense.getModelMatrix().scale(glm.fvec3(1, -1, -1))
         point_cloud_mesh = OpenGLMesh(OpenGLBufferGroup.createBufferGroup(GeometryO3DPointCloud(self.project.get_dense())))
         self.point_cloud_dense.addMeshes(point_cloud_mesh)
+        
+        # https://towardsdatascience.com/5-step-guide-to-generate-3d-meshes-from-point-clouds-with-python-36bad397d8ba
+        # http://www.open3d.org/docs/release/python_api/open3d.geometry.TriangleMesh.html
+        #point_cloud = self.project.get_dense()
+        #poisson_mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(point_cloud, depth=8, width=0, scale=1.1, linear_fit=False)[0]
+        #bbox = point_cloud.get_axis_aligned_bounding_box()
+        #p_mesh_crop = poisson_mesh.crop(bbox)
+        
+        #opengl_mesh = OpenGLMesh(OpenGLBufferGroup.createBufferGroup(GeometryO3DTriangleMesh(p_mesh_crop)))
+        #self.point_cloud_dense.addMeshes(opengl_mesh)
+        
         
         self.point_cloud_sparse = Model()
         self.point_cloud_sparse.getModelMatrix().scale(glm.fvec3(1, -1, -1))

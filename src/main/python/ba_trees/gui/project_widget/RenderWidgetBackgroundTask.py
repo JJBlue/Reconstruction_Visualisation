@@ -205,7 +205,11 @@ class BackgroundRenderWidget(QThread):
             self.lines.clearLines()
             return
         
-        selected_pixels = [MousePickInfo(0, 0, 578)] # 14806
+        # Test Files
+        # 9383 <Point3D 'xyz=[0.0222964  0.811361  0.574178], track_length=3, error=0.276763'> [0.02229639 0.8113615  0.57417846]
+        # 4073 vec3(    0.0222964,     0.811361,     0.574178 )
+        # Three Cameras (x x 0 x)
+        #selected_pixels = [MousePickInfo(0, 0, 4073)]
         self.lines.clearLines()
         
         # Vertices to Coordinates & World to Image
@@ -226,14 +230,11 @@ class BackgroundRenderWidget(QThread):
             sub_project = project.getPyColmapProjects()[sub_project_id]
             
             point3d_id = None
-            point3d_point = None
             for i, p in sub_project.points3D.items():
                 pf = np.asarray(p.xyz, dtype=np.float32)
                 if pf[0] == point3D.x and pf[1] == point3D.y and pf[2] == point3D.z:
                     point3d_id = i
-                    point3d_point = p
             
-            print(f"here {point3d_id}")
             if point3d_id == None:
                 print("point3d_id not found")
                 self.lines.clearLines()
@@ -241,8 +242,6 @@ class BackgroundRenderWidget(QThread):
             
             for _, image in sub_project.images.items():
                 if not image.has_point3D(point3d_id):
-                #if not (point3d_id in image.get_valid_point2D_ids()):
-                    print("not here")
                     continue
                 
                 image_id = image.image_id
