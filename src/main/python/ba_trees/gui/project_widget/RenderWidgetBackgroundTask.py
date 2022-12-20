@@ -13,7 +13,7 @@ from render.data import CoordinateSystem, Primitves, PrimitiveType
 from render.data.RenderBufferData import RenderBufferInternalFormat
 from render.data.TextureData import TextureInternalFormat, TextureFormat, TextureType, TextureData
 from render.functions import RenderDataStorages
-from render.functions.MousePickerColor import MousePickerColor, MousePickInfo
+from render.functions.MousePickerColor import MousePickerColor
 from render.opengl import OpenGLCamera, OpenGLMesh, OpenGLTexture, OpenGLFrameBuffer, OpenGLProgramm
 from render.opengl.OpenGLBuffer import OpenGLBufferGroup, OpenGLBufferFactory
 from render.opengl.OpenGLRenderBuffer import OpenGLRenderBuffer
@@ -256,8 +256,6 @@ class BackgroundRenderWidget(QThread):
         
                 # Create OpenGL Lines
                 self.lines.addLine(glm.vec3(point3D.x, -point3D.y, -point3D.z), glm.vec3(point3D_camera.x, -point3D_camera.y, -point3D_camera.z))
-            
-        pass
     
     def addProject(self, project: Project):
         self.projects.append(project)
