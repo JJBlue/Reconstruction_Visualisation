@@ -98,7 +98,7 @@ class ColmapSubProjectOpenGL:
                                                             extrinsics=image.extrinsics,
                                                             intrinsics=image.intrinsics.K,
                                                             image=image_data,
-                                                            scale=1
+                                                            scale=0.4
                                                          )
             
             texture: Texture = OpenGLTexture(TextureFile(image.path))

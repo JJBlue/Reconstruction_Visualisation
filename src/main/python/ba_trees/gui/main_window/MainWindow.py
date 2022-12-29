@@ -19,6 +19,10 @@ class MainWindow(QMainWindow):
         # Open Last Session
         workspace: Workspace = Workspaces.reopenLastSession()
         self.updateWorkspaceGui(workspace)
+        
+        from ba_trees.gui.image_pixel_widget import PointInImageWidget
+        self.test = PointInImageWidget()
+        self.ui.tabs.addTab(self.test, "Test")
     
     def createWorkspace(self):
         dialog: QFileDialog = QFileDialog()
