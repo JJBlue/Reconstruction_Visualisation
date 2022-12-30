@@ -1,8 +1,8 @@
 from pathlib import Path
 
-from PyQt6.QtGui import QPixmap
-from PyQt6.QtWidgets import QWidget, QTableWidgetItem, QTableWidget, QLabel, \
-    QHBoxLayout
+from PIL import Image as Img, ImageDraw
+from PyQt6.QtGui import QPixmap, QImage
+from PyQt6.QtWidgets import QWidget, QTableWidgetItem, QTableWidget, QLabel
 from pycolmap import Camera, Image, Point3D
 
 from ba_trees.gui.image_pixel_widget.PointInImageSetup import Ui_point_in_image_form
@@ -38,19 +38,28 @@ class PointInImageTableWidget(QTableWidget):
         self.insertRow(self.rowCount())
         row = self.rowCount() - 1
         
-        print(camera)
-        print(image)
-        print(point)
-        
         item = QTableWidgetItem(str(image.image_id))
         self.setItem(row, 0, item)
         
         item = QTableWidgetItem("?")
         self.setItem(row, 1, item)
         
-        pixmap = QPixmap(str(Path(sub_project._src_image_path, image.name)))
         item = QLabel()
-        item.setPixmap(pixmap)
+        uv = camera.world_to_image(image.project(point.xyz))
+        
+        with Img.open(Path(sub_project._src_image_path, image.name)) as img:
+            draw = ImageDraw.Draw(img)
+            
+            size = 30
+            draw.line([uv[0] - size, uv[1] - size, uv[0] + size, uv[1] + size], fill=128, width=5)
+            draw.line([uv[0] + size, uv[1] - size, uv[0] - size, uv[1] + size], fill=128, width=5)
+            draw.arc([uv[0] - size, uv[1] - size, uv[0] + size, uv[1] + size], 0, 360, fill=128, width=5)
+            
+            img2 = img.convert("RGBA")
+            data = img2.tobytes("raw", "BGRA")
+            qimg = QImage(data, img2.width, img2.height, QImage.Format.Format_ARGB32)
+            pixmap = QPixmap(qimg)
+            item.setPixmap(pixmap)
         
         self.setCellWidget(row, 2, item)
         
