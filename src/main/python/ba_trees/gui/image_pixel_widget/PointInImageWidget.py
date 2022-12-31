@@ -16,7 +16,37 @@ class PointInImageWidget(QWidget):
         self.ui.setupUi(self)
     
     def addImage(self, sub_project, camera: Camera, image: Image, point: Point3D):
+        self.ui.point_information.setPoint(point)
         self.ui.table.addImage(sub_project,camera, image, point)
+
+class PointInImagePointInformationWidget(QTableWidget):
+    def __init__(self, *args):
+        QTableWidget.__init__(self, *args)
+        
+        self.setRowCount(3)
+        self.setColumnCount(2)
+    
+    def setPoint(self, point: Point3D):
+        item = QTableWidgetItem("position")
+        self.setItem(0, 0, item)
+        
+        item = QTableWidgetItem(f"{point.xyz}")
+        self.setItem(0, 1, item)
+        
+        item = QTableWidgetItem("color")
+        self.setItem(1, 0, item)
+        
+        item = QTableWidgetItem(f"{point.color}")
+        self.setItem(1, 1, item)
+        
+        item = QTableWidgetItem("error")
+        self.setItem(2, 0, item)
+        
+        item = QTableWidgetItem(f"{point.error}")
+        self.setItem(2, 1, item)
+        
+        self.resizeColumnsToContents()
+        self.resizeRowsToContents()
 
 class PointInImageTableWidget(QTableWidget):
     def __init__(self, *args):
