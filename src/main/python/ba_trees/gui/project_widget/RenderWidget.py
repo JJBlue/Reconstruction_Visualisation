@@ -102,7 +102,7 @@ class RenderWidget(QOpenGLWidget):
     
     def mouseDoubleClickEvent(self, event):
         pos: QPoint = event.position()
-        self.thread.selectPixelCoord(pos.x(), pos.y())
+        self.thread.selectPixelCoord(self.window(), pos.x(), pos.y())
         self.thread.repaint()
     
     def mouseReleaseEvent(self, event):

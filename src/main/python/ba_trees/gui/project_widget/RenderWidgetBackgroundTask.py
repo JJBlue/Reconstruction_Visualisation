@@ -1,14 +1,17 @@
 import time
+import glm
+import numpy as np
 
 from OpenGL.GL import *
 from PIL import Image, ImageOps
 from PyQt6.QtCore import QThread, QWaitCondition, QMutex
 from PyQt6.QtGui import QOffscreenSurface, QOpenGLContext, QSurfaceFormat
-import glm
 
+from ba_trees.gui.background.qt.QtFunctions import QtFunctions
+from ba_trees.gui.image_pixel_widget import PointInImageWidget
 from ba_trees.workspace import Project
 from ba_trees.workspace.colmap.ColmapOpenGL import ColmapProjectOpenGL
-import numpy as np
+
 from render.data import CoordinateSystem, Primitves, PrimitiveType
 from render.data.RenderBufferData import RenderBufferInternalFormat
 from render.data.TextureData import TextureInternalFormat, TextureFormat, TextureType, TextureData
@@ -107,13 +110,13 @@ class BackgroundRenderWidget(QThread):
     ### Global Methops ###
     ######################
     
-    def selectPixelCoord(self, x: int, y: int, radius: int = 10):
-        def run(x: int = x, y: int = y, radius: int = radius):
-            self.__selectPixelCoordGL(x, y, radius)
+    def selectPixelCoord(self, window, x: int, y: int, radius: int = 10):
+        def run(window = window, x: int = x, y: int = y, radius: int = radius):
+            self.__selectPixelCoordGL(window, x, y, radius)
         
         self.runnables.append(run)
     
-    def __selectPixelCoordGL(self, x: int, y: int, radius: int = 10): # TODO failed near border
+    def __selectPixelCoordGL(self, window, x: int, y: int, radius: int = 10): # TODO failed near border
         selected_pixels = []
         y = self.height - y # Flip (OpenGL)
         
@@ -212,6 +215,9 @@ class BackgroundRenderWidget(QThread):
         #selected_pixels = [MousePickInfo(0, 0, 4073)]
         self.lines.clearLines()
         
+        # Add To Result Window (tmp_list)
+        piig_list = []
+        
         # Vertices to Coordinates & World to Image
         for mouse_pick in selected_pixels:
             project_id = 0
@@ -223,17 +229,19 @@ class BackgroundRenderWidget(QThread):
             sub_project_opengl = project_opengl.getSubProjects()[sub_project_id]
             
             vertices = sub_project_opengl.geometry_sparse.vertices.data
-            point3D = glm.vec3(vertices[point_id * 3], vertices[point_id * 3 + 1], vertices[point_id * 3 + 2])
+            point3D_glm = glm.vec3(vertices[point_id * 3], vertices[point_id * 3 + 1], vertices[point_id * 3 + 2])
             
             # World to Image
             project = self.projects[project_id]
             sub_project = project.getPyColmapProjects()[sub_project_id]
             
             point3d_id = None
+            point3D = None
             for i, p in sub_project.points3D.items():
                 pf = np.asarray(p.xyz, dtype=np.float32)
-                if pf[0] == point3D.x and pf[1] == point3D.y and pf[2] == point3D.z:
+                if pf[0] == point3D_glm.x and pf[1] == point3D_glm.y and pf[2] == point3D_glm.z:
                     point3d_id = i
+                    point3D = p
             
             if point3d_id == None:
                 print("point3d_id not found")
@@ -248,14 +256,26 @@ class BackgroundRenderWidget(QThread):
                 camera_id = image.camera_id
                 
                 camera = sub_project.cameras[camera_id]
-                uv = camera.world_to_image(image.project(point3D.xyz))
-                #print(uv)
                 
                 vertices = sub_project_opengl.geometry_cameras[image_id].vertices.data
                 point3D_camera = glm.vec3(vertices[0], vertices[1], vertices[2])
         
                 # Create OpenGL Lines
-                self.lines.addLine(glm.vec3(point3D.x, -point3D.y, -point3D.z), glm.vec3(point3D_camera.x, -point3D_camera.y, -point3D_camera.z))
+                self.lines.addLine(glm.vec3(point3D_glm.x, -point3D_glm.y, -point3D_glm.z), glm.vec3(point3D_camera.x, -point3D_camera.y, -point3D_camera.z))
+                
+                # Add To Result Window
+                piig_list.append([sub_project_opengl.project, camera, image, point3D])
+        
+        
+        # Add Tab (Run Later in Qt-Thread)
+        def lambda_window_tab():
+            piig = PointInImageWidget()
+            
+            for piig_arg in piig_list:
+                piig.addImage(piig_arg[0], piig_arg[1], piig_arg[2], piig_arg[3])
+            
+            window.ui.tabs.addTab(piig, f"ProjectName - {point3d_id}")
+        QtFunctions.runLater(lambda_window_tab)
     
     def addProject(self, project: Project):
         self.projects.append(project)

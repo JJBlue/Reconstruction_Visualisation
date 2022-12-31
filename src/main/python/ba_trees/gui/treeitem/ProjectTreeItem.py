@@ -26,31 +26,6 @@ class Runnable_Open_Project(QtCore.QThread):
     
     def runLater(self):
         self.project_widget.ui.opengl_widget.addProject(self.project)
-        
-        # TODO
-        from ba_trees.gui.image_pixel_widget import PointInImageWidget
-        test = PointInImageWidget()
-        
-        sub_project = self.project.getPyColmapProjects()[0]
-        sub_project_my = self.project.getProjects()[0]
-        
-        for point3D_id, point3D in sub_project.points3D.items():
-            for _, image in sub_project.images.items():
-                if not image.has_point3D(point3D_id):
-                    continue
-                
-                camera_id = image.camera_id
-                
-                camera = sub_project.cameras[camera_id]
-                #uv = camera.world_to_image(image.project(point3D.xyz))
-                #print(uv)
-                
-                test.addImage(sub_project_my, camera, image, point3D)
-            
-            break
-        
-        window = self.event.window
-        window.ui.tabs.addTab(test, "Test")
 
 class ProjectTreeItem(CustomTreeItem):
     def __init__(self, project: Project):

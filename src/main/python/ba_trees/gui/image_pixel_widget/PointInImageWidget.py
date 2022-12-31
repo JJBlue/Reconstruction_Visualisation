@@ -2,7 +2,7 @@ from pathlib import Path
 
 from PIL import Image as Img, ImageDraw
 from PyQt6.QtGui import QPixmap, QImage
-from PyQt6.QtWidgets import QWidget, QTableWidgetItem, QTableWidget, QLabel
+from PyQt6.QtWidgets import (QWidget, QTableWidgetItem, QTableWidget, QLabel, QSizePolicy)
 from pycolmap import Camera, Image, Point3D
 
 from ba_trees.gui.image_pixel_widget.PointInImageSetup import Ui_point_in_image_form
@@ -31,6 +31,8 @@ class PointInImageTableWidget(QTableWidget):
         self.resizeColumnsToContents()
         self.resizeRowsToContents()
         
+        self.setColumnWidth(2, 450)
+        
         #self.horizontalHeader().setStretchLastSection(True)
         #self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
     
@@ -46,6 +48,7 @@ class PointInImageTableWidget(QTableWidget):
         
         item = QLabel()
         uv = camera.world_to_image(image.project(point.xyz))
+        #scale = 0
         
         with Img.open(Path(sub_project._src_image_path, image.name)) as img:
             draw = ImageDraw.Draw(img)
@@ -57,14 +60,20 @@ class PointInImageTableWidget(QTableWidget):
             
             img2 = img.convert("RGBA")
             data = img2.tobytes("raw", "BGRA")
+            scale = float(img2.height) / float(img2.width)
             qimg = QImage(data, img2.width, img2.height, QImage.Format.Format_ARGB32)
             pixmap = QPixmap(qimg)
+            
             item.setPixmap(pixmap)
+            item.setScaledContents(True)
+            item.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
         
         self.setCellWidget(row, 2, item)
         
         item = QTableWidgetItem(image.name)
         self.setItem(row, 3, item)
         
-        self.resizeColumnsToContents()
-        self.resizeRowsToContents()
+        #self.resizeColumnsToContents()
+        #self.resizeRowsToContents()
+        
+        self.setRowHeight(row, int(scale * self.columnWidth(2)))

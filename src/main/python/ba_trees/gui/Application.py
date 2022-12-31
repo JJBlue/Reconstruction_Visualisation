@@ -3,8 +3,9 @@ import sys
 from PyQt6.QtCore import QCoreApplication, Qt
 from PyQt6.QtWidgets import (QApplication, QMainWindow)
 
+from ba_trees.gui.background.opengl.OpenGLData import OpenGLData
+from ba_trees.gui.background.qt.QtFunctions import QtFunctions
 from ba_trees.gui.main_window import MainWindow
-from ba_trees.gui.opengl.OpenGLData import OpenGLData
 
 
 class Application:
@@ -12,6 +13,7 @@ class Application:
         QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts)
         self.app: QApplication = QApplication(sys.argv)
         
+        QtFunctions.init()
         OpenGLData.start()
         
         self.window = MainWindow()
