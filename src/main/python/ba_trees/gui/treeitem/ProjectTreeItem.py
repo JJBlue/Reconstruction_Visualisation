@@ -23,17 +23,17 @@ class Runnable_Open_Project(QtCore.QThread):
         QtFunctions.runLater(self.runLater)
     
     def runLater(self):
-        from ba_trees.gui.image_pixel_widget import PointsInImageWidget
-        piig = PointsInImageWidget()
-        for sub_project in self.project.getProjects():
-            for _, image in sub_project.pycolmap.images.items():
-                camera_id = image.camera_id
-                camera = sub_project.pycolmap.cameras[camera_id]
-                piig.addImage(sub_project, camera, image)
-                break
-            break
-        window = self.event.window
-        window.ui.tabs.addTab(piig, f"ProjectName")
+        #from ba_trees.gui.image_pixel_widget import PointsInImageWidget
+        #piig = PointsInImageWidget()
+        #for sub_project in self.project.getProjects():
+        #    for _, image in sub_project.pycolmap.images.items():
+        #        camera_id = image.camera_id
+        #        camera = sub_project.pycolmap.cameras[camera_id]
+        #        piig.addImage(sub_project, camera, image)
+        #        break
+        #    break
+        #window = self.event.window
+        #window.ui.tabs.addTab(piig, f"ProjectName")
         
         self.project_widget.ui.opengl_widget.addProject(self.project)
 

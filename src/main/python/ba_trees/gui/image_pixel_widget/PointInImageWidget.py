@@ -80,7 +80,7 @@ class PointInImageTableWidget(QTableWidget):
         uv = camera.world_to_image(image.project(point.xyz))
         #scale = 0
         
-        with Img.open(Path(sub_project._src_image_path, image.name)) as img:
+        with Img.open(Path(sub_project.reconstruction._src_image_path, image.name)) as img:
             draw = ImageDraw.Draw(img)
             
             size = 30
