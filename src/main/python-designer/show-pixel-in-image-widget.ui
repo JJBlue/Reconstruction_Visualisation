@@ -7,18 +7,55 @@
     <x>0</x>
     <y>0</y>
     <width>940</width>
-    <height>708</height>
+    <height>687</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="PointInImageTableWidget" name="table">
-     <property name="editTriggers">
-      <set>QAbstractItemView::NoEditTriggers</set>
+    <widget class="QSplitter" name="splitter">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
      </property>
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <widget class="PointInImagePointInformationWidget" name="point_information">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <attribute name="horizontalHeaderVisible">
+       <bool>false</bool>
+      </attribute>
+      <attribute name="verticalHeaderVisible">
+       <bool>false</bool>
+      </attribute>
+     </widget>
+     <widget class="PointInImageTableWidget" name="table">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>1</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+     </widget>
     </widget>
    </item>
   </layout>
@@ -26,6 +63,11 @@
  <customwidgets>
   <customwidget>
    <class>PointInImageTableWidget</class>
+   <extends>QTableWidget</extends>
+   <header>ba_trees.gui.image_pixel_widget.PointInImageWidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>PointInImagePointInformationWidget</class>
    <extends>QTableWidget</extends>
    <header>ba_trees.gui.image_pixel_widget.PointInImageWidget.h</header>
   </customwidget>

@@ -2,14 +2,14 @@ from pathlib import Path
 
 from PyQt6 import QtCore
 
+from ba_trees.gui.background.qt.QtFunctions import QtFunctions
 from ba_trees.gui.project_widget.ProjectWidget import ProjectWidget
 from ba_trees.gui.treeitem import PathTreeItem, Event
 from ba_trees.gui.treeitem.CustomTreeItem import CustomTreeItem
 from ba_trees.workspace import Project
 
+
 class Runnable_Open_Project(QtCore.QThread):
-    __signal = QtCore.pyqtSignal(object)
-    
     def __init__(self, project: Project, project_widget, event: Event):
         super().__init__()
         
@@ -17,14 +17,24 @@ class Runnable_Open_Project(QtCore.QThread):
         self.project_widget = project_widget
         self.event = event
         
-        self.__signal.connect(self.runLater)
-        
     def run(self):
         self.project.open()
         self.project.load()
-        self.__signal.emit(None)
+        QtFunctions.runLater(self.runLater)
     
     def runLater(self):
+        from ba_trees.gui.image_pixel_widget import PointsInImageWidget
+        piig = PointsInImageWidget()
+        for sub_project in self.project.getProjects():
+            for _, image in sub_project.pycolmap.images.items():
+                camera_id = image.camera_id
+                camera = sub_project.pycolmap.cameras[camera_id]
+                piig.addImage(sub_project, camera, image)
+                break
+            break
+        window = self.event.window
+        window.ui.tabs.addTab(piig, f"ProjectName")
+        
         self.project_widget.ui.opengl_widget.addProject(self.project)
 
 class ProjectTreeItem(CustomTreeItem):

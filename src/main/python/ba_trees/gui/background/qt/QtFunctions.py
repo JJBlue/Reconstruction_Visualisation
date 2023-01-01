@@ -1,7 +1,5 @@
 import queue
 
-from typing import Callable
-
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QWidget
 

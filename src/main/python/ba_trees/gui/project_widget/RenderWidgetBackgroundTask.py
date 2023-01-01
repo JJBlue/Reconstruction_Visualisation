@@ -232,12 +232,11 @@ class BackgroundRenderWidget(QThread):
             point3D_glm = glm.vec3(vertices[point_id * 3], vertices[point_id * 3 + 1], vertices[point_id * 3 + 2])
             
             # World to Image
-            project = self.projects[project_id]
-            sub_project = project.getPyColmapProjects()[sub_project_id]
+            sub_project = sub_project_opengl.project
             
             point3d_id = None
             point3D = None
-            for i, p in sub_project.points3D.items():
+            for i, p in sub_project.pycolmap.points3D.items():
                 pf = np.asarray(p.xyz, dtype=np.float32)
                 if pf[0] == point3D_glm.x and pf[1] == point3D_glm.y and pf[2] == point3D_glm.z:
                     point3d_id = i
@@ -248,14 +247,14 @@ class BackgroundRenderWidget(QThread):
                 self.lines.clearLines()
                 return
             
-            for _, image in sub_project.images.items():
+            for _, image in sub_project.pycolmap.images.items():
                 if not image.has_point3D(point3d_id):
                     continue
                 
                 image_id = image.image_id
                 camera_id = image.camera_id
                 
-                camera = sub_project.cameras[camera_id]
+                camera = sub_project.pycolmap.cameras[camera_id]
                 
                 vertices = sub_project_opengl.geometry_cameras[image_id].vertices.data
                 point3D_camera = glm.vec3(vertices[0], vertices[1], vertices[2])
@@ -264,7 +263,7 @@ class BackgroundRenderWidget(QThread):
                 self.lines.addLine(glm.vec3(point3D_glm.x, -point3D_glm.y, -point3D_glm.z), glm.vec3(point3D_camera.x, -point3D_camera.y, -point3D_camera.z))
                 
                 # Add To Result Window
-                piig_list.append([sub_project_opengl.project, camera, image, point3D])
+                piig_list.append([sub_project, camera, image, point3D])
         
         
         # Add Tab (Run Later in Qt-Thread)

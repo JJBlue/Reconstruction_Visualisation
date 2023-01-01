@@ -26,11 +26,16 @@ class ColmapProject(Project):
                                     )
         
         self.projects_pycolmap: list = []
+        self.projects: list = []
         try:
             import pycolmap
             
             for project in self.reconstruction.projects:
-                self.projects_pycolmap.append(pycolmap.Reconstruction(project._sparse_base_path))
+                pycolmap = pycolmap.Reconstruction(project._sparse_base_path)
+                
+                self.projects_pycolmap.append(pycolmap)
+                self.projects.append(ColmapSubProject(project, pycolmap))
+                
         except:
             pass
         
@@ -61,9 +66,13 @@ class ColmapProject(Project):
     def getPyColmapProjects(self) -> list:
         return self.projects_pycolmap
     
-    def getProjects(self):
-        return self.reconstruction.projects
+    def getProjects(self) -> list:
+        return self.projects
     
     def getProjectType(self) -> str:
         return "colmap"
-    
+
+class ColmapSubProject:
+    def __init__(self, reconstruction = None, pycolmap = None):
+        self.reconstruction = reconstruction
+        self.pycolmap = pycolmap

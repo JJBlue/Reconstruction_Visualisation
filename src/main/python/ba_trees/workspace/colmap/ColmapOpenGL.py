@@ -1,8 +1,6 @@
 import glm
 import numpy as np
 
-import open3d as o3d
-
 from colmap_wrapper.colmap.camera import ImageInformation
 from colmap_wrapper.visualization import draw_camera_viewport
 
@@ -21,8 +19,8 @@ class ColmapProjectOpenGL:
         
         projs = self.project.getProjects()
         
-        for sproject in projs:
-            self.sub_projects.append(ColmapSubProjectOpenGL(sproject))
+        for sub_project in projs:
+            self.sub_projects.append(ColmapSubProjectOpenGL(sub_project))
     
     def upload(self):
         pass
@@ -61,14 +59,16 @@ class ColmapSubProjectOpenGL:
         pass
     
     def create(self):
+        reconstruction = self.project.reconstruction
+        
         self.point_cloud_dense = Model()
         self.point_cloud_dense.getModelMatrix().scale(glm.fvec3(1, -1, -1))
-        point_cloud_mesh = OpenGLMesh(OpenGLBufferGroup.createBufferGroup(GeometryO3DPointCloud(self.project.get_dense())))
+        point_cloud_mesh = OpenGLMesh(OpenGLBufferGroup.createBufferGroup(GeometryO3DPointCloud(reconstruction.get_dense())))
         self.point_cloud_dense.addMeshes(point_cloud_mesh)
         
         # https://towardsdatascience.com/5-step-guide-to-generate-3d-meshes-from-point-clouds-with-python-36bad397d8ba
         # http://www.open3d.org/docs/release/python_api/open3d.geometry.TriangleMesh.html
-        #point_cloud = self.project.get_dense()
+        #point_cloud = reconstruction.get_dense()
         #poisson_mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(point_cloud, depth=8, width=0, scale=1.1, linear_fit=False)[0]
         #bbox = point_cloud.get_axis_aligned_bounding_box()
         #p_mesh_crop = poisson_mesh.crop(bbox)
@@ -79,16 +79,16 @@ class ColmapSubProjectOpenGL:
         
         self.point_cloud_sparse = Model()
         self.point_cloud_sparse.getModelMatrix().scale(glm.fvec3(1, -1, -1))
-        self.geometry_sparse = GeometryO3DPointCloud(self.project.get_sparse()) # Saved for later usage (for example: Information for MouseClick)
+        self.geometry_sparse = GeometryO3DPointCloud(reconstruction.get_sparse()) # Saved for later usage (for example: Information for MouseClick)
         point_cloud_mesh = OpenGLMesh(OpenGLBufferGroup.createBufferGroup(self.geometry_sparse))
         self.point_cloud_sparse.addMeshes(point_cloud_mesh)
         
         
-        for image_idx in self.project.images.keys():
+        for image_idx in reconstruction.images.keys():
             if image_idx % 10 == 0:
                 print(f"Load Image: {image_idx}")
             
-            image: ImageInformation = self.project.images[image_idx]
+            image: ImageInformation = reconstruction.images[image_idx]
             image_data = np.asarray([], dtype=np.uint8)
             
             # line_set: Camera Viewport Outline
