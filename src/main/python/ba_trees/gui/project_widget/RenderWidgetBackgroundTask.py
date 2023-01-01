@@ -1,17 +1,17 @@
 import time
-import glm
-import numpy as np
 
 from OpenGL.GL import *
 from PIL import Image, ImageOps
 from PyQt6.QtCore import QThread, QWaitCondition, QMutex
 from PyQt6.QtGui import QOffscreenSurface, QOpenGLContext, QSurfaceFormat
+import glm
 
 from ba_trees.gui.background.qt.QtFunctions import QtFunctions
-from ba_trees.gui.image_pixel_widget import PointInImageWidget
+from ba_trees.gui.image_pixel_widget import PointInImageWidget, \
+    PointsInImageWidget
 from ba_trees.workspace import Project
 from ba_trees.workspace.colmap.ColmapOpenGL import ColmapProjectOpenGL
-
+import numpy as np
 from render.data import CoordinateSystem, Primitves, PrimitiveType
 from render.data.RenderBufferData import RenderBufferInternalFormat
 from render.data.TextureData import TextureInternalFormat, TextureFormat, TextureType, TextureData
@@ -227,56 +227,81 @@ class BackgroundRenderWidget(QThread):
         
         # Add To Result Window (tmp_list)
         piig_list = []
+        psiig_list = []
         
         # Vertices to Coordinates & World to Image
-        for mouse_pick in selected_pixels:
-            print(mouse_pick)
-            break
-            
+        for mouse_pick in selected_pixels:            
             project_id = mouse_pick.project_id
             sub_project_id = mouse_pick.sub_project_id
+            object_id = mouse_pick.object_id
             point_id = mouse_pick.vertex_id
             
             # Vertices to Coordinates
             project_opengl = self.opengl_project_data[project_id]
             sub_project_opengl = project_opengl.getSubProjects()[sub_project_id]
-            
-            vertices = sub_project_opengl.geometry_sparse.vertices.data
-            point3D_glm = glm.vec3(vertices[point_id * 3], vertices[point_id * 3 + 1], vertices[point_id * 3 + 2])
-            
-            # World to Image
             sub_project = sub_project_opengl.project
             
-            point3d_id = None
-            point3D = None
-            for i, p in sub_project.pycolmap.points3D.items():
-                pf = np.asarray(p.xyz, dtype=np.float32)
-                if pf[0] == point3D_glm.x and pf[1] == point3D_glm.y and pf[2] == point3D_glm.z:
-                    point3d_id = i
-                    point3D = p
+            # Dense
+            if object_id == 0:
+                pass
             
-            if point3d_id == None:
-                print("point3d_id not found")
-                self.lines.clearLines()
-                return
-            
-            for _, image in sub_project.pycolmap.images.items():
-                if not image.has_point3D(point3d_id):
-                    continue
+            # Sparse
+            elif object_id == 1:
+                vertices = sub_project_opengl.geometry_sparse.vertices.data
+                point3D_glm = glm.vec3(vertices[point_id * 3], vertices[point_id * 3 + 1], vertices[point_id * 3 + 2])
                 
-                image_id = image.image_id
+                # World to Image
+                point3d_id = None
+                point3D = None
+                for i, p in sub_project.pycolmap.points3D.items():
+                    pf = np.asarray(p.xyz, dtype=np.float32)
+                    if pf[0] == point3D_glm.x and pf[1] == point3D_glm.y and pf[2] == point3D_glm.z:
+                        point3d_id = i
+                        point3D = p
+                
+                if point3d_id == None:
+                    print("point3d_id not found")
+                    self.lines.clearLines()
+                    return
+                
+                for _, image in sub_project.pycolmap.images.items():
+                    if not image.has_point3D(point3d_id):
+                        continue
+                    
+                    image_id = image.image_id
+                    camera_id = image.camera_id
+                    
+                    camera = sub_project.pycolmap.cameras[camera_id]
+                    
+                    vertices = sub_project_opengl.geometry_cameras[image_id].vertices.data
+                    point3D_camera = glm.vec3(vertices[0], vertices[1], vertices[2])
+            
+                    # Create OpenGL Lines
+                    self.lines.addLine(glm.vec3(point3D_glm.x, -point3D_glm.y, -point3D_glm.z), glm.vec3(point3D_camera.x, -point3D_camera.y, -point3D_camera.z))
+                    
+                    # Add To Result Window
+                    piig_list.append([sub_project, camera, image, point3D, point3d_id])
+            
+            # Camera/Images
+            elif object_id >= 2:
+                selected_image = None
+                image = None
+                
+                i = 0
+                for image_id, img in sub_project.reconstruction.images.items():
+                    if i == object_id - 2:
+                        selected_image = img
+                    i += 1
+                
+                for image_id, img in sub_project.pycolmap.images.items():
+                    if image_id == selected_image.id:
+                        image = img
+                
                 camera_id = image.camera_id
-                
                 camera = sub_project.pycolmap.cameras[camera_id]
                 
-                vertices = sub_project_opengl.geometry_cameras[image_id].vertices.data
-                point3D_camera = glm.vec3(vertices[0], vertices[1], vertices[2])
-        
-                # Create OpenGL Lines
-                self.lines.addLine(glm.vec3(point3D_glm.x, -point3D_glm.y, -point3D_glm.z), glm.vec3(point3D_camera.x, -point3D_camera.y, -point3D_camera.z))
+                psiig_list.append([sub_project, camera, image])
                 
-                # Add To Result Window
-                piig_list.append([sub_project, camera, image, point3D])
         
         if piig_list:
             # Add Tab (Run Later in Qt-Thread)
@@ -286,7 +311,18 @@ class BackgroundRenderWidget(QThread):
                 for piig_arg in piig_list:
                     piig.addImage(piig_arg[0], piig_arg[1], piig_arg[2], piig_arg[3])
                 
-                window.ui.tabs.addTab(piig, f"ProjectName - {point3d_id}")
+                window.ui.tabs.addTab(piig, f"ProjectName - {piig_arg[4]}")
+            QtFunctions.runLater(lambda_window_tab)
+        
+        if psiig_list:
+            # Add Tab (Run Later in Qt-Thread)
+            def lambda_window_tab():
+                piig = PointsInImageWidget()
+                
+                for piig_arg in psiig_list:
+                    piig.addImage(piig_arg[0], piig_arg[1], piig_arg[2])
+                
+                window.ui.tabs.addTab(piig, f"ProjectName - {piig_arg[2].name}")
             QtFunctions.runLater(lambda_window_tab)
     
     def addProject(self, project: Project):
@@ -550,7 +586,7 @@ class BackgroundRenderWidget(QThread):
                     object_id = 2
                     for cam in sub_project.cameras:
                         self.shader_camera.uniform("object_id", object_id)
-                    
+                        
                         cam.bind(self.shader_camera)
                         cam.draw()
                         cam.unbind()

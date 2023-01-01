@@ -62,7 +62,6 @@ class MousePickerColor():
         if a < 1.0:
             return None
         
-        print(f"{r} {g} {b} {a}")
         info: MousePickInfo = MousePickInfo()
         
         value: int = r << self.bit_per_channel
@@ -71,7 +70,6 @@ class MousePickerColor():
         
         for name, bit_size in reversed(self.id_bit_sizes.items()):
             value_id = value & MousePickerColor.getOneBits(bit_size)
-            print(f"{name} {bit_size} {value_id}")
             value = value >> bit_size
             setattr(info, name, value_id)
         
@@ -96,15 +94,3 @@ class MousePickerColor():
             value += 1
         
         return value
-
-if __name__ == "__main__":
-    picks = MousePickerColor()
-    
-    info = MousePickerColor()
-    info.mesh_id = 1
-    info.primitive_id = 23
-    info.vertex_id = 242
-    
-    color = picks.createID(info)
-    print(color)
-    print(picks.colorToID_vec4(color))
