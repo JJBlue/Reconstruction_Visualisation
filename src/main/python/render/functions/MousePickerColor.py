@@ -1,93 +1,91 @@
 from glm import vec4, u32vec4
 
+
 class MousePickInfo():
-    def __init__(self, mesh_id = 0, primitive_id = 0, vertex_id = 0):
-        self.mesh_id = mesh_id
-        self.primitive_id = primitive_id
-        self.vertex_id = vertex_id
+    def __init__(self):
+        pass
     
     def __str__(self):
-        return f"({self.mesh_id}, {self.primitive_id}, {self.vertex_id})"
+        attrs = [a for a in dir(self) if not callable(getattr(self, a))]
+        #funcs = [a for a in dir(obj) if callable(a)]
+        
+        tmp_list = []
+        for attr in attrs:
+            if attr.startswith("_"):
+                continue
+            tmp_list.append(f"{attr}: {getattr(self, attr)}")
+        
+        return ', '.join(tmp_list)
 
 class MousePickerColor():
-    # Only RGB can be used. Alpha used to blend
-    bit_per_channel = 32 # 32 = INTEGER
-    
-    mesh_id_size = 0 # Set per uniform
-    primitive_id_size = 0 # int gl_PrimitiveID
-    vertex_id_size = (bit_per_channel * 3) - primitive_id_size - mesh_id_size # int gl_VertexID
-    
-    @staticmethod
-    def createID(mesh: int, primitive: int, vertex: int) -> vec4:
-        if MousePickerColor.mesh_id_size + MousePickerColor.primitive_id_size + MousePickerColor.vertex_id_size > MousePickerColor.bit_per_channel * 3:
-            raise AttributeError(f"id sizes > {MousePickerColor.max_size}")
+    def __init__(self):
+        self.bit_per_channel = 32 # 32 = INTEGER
+        self.channels = 3 # Only RGB can be used. Alpha used to blend
         
-        max_value: int = MousePickerColor.getOneBits(MousePickerColor.bit_per_channel)
+        self.id_bit_sizes = {
+                                "mesh_id": 32,       # Set per uniform
+                                "primitive_id": 32,  # int gl_PrimitiveID
+                                "vertex_id": 32     # int gl_VertexID
+                            }
+    
+    def createID(self, info: MousePickInfo) -> vec4:
+        if not self.__check_settings():
+            return None
+        
+        max_value: int = MousePickerColor.getOneBits(self.bit_per_channel)
         value: int = 0
+        last_bit_size: int = 0
         
-        mesh = mesh & MousePickerColor.getOneBits(MousePickerColor.mesh_id_size)
-        value = value + mesh
-        
-        if MousePickerColor.primitive_id_size > 0 or MousePickerColor.vertex_id_size > 0:
-            value = value << MousePickerColor.mesh_id_size
-        
-        
-        primitive = primitive & MousePickerColor.getOneBits(MousePickerColor.primitive_id_size)
-        value = value + primitive
-        
-        if MousePickerColor.vertex_id_size > 0:
-            value = value << MousePickerColor.primitive_id_size
-        
-        
-        vertex = vertex & MousePickerColor.getOneBits(MousePickerColor.vertex_id_size)
-        value = value + vertex
+        for name, bit_size in self.id_bit_sizes.items():
+            value = value << last_bit_size
+            v_value = getattr(info, name)
+            value += v_value
+            last_bit_size = bit_size
         
         b: float = value & max_value
-        g: float = (value >> MousePickerColor.bit_per_channel) & max_value
-        r: float = (value >> (2*MousePickerColor.bit_per_channel)) & max_value
+        g: float = (value >> self.bit_per_channel) & max_value
+        r: float = (value >> (2 * self.bit_per_channel)) & max_value
         
         return u32vec4(r, g, b, max_value)
     
-    @staticmethod
-    def colorToID_list(data: list, offset: int):
-        return MousePickerColor.colorToID(data[offset], data[offset + 1], data[offset + 2], data[offset + 3])
+    def colorToID_list(self, data: list, offset: int):
+        return self.colorToID(data[offset], data[offset + 1], data[offset + 2], data[offset + 3])
     
-    @staticmethod
-    def colorToID_vec4(color: vec4):
-        return MousePickerColor.colorToID(int(color.x), int(color.y), int(color.z), int(color.w))
+    def colorToID_vec4(self, color: vec4):
+        return self.colorToID(int(color.x), int(color.y), int(color.z), int(color.w))
     
-    @staticmethod
-    def colorToID(r: int, g: int, b: int, a: int):
-        if MousePickerColor.mesh_id_size + MousePickerColor.primitive_id_size + MousePickerColor.vertex_id_size > MousePickerColor.bit_per_channel * 3:
-            raise AttributeError(f"id sizes > {MousePickerColor.max_size}")
+    def colorToID(self, r: int, g: int, b: int, a: int):
+        if not self.__check_settings():
+            return None
         
         # Alpha < 0. No Data found
         if a < 1.0:
             return None
         
-        bit_move = MousePickerColor.mesh_id_size + MousePickerColor.primitive_id_size + MousePickerColor.vertex_id_size
+        print(f"{r} {g} {b} {a}")
+        info: MousePickInfo = MousePickInfo()
         
-        mesh_id = 0
-        primitive_id = 0
-        vertex_id = 0
-        
-        value: int = r << MousePickerColor.bit_per_channel
-        value = (value + g) << MousePickerColor.bit_per_channel
+        value: int = r << self.bit_per_channel
+        value = (value + g) << self.bit_per_channel
         value = value + b
         
-        if MousePickerColor.mesh_id_size > 0:
-            bit_move -= MousePickerColor.mesh_id_size
-            mesh_id = (value >> bit_move) & MousePickerColor.getOneBits(MousePickerColor.mesh_id_size)
+        for name, bit_size in reversed(self.id_bit_sizes.items()):
+            value_id = value & MousePickerColor.getOneBits(bit_size)
+            print(f"{name} {bit_size} {value_id}")
+            value = value >> bit_size
+            setattr(info, name, value_id)
         
-        if MousePickerColor.primitive_id_size > 0:
-            bit_move -= MousePickerColor.primitive_id_size
-            primitive_id = (value >> bit_move) & MousePickerColor.getOneBits(MousePickerColor.primitive_id_size)
+        return info
+    
+    def __check_settings(self) -> bool:
+        bits: int = 0
+        for b in self.id_bit_sizes.values():
+            bits += b
         
-        if MousePickerColor.vertex_id_size > 0:
-            bit_move -= MousePickerColor.vertex_id_size
-            vertex_id = (value >> bit_move) & MousePickerColor.getOneBits(MousePickerColor.vertex_id_size)
-        
-        return MousePickInfo(mesh_id, primitive_id, vertex_id)
+        if bits > self.bit_per_channel * self.channels:
+            raise AttributeError(f"To many bits in id_bit_sizes")
+            return False
+        return True
     
     @staticmethod
     def getOneBits(size: int):
@@ -98,3 +96,15 @@ class MousePickerColor():
             value += 1
         
         return value
+
+if __name__ == "__main__":
+    picks = MousePickerColor()
+    
+    info = MousePickerColor()
+    info.mesh_id = 1
+    info.primitive_id = 23
+    info.vertex_id = 242
+    
+    color = picks.createID(info)
+    print(color)
+    print(picks.colorToID_vec4(color))

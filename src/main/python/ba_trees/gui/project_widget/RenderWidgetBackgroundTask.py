@@ -98,6 +98,16 @@ class BackgroundRenderWidget(QThread):
         self.opengl_project_data: list = []
         self.outputTexture = None
         
+        self.mouse_picker = MousePickerColor()
+        self.mouse_picker.id_bit_sizes =    {
+                                                "project_id": 16,
+                                                "sub_project_id": 16,
+                                                "object_id": 16, # 0 = dense, 1 = sparse, 2...n = Camera/Image
+                                                #"mesh_id": 0,
+                                                #"primitive_id": 0,
+                                                "vertex_id": 32
+                                            }
+        
         # Events
         self.sizeChanged = True
         self.should_repaint = False
@@ -159,7 +169,7 @@ class BackgroundRenderWidget(QThread):
                 yt: int = y_center - i
                 if yt >= 0:
                     pixel: int = yt * size + xt * color_size
-                    pick_result = MousePickerColor.colorToID_list(data, pixel)
+                    pick_result = self.mouse_picker.colorToID_list(data, pixel)
                     
                     if pick_result != None:
                         selected_pixels.append(pick_result)
@@ -171,7 +181,7 @@ class BackgroundRenderWidget(QThread):
                 yt: int = y_center + i
                 if yt < height:
                     pixel: int = yt * size + xt * color_size
-                    pick_result = MousePickerColor.colorToID_list(data, pixel)
+                    pick_result = self.mouse_picker.colorToID_list(data, pixel)
                     
                     if pick_result != None:
                         selected_pixels.append(pick_result)
@@ -188,7 +198,7 @@ class BackgroundRenderWidget(QThread):
                 xt: int = x_center - i
                 if xt >= 0:
                     pixel: int = yt * size + xt * color_size
-                    pick_result = MousePickerColor.colorToID_list(data, pixel)
+                    pick_result = self.mouse_picker.colorToID_list(data, pixel)
                     
                     if pick_result != None:
                         selected_pixels.append(pick_result)
@@ -197,7 +207,7 @@ class BackgroundRenderWidget(QThread):
                 xt: int = x_center + i
                 if xt < width:
                     pixel: int = yt * size + xt * color_size
-                    pick_result = MousePickerColor.colorToID_list(data, pixel)
+                    pick_result = self.mouse_picker.colorToID_list(data, pixel)
                     
                     if pick_result != None:
                         selected_pixels.append(pick_result)
@@ -220,8 +230,11 @@ class BackgroundRenderWidget(QThread):
         
         # Vertices to Coordinates & World to Image
         for mouse_pick in selected_pixels:
-            project_id = 0
-            sub_project_id = 0
+            print(mouse_pick)
+            break
+            
+            project_id = mouse_pick.project_id
+            sub_project_id = mouse_pick.sub_project_id
             point_id = mouse_pick.vertex_id
             
             # Vertices to Coordinates
@@ -265,16 +278,16 @@ class BackgroundRenderWidget(QThread):
                 # Add To Result Window
                 piig_list.append([sub_project, camera, image, point3D])
         
-        
-        # Add Tab (Run Later in Qt-Thread)
-        def lambda_window_tab():
-            piig = PointInImageWidget()
-            
-            for piig_arg in piig_list:
-                piig.addImage(piig_arg[0], piig_arg[1], piig_arg[2], piig_arg[3])
-            
-            window.ui.tabs.addTab(piig, f"ProjectName - {point3d_id}")
-        QtFunctions.runLater(lambda_window_tab)
+        if piig_list:
+            # Add Tab (Run Later in Qt-Thread)
+            def lambda_window_tab():
+                piig = PointInImageWidget()
+                
+                for piig_arg in piig_list:
+                    piig.addImage(piig_arg[0], piig_arg[1], piig_arg[2], piig_arg[3])
+                
+                window.ui.tabs.addTab(piig, f"ProjectName - {point3d_id}")
+            QtFunctions.runLater(lambda_window_tab)
     
     def addProject(self, project: Project):
         self.projects.append(project)
@@ -360,6 +373,7 @@ class BackgroundRenderWidget(QThread):
         self.global_shader_storage = global_storage.getShaders()
         
         # Shaders
+        self.shader_camera = None
         self.shader_point_cloud_sparse = None
         self.shader_point_cloud_dense = None
         self.shader_images = None
@@ -440,6 +454,9 @@ class BackgroundRenderWidget(QThread):
     
     def __update(self):
         # Initialize
+        if not self.shader_camera and self.global_shader_storage.has("camera"):
+            self.shader_camera = OpenGLProgramm(self.global_shader_storage.get("camera"))
+        
         if not self.shader_point_cloud_sparse and self.global_shader_storage.has("point_cloud_sparse"):
             self.shader_point_cloud_sparse = OpenGLProgramm(self.global_shader_storage.get("point_cloud_sparse"))
         
@@ -519,29 +536,47 @@ class BackgroundRenderWidget(QThread):
             self.shader_coordinate_system.unbind()
         
         # Draw Projects
+        project_id = 0
         for project in self.opengl_project_data:
+            sub_project_id = 0
             for sub_project in project.getSubProjects():
-                if self.shader_coordinate_system:
-                    self.shader_coordinate_system.bind()
-                    self.camera.updateShaderUniform(self.shader_coordinate_system)
+                if self.shader_camera:
+                    self.shader_camera.bind()
+                    self.shader_camera.uniform("project_id", project_id)
+                    self.shader_camera.uniform("sub_project_id", sub_project_id)
                     
+                    self.camera.updateShaderUniform(self.shader_camera)
+                    
+                    object_id = 2
                     for cam in sub_project.cameras:
-                        cam.bind(self.shader_coordinate_system)
+                        self.shader_camera.uniform("object_id", object_id)
+                    
+                        cam.bind(self.shader_camera)
                         cam.draw()
                         cam.unbind()
+                        
+                        object_id += 1
                     
-                    self.shader_coordinate_system.unbind()
+                    self.shader_camera.unbind()
+                    
                 
                 # Draw Image
                 if self.shader_images:
                     glDisable(GL_CULL_FACE)
                     self.shader_images.bind()
+                    self.shader_images.uniform("project_id", project_id)
+                    self.shader_images.uniform("sub_project_id", sub_project_id)
                     self.camera.updateShaderUniform(self.shader_images)
                     
+                    object_id = 2
                     for img in sub_project.images:
+                        self.shader_images.uniform("object_id", object_id)
+                        
                         img.bind(self.shader_images)
                         img.draw()
                         img.unbind()
+                        
+                        object_id += 1
                     
                     self.shader_images.unbind()
                     glEnable(GL_CULL_FACE)
@@ -550,6 +585,9 @@ class BackgroundRenderWidget(QThread):
                 if self.shader_point_cloud_dense:
                     self.shader_point_cloud_dense.bind()
                     self.shader_point_cloud_dense.uniform("point_size", self.rw.point_size)
+                    self.shader_point_cloud_dense.uniform("project_id", project_id)
+                    self.shader_point_cloud_dense.uniform("sub_project_id", sub_project_id)
+                    self.shader_point_cloud_dense.uniform("object_id", 0)
                     self.camera.updateShaderUniform(self.shader_point_cloud_dense)
                     
                     point_cloud = sub_project.point_cloud_dense
@@ -558,20 +596,35 @@ class BackgroundRenderWidget(QThread):
                     point_cloud.unbind()
                     
                     self.shader_point_cloud_dense.unbind()
+                
+                sub_project_id += 1
+            
+            project_id += 1
         
         ### Clickable Objects
         # Draw Point Sparse
         if self.shader_point_cloud_sparse:
             self.shader_point_cloud_sparse.bind()
             self.shader_point_cloud_sparse.uniform("point_size", self.rw.point_size)
+            self.shader_point_cloud_sparse.uniform("object_id", 1)
             self.camera.updateShaderUniform(self.shader_point_cloud_sparse)
             
+            project_id = 0
             for project in self.opengl_project_data:
+                self.shader_point_cloud_sparse.uniform("project_id", project_id)
+                
+                sub_project_id = 0
                 for sub_project in project.getSubProjects():
+                    self.shader_point_cloud_sparse.uniform("sub_project_id", sub_project_id)
+                    
                     point_cloud = sub_project.point_cloud_sparse
                     point_cloud.bind(self.shader_point_cloud_sparse)
                     point_cloud.draw()
                     point_cloud.unbind()
+                    
+                    sub_project_id += 1
+                
+                project_id += 1
             
             self.shader_point_cloud_sparse.unbind()
         

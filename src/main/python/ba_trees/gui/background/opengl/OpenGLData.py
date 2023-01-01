@@ -133,6 +133,11 @@ class OpenGLData:
         shader = ShaderGroup(shader_vert, shader_frag)
         RenderDataStorages.getShaders().put("point_cloud_dense", shader)
         
+        shader_vert = OpenGLShader(OpenGLData.getShaderFile(GL_VERTEX_SHADER, "camera.vert"))
+        shader_frag = OpenGLShader(OpenGLData.getShaderFile(GL_FRAGMENT_SHADER, "camera.frag"))
+        shader = ShaderGroup(shader_vert, shader_frag)
+        RenderDataStorages.getShaders().put("camera", shader)
+        
         shader_vert = OpenGLShader(OpenGLData.getShaderFile(GL_VERTEX_SHADER, "images.vert"))
         shader_frag = OpenGLShader(OpenGLData.getShaderFile(GL_FRAGMENT_SHADER, "images.frag"))
         shader = ShaderGroup(shader_vert, shader_frag)
