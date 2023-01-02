@@ -1,6 +1,7 @@
 #version 430
 
 in vec3 color;
+flat in unsigned int v_id;
 
 uniform int project_id;
 uniform int sub_project_id;
@@ -13,6 +14,5 @@ void main() {
 	unsigned int max_value = 4294967295;
 
 	out_color = vec4(color, 1.0);
-	mouse_picker = uvec4(0, 0, 0, 0);
-	//mouse_picker = uvec4(project_id, ((sub_project_id << 16) + object_id), 0, max_value);
+	mouse_picker = uvec4(project_id, ((sub_project_id << 16) + object_id), v_id & max_value, max_value);
 }

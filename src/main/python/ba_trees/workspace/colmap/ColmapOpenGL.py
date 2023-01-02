@@ -63,7 +63,8 @@ class ColmapSubProjectOpenGL:
         
         self.point_cloud_dense = Model()
         self.point_cloud_dense.getModelMatrix().scale(glm.fvec3(1, -1, -1))
-        point_cloud_mesh = OpenGLMesh(OpenGLBufferGroup.createBufferGroup(GeometryO3DPointCloud(reconstruction.get_dense())))
+        self.geometry_dense = GeometryO3DPointCloud(reconstruction.get_dense())
+        point_cloud_mesh = OpenGLMesh(OpenGLBufferGroup.createBufferGroup(self.geometry_dense))
         self.point_cloud_dense.addMeshes(point_cloud_mesh)
         
         # https://towardsdatascience.com/5-step-guide-to-generate-3d-meshes-from-point-clouds-with-python-36bad397d8ba

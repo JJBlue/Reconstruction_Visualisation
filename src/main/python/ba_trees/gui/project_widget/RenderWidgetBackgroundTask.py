@@ -243,10 +243,30 @@ class BackgroundRenderWidget(QThread):
             
             # Dense
             if object_id == 0:
-                pass
+                vertices = sub_project_opengl.geometry_dense.vertices.data
+                point3D_glm = glm.vec3(vertices[point_id * 3], vertices[point_id * 3 + 1], vertices[point_id * 3 + 2])
+                
+                # Dense Point to nearest Sparse Point
+                sparse_id_nearest = -1
+                sparse_last_distance = -1
+                
+                geometry_data = sub_project_opengl.geometry_sparse.vertices
+                vertices_sparse = geometry_data.data
+                for i in range(geometry_data.getSize()):
+                    point3D_sparse_glm = glm.vec3(vertices_sparse[i * 3], vertices_sparse[i * 3 + 1], vertices_sparse[i * 3 + 2])
+                    
+                    distance = glm.distance2(point3D_glm, point3D_sparse_glm)
+                    if sparse_last_distance == -1 or sparse_last_distance > distance:
+                        sparse_id_nearest = i
+                        sparse_last_distance = distance
+                
+                # Set for next Step in Sparse
+                object_id = 1
+                point_id = sparse_id_nearest
+                object_id = 1
             
             # Sparse
-            elif object_id == 1:
+            if object_id == 1:
                 vertices = sub_project_opengl.geometry_sparse.vertices.data
                 point3D_glm = glm.vec3(vertices[point_id * 3], vertices[point_id * 3 + 1], vertices[point_id * 3 + 2])
                 

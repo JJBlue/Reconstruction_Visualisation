@@ -11,6 +11,7 @@ uniform mat4 proj;
 uniform float point_size;
 
 out vec3 color;
+flat out unsigned int v_id;
 
 void main() {
 	vec4 eye_pos = view * model * vec4(pos, 1.0);
@@ -26,4 +27,5 @@ void main() {
 	//gl_PointSize = point_size;
 
 	color = in_color;
+	v_id = gl_VertexID;
 }
