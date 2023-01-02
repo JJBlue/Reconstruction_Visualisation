@@ -85,6 +85,32 @@ class OpenGLBufferGroup:
         buffers.geometry_primitive_type = geometry.getPrimitive()
         
         return buffers
+    
+    @staticmethod
+    def reupload_GeometryToMesh(mesh, geometry: Geometry):
+        OpenGLBufferGroup.reupload_GeometryToBufferGroup(mesh.buffer_group, geometry)
+    
+    @staticmethod
+    def reupload_GeometryToBufferGroup(buffers: BufferGroup, geometry: Geometry): # TODO delete or create buffers
+        vertices = geometry.getAllVertices()
+        vertex_buffers = buffers.getVertexBuffers()
+        
+        # Verticies
+        for i in range(len(vertices)):
+            geo_data = vertices[i]
+            vertex_buffers[i].setMetaData(geo_data.getPrimitiveType(), geo_data.getDimension(), geo_data.getSize())
+            vertex_buffers[i].setData(geo_data.getData())
+            buffers.count_vertices = vertex_buffers[i].amount
+        
+        # Indicies
+        indices = geometry.indices
+        if indices != None:
+            buffer = buffers.getIndexBuffer()
+            buffer.setMetaData(indices.getPrimitiveType(), indices.getDimension(), indices.getSize())
+            buffer.setData(indices.getData())
+            buffers.count_indices = buffer.amount
+        
+        buffers.geometry_primitive_type = geometry.getPrimitive()
 
 class OpenGLBufferFactory:
     @staticmethod

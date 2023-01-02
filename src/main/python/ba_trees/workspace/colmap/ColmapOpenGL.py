@@ -42,15 +42,22 @@ class ColmapSubProjectOpenGL:
     def __init__(self, project):
         self.project = project
         
-        self.point_cloud_dense = None
-        self.point_cloud_sparse = None
         self.image_type = 'image'
         
-        self.images: list = []
-        self.cameras: list = []
+        self.mesh_images = {} # Meshes
+        self.images: list = [] # Model
         
-        self.geometry_sparse = None
-        self.geometry_cameras = {}
+        self.geometry_cameras = {} # O3D GeometryData
+        self.mesh_cameras = {} # Meshes
+        self.cameras: list = [] # Model
+        
+        self.geometry_dense = None # O3D GeometryData
+        self.point_cloud_dense = None # Model
+        
+        self.geometry_sparse = None # O3D GeometryData
+        self.point_cloud_sparse = None # Model
+        
+        
     
     def __del__(self):
         self.delete()
@@ -120,6 +127,33 @@ class ColmapSubProjectOpenGL:
                 camera.addMeshes(OpenGLMesh(OpenGLBufferGroup.createBufferGroup(GeometryO3DTriangleMesh(s))))
             
             self.cameras.append(camera)
+    
+    def reupload(self, camera_scale = 0.4):
+        reconstruction = self.project.reconstruction
+        
+        for image_idx in reconstruction.images.keys():
+            image: ImageInformation = reconstruction.images[image_idx]
+            image_data = np.asarray([], dtype=np.uint8)
+            
+            # line_set: Camera Viewport Outline
+            # sphere: Camera Location
+            # mesh: Image Plane
+            line_set, _, mesh = draw_camera_viewport(
+                                                            extrinsics=image.extrinsics,
+                                                            intrinsics=image.intrinsics.K,
+                                                            image=image_data,
+                                                            scale=camera_scale
+                                                         )
+            
+            # image_model reupload
+            mesh_image = self.mesh_images[image_idx] # TODO set self.mesh_images
+            OpenGLBufferGroup.reupload_GeometryToMesh(mesh_image, GeometryO3DTriangleMesh(mesh))
+            
+            # camera.mesh reupload
+            mesh_camera = self.mesh_cameras[image_idx] # TODO set self.mesh_cameras
+            geometry_lines = GeometryO3DLineSet(line_set)
+            self.geometry_cameras[image_idx] = geometry_lines
+            OpenGLBufferGroup.reupload_GeometryToMesh(mesh_camera, geometry_lines)
     
     def delete(self):
         # TODO delete buffers in Model
