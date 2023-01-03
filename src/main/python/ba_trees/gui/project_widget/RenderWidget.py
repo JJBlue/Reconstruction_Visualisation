@@ -187,13 +187,7 @@ class RenderWidget(QOpenGLWidget):
     def selectCurrentModelEvent(self, current: QTreeWidgetItem, previous: QTreeWidgetItem):
         pass
     
-    def showDenseModel(self, value: bool):
-        pass
-    
-    def showSparseModel(self, value: bool):
-        pass
-    
-    def showCameraModel(self, value: bool):
+    def setVisibleModel(self, value: float):
         pass
     
     def setCameraScaleModel(self, value: float):

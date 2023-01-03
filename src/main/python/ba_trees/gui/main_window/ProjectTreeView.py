@@ -21,9 +21,6 @@ class ProjectTreeView(QTreeView):
         
         for project in workspace.getProjects():
             project_tree_item = ProjectTreeItem(project)
-            # project_tree_item.appendRow(...)
-            # TODO
-            
             self.root_node.appendRow(project_tree_item)
         
         self.setModel(root_tree_model)

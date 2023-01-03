@@ -10,7 +10,7 @@ import glm
 from ba_trees.gui.background.qt.QtFunctions import QtFunctions
 from ba_trees.gui.image_pixel_widget import (PointInImageWidget, PointsInImageWidget)
 from ba_trees.gui.project_widget.RenderSettings import RenderCollection, \
-    RenderMesh
+    RenderModel, RenderMesh
 from ba_trees.workspace import Project
 from ba_trees.workspace.colmap.ColmapOpenGL import ColmapProjectOpenGL
 import numpy as np
@@ -372,7 +372,7 @@ class BackgroundRenderWidget(QThread):
                 render_collection_sp.name = f"[{sub_project_id}]"
                 render_collection_project.childs.append(render_collection_sp)
                 
-                render_mesh: RenderMesh = RenderMesh()
+                render_mesh: RenderModel = RenderModel()
                 render_mesh.name = "Sparse Pointcloud"
                 render_mesh.model = sub_projects.point_cloud_sparse
                 render_mesh.shader_id = "point_cloud_sparse"
@@ -382,7 +382,7 @@ class BackgroundRenderWidget(QThread):
                 render_mesh.shader_uniforms["object_id"] = 1
                 render_collection_project.childs.append(render_mesh)
                 
-                render_mesh: RenderMesh = RenderMesh()
+                render_mesh: RenderModel = RenderModel()
                 render_mesh.name = "Dense Pointcloud"
                 render_mesh.model = sub_projects.point_cloud_dense
                 render_mesh.shader_id = "point_cloud_dense"
@@ -401,7 +401,7 @@ class BackgroundRenderWidget(QThread):
                     render_collection_camera_x.name = f"Camera {camera_id}"
                     render_collection_camera.childs.append(render_collection_camera_x)
                     
-                    render_mesh: RenderMesh = RenderMesh()
+                    render_mesh: RenderModel = RenderModel()
                     render_mesh.name = f"Camera"
                     render_mesh.model = sub_projects.cameras[camera_id]
                     render_mesh.shader_id = "camera"
@@ -410,7 +410,7 @@ class BackgroundRenderWidget(QThread):
                     render_mesh.shader_uniforms["object_id"] = camera_id + 2
                     render_collection_camera_x.childs.append(render_mesh)
                     
-                    render_mesh: RenderMesh = RenderMesh()
+                    render_mesh: RenderModel = RenderModel()
                     render_mesh.name = f"Image"
                     render_mesh.model = sub_projects.images[camera_id]
                     render_mesh.shader_id = "images"
@@ -510,7 +510,7 @@ class BackgroundRenderWidget(QThread):
         coordinate_system.getModelMatrix().scale(1000.0)
         
             # self.rw.setting_show_coordinate_system
-        render_mesh: RenderMesh = RenderMesh()
+        render_mesh: RenderModel = RenderModel()
         render_mesh.name = "Coordinate System"
         render_mesh.model = coordinate_system
         render_mesh.shader_id = "coordinate_system"
@@ -519,7 +519,7 @@ class BackgroundRenderWidget(QThread):
         # Point3D to Camera Lines
         self.lines = SelectionLines()
         
-        render_mesh: RenderMesh = RenderMesh()
+        render_mesh: RenderModel = RenderModel()
         render_mesh.name = "Lines"
         render_mesh.model = self.lines.model
         render_mesh.shader_id = "coordinate_system"
@@ -624,9 +624,6 @@ class BackgroundRenderWidget(QThread):
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO)
         
-        
-        
-        
         self.__visit_queue.put(self.root_collection)
         
         while not self.__visit_queue.empty():
@@ -638,7 +635,7 @@ class BackgroundRenderWidget(QThread):
             if isinstance(render_object, RenderCollection):
                 for child in render_object.childs:
                     self.__visit_queue.put(child)
-            elif isinstance(render_object, RenderMesh):
+            elif isinstance(render_object, RenderModel):
                 model = render_object.model
                 shader = render_object.getShader()
                 
@@ -647,13 +644,27 @@ class BackgroundRenderWidget(QThread):
                 
                 shader.bind()
                 self.camera.updateShaderUniform(shader)
-                
-                for name, value in render_object.shader_uniforms.items():
-                    shader.uniform(name, value)
+                render_object.setShaderUniforms()
                 
                 model.bind(shader)
                 model.draw()
                 model.unbind()
+                
+                shader.unbind()
+            elif isinstance(render_object, RenderMesh):
+                mesh = render_object.mesh
+                shader = render_object.getShader()
+                
+                if model == None or shader == None:
+                    continue
+                
+                shader.bind()
+                self.camera.updateShaderUniform(shader)
+                render_object.setShaderUniforms()
+                
+                mesh.bind()
+                mesh.draw()
+                mesh.unbind()
                 
                 shader.unbind()
         

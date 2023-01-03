@@ -14,15 +14,15 @@ class RenderCollection(RenderObject):
         super().__init__()
         self.childs = []
 
-class RenderMesh(RenderObject): # Currently Model
+class RenderShaderObject(RenderObject):
     def __init__(self):
         super().__init__()
-        self.model = None
+        
         self.shader_id = None
-        self.shader = None # TODO Shader Local or Global Context
+        self.shader = None
         
         self.shader_uniforms: dict = {}
-    
+
     def getShader(self):
         if self.shader:
             return self.shader
@@ -34,3 +34,29 @@ class RenderMesh(RenderObject): # Currently Model
             self.shader = OpenGLProgramm(global_shader_storage.get(self.shader_id))
         
         return self.shader
+    
+    def setShaderUniforms(self, shader = self.getShader()):
+        if shader == None:
+            return
+        
+        for name, value in self.shader_uniforms.items():
+            shader.uniform(name, value)
+
+class RenderModel(RenderShaderObject):
+    def __init__(self):
+        super().__init__()
+        
+        self.model = None
+        self.shader_id = None
+        self.shader = None
+        
+        self.shader_uniforms: dict = {}
+    
+    def getModel(self):
+        return self.model
+    
+class RenderMesh(RenderShaderObject):
+    def __init__(self):
+        super().__init__()
+        
+        self.mesh = None
