@@ -3,9 +3,8 @@ from pathlib import Path
 from PyQt6 import QtCore
 
 from ba_trees.gui.background.qt.QtFunctions import QtFunctions
+from ba_trees.gui.main_window.treeitem import Event, CustomTreeItem, PathTreeItem
 from ba_trees.gui.project_widget.ProjectWidget import ProjectWidget
-from ba_trees.gui.treeitem import PathTreeItem, Event
-from ba_trees.gui.treeitem.CustomTreeItem import CustomTreeItem
 from ba_trees.workspace import Project
 
 

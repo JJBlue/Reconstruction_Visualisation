@@ -10,6 +10,7 @@ from render.functions import RenderDataStorages
 from render.opengl import OpenGLMesh, OpenGLProgramm
 from render.render import Texture
 from render.opengl.OpenGLBuffer import OpenGLBufferGroup
+from PyQt6.QtWidgets import QTreeWidgetItem
 
 
 class RenderWidget(QOpenGLWidget):
@@ -28,6 +29,11 @@ class RenderWidget(QOpenGLWidget):
     model_rotation_pitch = pyqtSignal(float)
     model_rotation_yaw = pyqtSignal(float)
     model_rotation_roll = pyqtSignal(float)
+    
+    showDenseModelChanged = pyqtSignal(bool)
+    showSparseModelChanged = pyqtSignal(bool)
+    showCameraModelChanged = pyqtSignal(bool)
+    cameraScaleModelChanged = pyqtSignal(float)
     
     repaintSignal = pyqtSignal(Texture)
     mousePickingSignal = pyqtSignal(Texture)
@@ -55,6 +61,12 @@ class RenderWidget(QOpenGLWidget):
         
         self.camera_speed: float = 0.1
         self.camera_enable_movement_speed: bool = True
+        
+        self.selected_models = None
+        self.show_dense_model = True
+        self.show_sparse_model = True
+        self.show_camera_model = True
+        self.camera_scale_model = 0.4
         
         self.thread = BackgroundRenderWidget(self)
         self.thread.start()
@@ -171,7 +183,21 @@ class RenderWidget(QOpenGLWidget):
             self.thread.camera.fov = value
             self.cameraFOVChanged.emit(self.thread.camera.fov)
             self.repaintInBackground()
-            
+    
+    def selectCurrentModelEvent(self, current: QTreeWidgetItem, previous: QTreeWidgetItem):
+        pass
+    
+    def showDenseModel(self, value: bool):
+        pass
+    
+    def showSparseModel(self, value: bool):
+        pass
+    
+    def showCameraModel(self, value: bool):
+        pass
+    
+    def setCameraScaleModel(self, value: float):
+        pass
     
     ###############
     ### Methods ###

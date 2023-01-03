@@ -113,7 +113,9 @@ class ColmapSubProjectOpenGL:
             
             image_model = Model()
             image_model.getModelMatrix().scale(glm.fvec3(1, -1, -1))
-            image_model.addMeshes(OpenGLMesh(OpenGLBufferGroup.createBufferGroup(GeometryO3DTriangleMesh(mesh))))
+            image_mesh = OpenGLMesh(OpenGLBufferGroup.createBufferGroup(GeometryO3DTriangleMesh(mesh)))
+            self.mesh_images[image_idx] = image_mesh
+            image_model.addMeshes(image_mesh)
             image_model.addTexture(texture)
             self.images.append(image_model)
             
@@ -121,7 +123,9 @@ class ColmapSubProjectOpenGL:
             camera.getModelMatrix().scale(glm.fvec3(1, -1, -1))
             geometry_lines = GeometryO3DLineSet(line_set)
             self.geometry_cameras[image_idx] = geometry_lines
-            camera.addMeshes(OpenGLMesh(OpenGLBufferGroup.createBufferGroup(geometry_lines)))
+            camera_mesh = OpenGLMesh(OpenGLBufferGroup.createBufferGroup(geometry_lines))
+            self.mesh_cameras[image_idx] = camera_mesh
+            camera.addMeshes(camera_mesh)
             
             for s in sphere:
                 camera.addMeshes(OpenGLMesh(OpenGLBufferGroup.createBufferGroup(GeometryO3DTriangleMesh(s))))
@@ -146,11 +150,11 @@ class ColmapSubProjectOpenGL:
                                                          )
             
             # image_model reupload
-            mesh_image = self.mesh_images[image_idx] # TODO set self.mesh_images
+            mesh_image = self.mesh_images[image_idx]
             OpenGLBufferGroup.reupload_GeometryToMesh(mesh_image, GeometryO3DTriangleMesh(mesh))
             
             # camera.mesh reupload
-            mesh_camera = self.mesh_cameras[image_idx] # TODO set self.mesh_cameras
+            mesh_camera = self.mesh_cameras[image_idx]
             geometry_lines = GeometryO3DLineSet(line_set)
             self.geometry_cameras[image_idx] = geometry_lines
             OpenGLBufferGroup.reupload_GeometryToMesh(mesh_camera, geometry_lines)

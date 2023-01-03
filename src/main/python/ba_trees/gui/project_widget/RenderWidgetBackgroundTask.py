@@ -1,3 +1,4 @@
+import queue
 import time
 
 from OpenGL.GL import *
@@ -7,17 +8,17 @@ from PyQt6.QtGui import QOffscreenSurface, QOpenGLContext, QSurfaceFormat
 import glm
 
 from ba_trees.gui.background.qt.QtFunctions import QtFunctions
-from ba_trees.gui.image_pixel_widget import PointInImageWidget, \
-    PointsInImageWidget
+from ba_trees.gui.image_pixel_widget import (PointInImageWidget, PointsInImageWidget)
+from ba_trees.gui.project_widget.RenderSettings import RenderCollection, \
+    RenderMesh
 from ba_trees.workspace import Project
 from ba_trees.workspace.colmap.ColmapOpenGL import ColmapProjectOpenGL
 import numpy as np
 from render.data import CoordinateSystem, Primitves, PrimitiveType
 from render.data.RenderBufferData import RenderBufferInternalFormat
 from render.data.TextureData import TextureInternalFormat, TextureFormat, TextureType, TextureData
-from render.functions import RenderDataStorages
 from render.functions.MousePickerColor import MousePickerColor
-from render.opengl import OpenGLCamera, OpenGLMesh, OpenGLTexture, OpenGLFrameBuffer, OpenGLProgramm
+from render.opengl import OpenGLCamera, OpenGLMesh, OpenGLTexture, OpenGLFrameBuffer
 from render.opengl.OpenGLBuffer import OpenGLBufferGroup, OpenGLBufferFactory
 from render.opengl.OpenGLRenderBuffer import OpenGLRenderBuffer
 from render.render import FrameBuffer, RenderBuffer, Model
@@ -66,7 +67,14 @@ class SelectionLines():
         self.amount = 0
         self.lines = np.resize(self.lines, 0)
         self.colors = np.resize(self.colors, 0)
-        # Maybe clear Buffer on GPU
+        
+        self.vbo_lines.setData(self.lines)
+        self.vbo_lines.setMetaData(PrimitiveType.FLOAT, 3, self.amount)
+        
+        self.vbo_colors.setData(self.colors)
+        self.vbo_colors.setMetaData(PrimitiveType.FLOAT, 3, self.amount)
+        
+        self.buffer_lines.count_vertices = self.amount
     
     def getModel(self):
         return self.model
@@ -93,8 +101,6 @@ class BackgroundRenderWidget(QThread):
         self.surface.setFormat(self.format)
         self.surface.create()
         
-        self.projects: list = []
-        self.new_projects: list = []
         self.opengl_project_data: list = []
         self.outputTexture = None
         
@@ -107,6 +113,8 @@ class BackgroundRenderWidget(QThread):
                                                 #"primitive_id": 0,
                                                 "vertex_id": 32
                                             }
+        
+        self.root_collection: RenderCollection = RenderCollection()
         
         # Events
         self.sizeChanged = True
@@ -346,8 +354,75 @@ class BackgroundRenderWidget(QThread):
             QtFunctions.runLater(lambda_window_tab)
     
     def addProject(self, project: Project):
-        self.projects.append(project)
-        self.new_projects.append(project)
+        # Add Project to OpenGL
+        def __addProjectGL(project = project):
+            cogl = ColmapProjectOpenGL(project)
+            cogl.create()
+            project_id = len(self.opengl_project_data)
+            self.opengl_project_data.append(cogl)
+            
+            
+            render_collection_project: RenderCollection = RenderCollection()
+            render_collection_project.name = project.getProjectName()
+            self.root_collection.childs.append(render_collection_project)
+            
+            sub_project_id = 0
+            for sub_projects in cogl.getSubProjects():
+                render_collection_sp: RenderCollection = RenderCollection()
+                render_collection_sp.name = f"[{sub_project_id}]"
+                render_collection_project.childs.append(render_collection_sp)
+                
+                render_mesh: RenderMesh = RenderMesh()
+                render_mesh.name = "Sparse Pointcloud"
+                render_mesh.model = sub_projects.point_cloud_sparse
+                render_mesh.shader_id = "point_cloud_sparse"
+                render_mesh.shader_uniforms["point_size"] = self.rw.point_size # TODO
+                render_mesh.shader_uniforms["project_id"] = project_id
+                render_mesh.shader_uniforms["sub_project_id"] = sub_project_id
+                render_mesh.shader_uniforms["object_id"] = 1
+                render_collection_project.childs.append(render_mesh)
+                
+                render_mesh: RenderMesh = RenderMesh()
+                render_mesh.name = "Dense Pointcloud"
+                render_mesh.model = sub_projects.point_cloud_dense
+                render_mesh.shader_id = "point_cloud_dense"
+                render_mesh.shader_uniforms["point_size"] = self.rw.point_size # TODO
+                render_mesh.shader_uniforms["project_id"] = project_id
+                render_mesh.shader_uniforms["sub_project_id"] = sub_project_id
+                render_mesh.shader_uniforms["object_id"] = 0
+                render_collection_project.childs.append(render_mesh)
+                
+                render_collection_camera: RenderCollection = RenderCollection()
+                render_collection_camera.name = f"Cameras"
+                render_collection_sp.childs.append(render_collection_camera)
+                
+                for camera_id in range(len(sub_projects.cameras)):
+                    render_collection_camera_x: RenderCollection = RenderCollection()
+                    render_collection_camera_x.name = f"Camera {camera_id}"
+                    render_collection_camera.childs.append(render_collection_camera_x)
+                    
+                    render_mesh: RenderMesh = RenderMesh()
+                    render_mesh.name = f"Camera"
+                    render_mesh.model = sub_projects.cameras[camera_id]
+                    render_mesh.shader_id = "camera"
+                    render_mesh.shader_uniforms["project_id"] = project_id
+                    render_mesh.shader_uniforms["sub_project_id"] = sub_project_id
+                    render_mesh.shader_uniforms["object_id"] = camera_id + 2
+                    render_collection_camera_x.childs.append(render_mesh)
+                    
+                    render_mesh: RenderMesh = RenderMesh()
+                    render_mesh.name = f"Image"
+                    render_mesh.model = sub_projects.images[camera_id]
+                    render_mesh.shader_id = "images"
+                    render_mesh.shader_uniforms["project_id"] = project_id
+                    render_mesh.shader_uniforms["sub_project_id"] = sub_project_id
+                    render_mesh.shader_uniforms["object_id"] = camera_id + 2
+                    render_collection_camera_x.childs.append(render_mesh)
+            
+                sub_project_id += 1
+        
+        
+        self.runnables.append(__addProjectGL)
     
     def resize(self, width, height):
         self.width = width
@@ -413,6 +488,8 @@ class BackgroundRenderWidget(QThread):
         self.context.doneCurrent()
     
     def __initialize(self):
+        self.__visit_queue = queue.Queue()
+        
         # Create Context
         self.context = QOpenGLContext()
         self.context.setFormat(self.format)
@@ -424,25 +501,32 @@ class BackgroundRenderWidget(QThread):
         # OpenGL
         self.camera = OpenGLCamera()
         
-        # Global storage
-        global_storage = RenderDataStorages.getGloablRenderDataStorage()
-        self.global_shader_storage = global_storage.getShaders()
         
-        # Shaders
-        self.shader_camera = None
-        self.shader_point_cloud_sparse = None
-        self.shader_point_cloud_dense = None
-        self.shader_images = None
-        self.shader_coordinate_system = None
         
         # Geometries
-        self.coordinate_system = Model()
+        coordinate_system = Model()
         buffer_group = OpenGLBufferGroup.createBufferGroup(CoordinateSystem()) # TODO store coordinate_system buffer: global
-        self.coordinate_system.addMeshes(OpenGLMesh(buffer_group))
-        self.coordinate_system.getModelMatrix().scale(1000.0)
+        coordinate_system.addMeshes(OpenGLMesh(buffer_group))
+        coordinate_system.getModelMatrix().scale(1000.0)
+        
+            # self.rw.setting_show_coordinate_system
+        render_mesh: RenderMesh = RenderMesh()
+        render_mesh.name = "Coordinate System"
+        render_mesh.model = coordinate_system
+        render_mesh.shader_id = "coordinate_system"
+        self.root_collection.childs.append(render_mesh)
         
         # Point3D to Camera Lines
         self.lines = SelectionLines()
+        
+        render_mesh: RenderMesh = RenderMesh()
+        render_mesh.name = "Lines"
+        render_mesh.model = self.lines.model
+        render_mesh.shader_id = "coordinate_system"
+        self.root_collection.childs.append(render_mesh)
+        
+        
+        
         
         # FrameBuffer
         self.framebuffer: FrameBuffer = OpenGLFrameBuffer()
@@ -488,9 +572,6 @@ class BackgroundRenderWidget(QThread):
         del camera
         
         # Delete Objects
-        del self.coordinate_system
-        self.coordinate_system = None
-        
         del self.framebuffer
         self.framebuffer = None
         
@@ -509,38 +590,13 @@ class BackgroundRenderWidget(QThread):
         del context
     
     def __update(self):
-        # Initialize
-        if not self.shader_camera and self.global_shader_storage.has("camera"):
-            self.shader_camera = OpenGLProgramm(self.global_shader_storage.get("camera"))
-        
-        if not self.shader_point_cloud_sparse and self.global_shader_storage.has("point_cloud_sparse"):
-            self.shader_point_cloud_sparse = OpenGLProgramm(self.global_shader_storage.get("point_cloud_sparse"))
-        
-        if not self.shader_point_cloud_dense and self.global_shader_storage.has("point_cloud_dense"):
-            self.shader_point_cloud_dense = OpenGLProgramm(self.global_shader_storage.get("point_cloud_dense"))
-        
-        if not self.shader_images and self.global_shader_storage.has("images"):
-            self.shader_images = OpenGLProgramm(self.global_shader_storage.get("images"))
-        
-        if not self.shader_coordinate_system and self.global_shader_storage.has("coordinate_system"):
-            self.shader_coordinate_system = OpenGLProgramm(self.global_shader_storage.get("coordinate_system"))
-        
         # Update Objects
         self.camera.update()
         
         # Resize
         if self.sizeChanged:
             self.sizeChanged = False
-            
             self.framebuffer.resize(self.width, self.height)
-        
-        # Add Project to OpenGL
-        while len(self.new_projects) > 0:
-            project = self.new_projects.pop()
-            
-            cogl = ColmapProjectOpenGL(project)
-            cogl.create()
-            self.opengl_project_data.append(cogl)
         
         # Run Runnables
         while len(self.runnables) > 0:
@@ -568,121 +624,38 @@ class BackgroundRenderWidget(QThread):
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO)
         
-        # Draw Coordinate System
-        if self.rw.setting_show_coordinate_system and self.shader_coordinate_system:
-            self.shader_coordinate_system.bind()
-            self.camera.updateShaderUniform(self.shader_coordinate_system)
-            
-            self.coordinate_system.bind(self.shader_coordinate_system)
-            self.coordinate_system.draw()
-            self.coordinate_system.unbind()
-            
-            self.shader_coordinate_system.unbind()
         
-        # Draw Lines (Point3D to Camera)
-        if self.shader_coordinate_system:
-            self.shader_coordinate_system.bind()
-            self.camera.updateShaderUniform(self.shader_coordinate_system)
-            
-            model = self.lines.getModel()
-            model.bind(self.shader_coordinate_system)
-            model.draw()
-            model.unbind()
-            
-            self.shader_coordinate_system.unbind()
         
-        # Draw Projects
-        project_id = 0
-        for project in self.opengl_project_data:
-            sub_project_id = 0
-            for sub_project in project.getSubProjects():
-                if self.shader_camera:
-                    self.shader_camera.bind()
-                    self.shader_camera.uniform("project_id", project_id)
-                    self.shader_camera.uniform("sub_project_id", sub_project_id)
-                    
-                    self.camera.updateShaderUniform(self.shader_camera)
-                    
-                    object_id = 2
-                    for cam in sub_project.cameras:
-                        self.shader_camera.uniform("object_id", object_id)
-                        
-                        cam.bind(self.shader_camera)
-                        cam.draw()
-                        cam.unbind()
-                        
-                        object_id += 1
-                    
-                    self.shader_camera.unbind()
-                    
-                
-                # Draw Image
-                if self.shader_images:
-                    glDisable(GL_CULL_FACE)
-                    self.shader_images.bind()
-                    self.shader_images.uniform("project_id", project_id)
-                    self.shader_images.uniform("sub_project_id", sub_project_id)
-                    self.camera.updateShaderUniform(self.shader_images)
-                    
-                    object_id = 2
-                    for img in sub_project.images:
-                        self.shader_images.uniform("object_id", object_id)
-                        
-                        img.bind(self.shader_images)
-                        img.draw()
-                        img.unbind()
-                        
-                        object_id += 1
-                    
-                    self.shader_images.unbind()
-                    glEnable(GL_CULL_FACE)
-                
-                # Draw Point Dense
-                if self.shader_point_cloud_dense:
-                    self.shader_point_cloud_dense.bind()
-                    self.shader_point_cloud_dense.uniform("point_size", self.rw.point_size)
-                    self.shader_point_cloud_dense.uniform("project_id", project_id)
-                    self.shader_point_cloud_dense.uniform("sub_project_id", sub_project_id)
-                    self.shader_point_cloud_dense.uniform("object_id", 0)
-                    self.camera.updateShaderUniform(self.shader_point_cloud_dense)
-                    
-                    point_cloud = sub_project.point_cloud_dense
-                    point_cloud.bind(self.shader_point_cloud_dense)
-                    point_cloud.draw()
-                    point_cloud.unbind()
-                    
-                    self.shader_point_cloud_dense.unbind()
-                
-                sub_project_id += 1
-            
-            project_id += 1
         
-        ### Clickable Objects
-        # Draw Point Sparse
-        if self.shader_point_cloud_sparse:
-            self.shader_point_cloud_sparse.bind()
-            self.shader_point_cloud_sparse.uniform("point_size", self.rw.point_size)
-            self.shader_point_cloud_sparse.uniform("object_id", 1)
-            self.camera.updateShaderUniform(self.shader_point_cloud_sparse)
+        self.__visit_queue.put(self.root_collection)
+        
+        while not self.__visit_queue.empty():
+            render_object = self.__visit_queue.get()
             
-            project_id = 0
-            for project in self.opengl_project_data:
-                self.shader_point_cloud_sparse.uniform("project_id", project_id)
-                
-                sub_project_id = 0
-                for sub_project in project.getSubProjects():
-                    self.shader_point_cloud_sparse.uniform("sub_project_id", sub_project_id)
-                    
-                    point_cloud = sub_project.point_cloud_sparse
-                    point_cloud.bind(self.shader_point_cloud_sparse)
-                    point_cloud.draw()
-                    point_cloud.unbind()
-                    
-                    sub_project_id += 1
-                
-                project_id += 1
+            if not render_object.visible:
+                continue
             
-            self.shader_point_cloud_sparse.unbind()
+            if isinstance(render_object, RenderCollection):
+                for child in render_object.childs:
+                    self.__visit_queue.put(child)
+            elif isinstance(render_object, RenderMesh):
+                model = render_object.model
+                shader = render_object.getShader()
+                
+                if model == None or shader == None:
+                    continue
+                
+                shader.bind()
+                self.camera.updateShaderUniform(shader)
+                
+                for name, value in render_object.shader_uniforms.items():
+                    shader.uniform(name, value)
+                
+                model.bind(shader)
+                model.draw()
+                model.unbind()
+                
+                shader.unbind()
         
         # Disable OpenGL Settings
         glDisable(GL_BLEND)

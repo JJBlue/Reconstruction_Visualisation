@@ -164,7 +164,7 @@
                  </sizepolicy>
                 </property>
                 <property name="currentIndex">
-                 <number>2</number>
+                 <number>1</number>
                 </property>
                 <widget class="QWidget" name="page">
                  <property name="geometry">
@@ -172,7 +172,7 @@
                    <x>0</x>
                    <y>0</y>
                    <width>173</width>
-                   <height>473</height>
+                   <height>84</height>
                   </rect>
                  </property>
                  <property name="sizePolicy">
@@ -212,7 +212,7 @@
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>169</width>
+                   <width>256</width>
                    <height>473</height>
                   </rect>
                  </property>
@@ -354,13 +354,41 @@
                 <property name="currentIndex">
                  <number>0</number>
                 </property>
+                <widget class="QWidget" name="page_5">
+                 <attribute name="label">
+                  <string>Models</string>
+                 </attribute>
+                 <layout class="QVBoxLayout" name="verticalLayout_8">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                  <item>
+                   <widget class="QTreeWidget" name="tree_view_models">
+                    <column>
+                     <property name="text">
+                      <string notr="true">1</string>
+                     </property>
+                    </column>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
                 <widget class="QWidget" name="page_4">
                  <property name="geometry">
                   <rect>
                    <x>0</x>
                    <y>0</y>
                    <width>169</width>
-                   <height>533</height>
+                   <height>473</height>
                   </rect>
                  </property>
                  <attribute name="label">
@@ -388,7 +416,7 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="8" column="0">
+                  <item row="10" column="0">
                    <spacer name="verticalSpacer_4">
                     <property name="orientation">
                      <enum>Qt::Vertical</enum>
@@ -499,7 +527,42 @@
                     </property>
                    </widget>
                   </item>
+                  <item row="8" column="0">
+                   <widget class="QLabel" name="label_13">
+                    <property name="text">
+                     <string>Settings</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="9" column="0">
+                   <widget class="QLabel" name="label_14">
+                    <property name="text">
+                     <string>scale:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="8" column="1">
+                   <spacer name="horizontalSpacer_3">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item row="9" column="1">
+                   <widget class="QDoubleSpinBox" name="doubleSpinBox_8"/>
+                  </item>
                  </layout>
+                </widget>
+                <widget class="QWidget" name="page_6">
+                 <attribute name="label">
+                  <string>Settings</string>
+                 </attribute>
                 </widget>
                </widget>
               </item>
@@ -532,6 +595,7 @@
     <slot>setCameraSpeed(double)</slot>
     <slot>enableMovementChanged(bool)</slot>
     <slot>setCameraFOV(double)</slot>
+    <slot>selectCurrentModelEvent(QTreeWidgetItem*,QTreeWidgetItem*)</slot>
    </slots>
   </customwidget>
  </customwidgets>
@@ -544,8 +608,8 @@
    <slot>show_coordinate_system(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>841</x>
-     <y>70</y>
+     <x>855</x>
+     <y>53</y>
     </hint>
     <hint type="destinationlabel">
      <x>611</x>
@@ -564,8 +628,8 @@
      <y>130</y>
     </hint>
     <hint type="destinationlabel">
-     <x>827</x>
-     <y>74</y>
+     <x>855</x>
+     <y>53</y>
     </hint>
    </hints>
   </connection>
@@ -576,7 +640,7 @@
    <slot>setValue(double)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>708</x>
+     <x>684</x>
      <y>127</y>
     </hint>
     <hint type="destinationlabel">
@@ -608,8 +672,8 @@
    <slot>setCameraSpeed(double)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>908</x>
-     <y>185</y>
+     <x>851</x>
+     <y>195</y>
     </hint>
     <hint type="destinationlabel">
      <x>652</x>
@@ -628,8 +692,8 @@
      <y>251</y>
     </hint>
     <hint type="destinationlabel">
-     <x>938</x>
-     <y>193</y>
+     <x>851</x>
+     <y>195</y>
     </hint>
    </hints>
   </connection>
@@ -640,8 +704,8 @@
    <slot>enableMovementChanged(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>885</x>
-     <y>131</y>
+     <x>851</x>
+     <y>136</y>
     </hint>
     <hint type="destinationlabel">
      <x>651</x>
@@ -660,8 +724,8 @@
      <y>130</y>
     </hint>
     <hint type="destinationlabel">
-     <x>895</x>
-     <y>129</y>
+     <x>851</x>
+     <y>136</y>
     </hint>
    </hints>
   </connection>
@@ -672,12 +736,12 @@
    <slot>setValue(double)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>720</x>
+     <x>684</x>
      <y>189</y>
     </hint>
     <hint type="destinationlabel">
-     <x>902</x>
-     <y>160</y>
+     <x>851</x>
+     <y>167</y>
     </hint>
    </hints>
   </connection>
@@ -688,12 +752,28 @@
    <slot>setCameraFOV(double)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>905</x>
-     <y>151</y>
+     <x>851</x>
+     <y>167</y>
     </hint>
     <hint type="destinationlabel">
      <x>641</x>
      <y>192</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>tree_view_models</sender>
+   <signal>currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)</signal>
+   <receiver>opengl_widget</receiver>
+   <slot>selectCurrentModelEvent(QTreeWidgetItem*,QTreeWidgetItem*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>804</x>
+     <y>172</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>582</x>
+     <y>172</y>
     </hint>
    </hints>
   </connection>

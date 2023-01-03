@@ -2,7 +2,7 @@ from PyQt6.QtCore import QModelIndex
 from PyQt6.QtGui import QStandardItemModel
 from PyQt6.QtWidgets import QTreeView, QMainWindow
 
-from ba_trees.gui.treeitem import ProjectTreeItem, Event
+from ba_trees.gui.main_window.treeitem import ProjectTreeItem, Event
 from ba_trees.workspace import Workspace
 
 

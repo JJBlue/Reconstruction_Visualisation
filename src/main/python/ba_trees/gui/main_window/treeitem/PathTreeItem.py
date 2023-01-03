@@ -1,11 +1,10 @@
+from pathlib import Path
 import subprocess
 
-from pathlib import Path
-
-from ba_trees.gui.treeitem import Event
-from ba_trees.gui.treeitem.CustomTreeItem import CustomTreeItem
-from PyQt6.QtWidgets import QLabel, QScrollArea
 from PyQt6.QtGui import QPixmap
+from PyQt6.QtWidgets import QLabel, QScrollArea
+
+from ba_trees.gui.main_window.treeitem import CustomTreeItem, Event
 
 
 class PathTreeItem(CustomTreeItem):

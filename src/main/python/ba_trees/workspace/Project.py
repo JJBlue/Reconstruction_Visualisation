@@ -29,6 +29,7 @@ class Projects:
 class Project:
     def __init__(self, folder: Path):
         self.folder = folder
+        self.name = self.getProjectFolder().name
         self.opened: bool = False
     
     def isOpened(self) -> bool:
@@ -53,6 +54,12 @@ class Project:
     
     def getProjectFolder(self) -> Path:
         return self.folder
+    
+    def getProjectName(self) -> str:
+        return self.name
+    
+    def setProjectName(self, value: str):
+        self.name = value
     
     def getProjectType(self) -> str:
         return None
