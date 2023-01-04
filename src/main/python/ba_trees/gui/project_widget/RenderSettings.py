@@ -35,7 +35,10 @@ class RenderShaderObject(RenderObject):
         
         return self.shader
     
-    def setShaderUniforms(self, shader = self.getShader()):
+    def setShaderUniforms(self, shader = None):
+        if shader == None:
+            shader = self.getShader()
+        
         if shader == None:
             return
         

@@ -1,5 +1,6 @@
 import queue
 
+from PyQt6.QtCore import pyqtSignal, QItemSelection
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from PyQt6.QtWidgets import QTreeView
 
@@ -7,15 +8,14 @@ from ba_trees.gui.project_widget.RenderSettings import (RenderObject, RenderColl
 
 
 class ModelsTreeView(QTreeView):
-    def __init__(self, root: RenderObject, *args):
-        super().__init__(args)
-        
-        self.updateRoot(root)
+    selectionChangedRenderStructure = pyqtSignal(RenderObject)
+    
+    def __init__(self, *args):
+        super().__init__(*args)
     
     def updateRoot(self, root: RenderObject):
         root_tree_model = QStandardItemModel()
         self.root_node = root_tree_model.invisibleRootItem()
-        
         
         visit_queue = queue.Queue()
         visit_queue.put([root, self.root_node])
@@ -26,7 +26,7 @@ class ModelsTreeView(QTreeView):
             render_object = list_item[0]
             parent_item = list_item[1]
             
-            
+                        
             tree_item = RenderObjectTreeItem(render_object)
             parent_item.appendRow(tree_item)
             
@@ -40,7 +40,18 @@ class ModelsTreeView(QTreeView):
         
         
         self.setModel(root_tree_model)
-        # self.expandAll()
+        self.selectionModel().selectionChanged.connect(self.__selectionChangedSlot)
+        
+        self.expandAll()
+    
+    def __selectionChangedSlot(self, selected: QItemSelection, deselected: QItemSelection):
+        for index in selected.indexes():
+            model = index.model()
+            
+            item = model.itemFromIndex(index)
+            render_object = item.render_object
+            
+            self.selectionChangedRenderStructure.emit(render_object)
 
 class CustomTreeItem(QStandardItem):
     def __init__(self):

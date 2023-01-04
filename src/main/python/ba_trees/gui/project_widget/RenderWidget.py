@@ -1,16 +1,17 @@
 from OpenGL.GL import *
 from PyQt6.QtCore import Qt, QPoint, pyqtSignal, QTimer
 from PyQt6.QtOpenGLWidgets import QOpenGLWidget
+from PyQt6.QtWidgets import QTreeWidgetItem
 
 from ba_trees.gui.project_widget import BackgroundRenderWidget
 from ba_trees.gui.project_widget.ControlStatus import ControlStatus
+from ba_trees.gui.project_widget.RenderSettings import RenderObject, RenderModel
 from ba_trees.workspace import Project
 from render.data.GeometryStructures import Pane
 from render.functions import RenderDataStorages
 from render.opengl import OpenGLMesh, OpenGLProgramm
-from render.render import Texture
 from render.opengl.OpenGLBuffer import OpenGLBufferGroup
-from PyQt6.QtWidgets import QTreeWidgetItem
+from render.render import Texture
 
 
 class RenderWidget(QOpenGLWidget):
@@ -22,21 +23,25 @@ class RenderWidget(QOpenGLWidget):
     cameraFOVChanged = pyqtSignal(float)
     cameraEnableMovementChanged = pyqtSignal(bool)
     
-    model_position_x = pyqtSignal(float)
-    model_position_y = pyqtSignal(float)
-    model_position_z = pyqtSignal(float)
-    
-    model_rotation_pitch = pyqtSignal(float)
-    model_rotation_yaw = pyqtSignal(float)
-    model_rotation_roll = pyqtSignal(float)
-    
-    showDenseModelChanged = pyqtSignal(bool)
-    showSparseModelChanged = pyqtSignal(bool)
-    showCameraModelChanged = pyqtSignal(bool)
+    renderStructureChanged = pyqtSignal(RenderObject)
     cameraScaleModelChanged = pyqtSignal(float)
     
     repaintSignal = pyqtSignal(Texture)
     mousePickingSignal = pyqtSignal(Texture)
+    
+    
+    # Model Settings
+    modelPositionXChanged = pyqtSignal(float)
+    modelPositionYChanged = pyqtSignal(float)
+    modelPositionZChanged = pyqtSignal(float)
+    modelRotationPitchChanged = pyqtSignal(float)
+    modelRotationYawChanged = pyqtSignal(float)
+    modelRotationRollChanged = pyqtSignal(float)
+    modelPositionScaleXChanged = pyqtSignal(float)
+    modelPositionScaleYChanged = pyqtSignal(float)
+    modelPositionScaleZChanged = pyqtSignal(float)
+    
+    modelVisibleChanged = pyqtSignal(bool)
     
     def __init__(self, parent = None):
         super().__init__(parent = parent)
@@ -67,6 +72,8 @@ class RenderWidget(QOpenGLWidget):
         self.show_sparse_model = True
         self.show_camera_model = True
         self.camera_scale_model = 0.4
+        
+        self.selected_render_object = None
         
         self.thread = BackgroundRenderWidget(self)
         self.thread.start()
@@ -184,11 +191,118 @@ class RenderWidget(QOpenGLWidget):
             self.cameraFOVChanged.emit(self.thread.camera.fov)
             self.repaintInBackground()
     
-    def selectCurrentModelEvent(self, current: QTreeWidgetItem, previous: QTreeWidgetItem):
-        pass
+    def selectCurrentModel(self, render_object: RenderObject):
+        self.selected_render_object = render_object
+        
+        if isinstance(render_object, RenderModel):
+            model_matrix = render_object.model.model_matrix
+            
+            self.modelPositionXChanged.emit(model_matrix.getX())
+            self.modelPositionYChanged.emit(model_matrix.getY())
+            self.modelPositionZChanged.emit(model_matrix.getZ())
+            self.modelRotationPitchChanged.emit(model_matrix.getPitch())
+            self.modelRotationYawChanged.emit(model_matrix.getYaw())
+            self.modelRotationRollChanged.emit(model_matrix.getRoll())
+        else:
+            self.modelPositionXChanged.emit(0)
+            self.modelPositionYChanged.emit(0)
+            self.modelPositionZChanged.emit(0)
+            self.modelRotationPitchChanged.emit(0)
+            self.modelRotationYawChanged.emit(0)
+            self.modelRotationRollChanged.emit(0)
+        
+        self.modelVisibleChanged.emit(render_object.visible)
     
-    def setVisibleModel(self, value: float):
-        pass
+    def __getModelMatrixFromModel(self):
+        render_object = self.selected_render_object
+        if render_object == None:
+            return
+        
+        model_matrix = None
+        if isinstance(render_object, RenderModel):
+            model_matrix = render_object.model.model_matrix
+        
+        return model_matrix
+    
+    def setModelPositionX(self, value: float):
+        model_matrix = self.__getModelMatrixFromModel()
+        if model_matrix == None:
+            return
+        
+        model_matrix.setX(value)
+        self.repaintInBackground()
+    
+    def setModelPositionY(self, value: float):
+        model_matrix = self.__getModelMatrixFromModel()
+        if model_matrix == None:
+            return
+        
+        model_matrix.setY(value)
+        self.repaintInBackground()
+    
+    def setModelPositionZ(self, value: float):
+        model_matrix = self.__getModelMatrixFromModel()
+        if model_matrix == None:
+            return
+        
+        model_matrix.setZ(value)
+        self.repaintInBackground()
+    
+    def setModelPositionPitch(self, value: float):
+        model_matrix = self.__getModelMatrixFromModel()
+        if model_matrix == None:
+            return
+        
+        model_matrix.setPitch(value)
+        self.thread.repaint()
+    
+    def setModelPositionYaw(self, value: float):
+        model_matrix = self.__getModelMatrixFromModel()
+        if model_matrix == None:
+            return
+        
+        model_matrix.setYaw(value)
+        self.repaintInBackground()
+    
+    def setModelPositionRoll(self, value: float):
+        model_matrix = self.__getModelMatrixFromModel()
+        if model_matrix == None:
+            return
+        
+        model_matrix.setRoll(value)
+        self.repaintInBackground()
+    
+    def setModelPositionScaleX(self, value: float):
+        model_matrix = self.__getModelMatrixFromModel()
+        if model_matrix == None:
+            return
+        
+        model_matrix.scaleX(value)
+        self.repaintInBackground()
+    
+    def setModelPositionScaleY(self, value: float):
+        model_matrix = self.__getModelMatrixFromModel()
+        if model_matrix == None:
+            return
+        
+        model_matrix.scaleY(value)
+        self.repaintInBackground()
+    
+    def setModelPositionScaleZ(self, value: float):
+        model_matrix = self.__getModelMatrixFromModel()
+        if model_matrix == None:
+            return
+        
+        model_matrix.scaleZ(value)
+        self.repaintInBackground()
+    
+    def setModelVisible(self, value: bool):
+        render_object = self.selected_render_object
+        if render_object == None:
+            return
+        
+        render_object.visible = value
+        self.repaintInBackground()
     
     def setCameraScaleModel(self, value: float):
         pass

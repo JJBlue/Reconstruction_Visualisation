@@ -115,6 +115,7 @@ class BackgroundRenderWidget(QThread):
                                             }
         
         self.root_collection: RenderCollection = RenderCollection()
+        self.root_collection.name = "Models"
         
         # Events
         self.sizeChanged = True
@@ -363,13 +364,13 @@ class BackgroundRenderWidget(QThread):
             
             
             render_collection_project: RenderCollection = RenderCollection()
-            render_collection_project.name = project.getProjectName()
+            render_collection_project.name = f"Project: {project.getProjectName()}"
             self.root_collection.childs.append(render_collection_project)
             
             sub_project_id = 0
             for sub_projects in cogl.getSubProjects():
                 render_collection_sp: RenderCollection = RenderCollection()
-                render_collection_sp.name = f"[{sub_project_id}]"
+                render_collection_sp.name = f"Subproject [{sub_project_id}]"
                 render_collection_project.childs.append(render_collection_sp)
                 
                 render_mesh: RenderModel = RenderModel()
@@ -398,7 +399,7 @@ class BackgroundRenderWidget(QThread):
                 
                 for camera_id in range(len(sub_projects.cameras)):
                     render_collection_camera_x: RenderCollection = RenderCollection()
-                    render_collection_camera_x.name = f"Camera {camera_id}"
+                    render_collection_camera_x.name = f"Camera: {camera_id}"
                     render_collection_camera.childs.append(render_collection_camera_x)
                     
                     render_mesh: RenderModel = RenderModel()
@@ -420,7 +421,8 @@ class BackgroundRenderWidget(QThread):
                     render_collection_camera_x.childs.append(render_mesh)
             
                 sub_project_id += 1
-        
+            
+            self.rw.renderStructureChanged.emit(self.root_collection)
         
         self.runnables.append(__addProjectGL)
     
@@ -526,6 +528,7 @@ class BackgroundRenderWidget(QThread):
         self.root_collection.childs.append(render_mesh)
         
         
+        self.rw.renderStructureChanged.emit(self.root_collection)
         
         
         # FrameBuffer

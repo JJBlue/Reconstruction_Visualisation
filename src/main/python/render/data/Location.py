@@ -49,8 +49,7 @@ class Position:
     def getModel(self) -> glm.mat4x4:
         return self.model
     
-    def updateModel(self):
-        model: glm.mat4x4 = glm.fmat4x4(1.0)
+    def updateModel(self, model = glm.fmat4x4(1.0)):
         model = glm.translate(model, self.position)
         self.model = model
 
@@ -92,16 +91,16 @@ class Location(Position):
         self.orientation = location.orientation
         self.updateModel()
     
-    def updateModel(self):
-        super().updateModel()
-        
+    def updateModel(self, model = glm.fmat4x4(1.0)):
         if self.orientation != None:
             # pitch
-            self.model = glm.rotate(self.model, self.orientation.x, glm.fvec3(1.0, 0.0, 0.0))
+            model = glm.rotate(model, self.orientation.x, glm.fvec3(1.0, 0.0, 0.0))
             # yaw
-            self.model = glm.rotate(self.model, self.orientation.y, glm.fvec3(0.0, 1.0, 0.0))
+            model = glm.rotate(model, self.orientation.y, glm.fvec3(0.0, 1.0, 0.0))
             # roll
-            self.model = glm.rotate(self.model, self.orientation.z, glm.fvec3(0.0, 0.0, 1.0))
+            model = glm.rotate(model, self.orientation.z, glm.fvec3(0.0, 0.0, 1.0))
+        
+        super().updateModel(model)
         
 class ModelMatrix(Location):
     def __init__(self, x = 0, y = 0, z = 0, pitch = 0, yaw = 0, roll = 0):
@@ -136,12 +135,11 @@ class ModelMatrix(Location):
         
         self.updateModel()
     
-    def updateModel(self):
-        super().updateModel()
-        
+    def updateModel(self, model = glm.fmat4x4(1.0)):
         if self.scale != None:
-            self.model = glm.scale(self.model, self.__scale)
-
+            model = glm.scale(model, self.__scale)
+        
+        super().updateModel(model)
 
 
 
