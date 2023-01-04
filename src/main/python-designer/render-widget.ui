@@ -164,15 +164,15 @@
                  </sizepolicy>
                 </property>
                 <property name="currentIndex">
-                 <number>1</number>
+                 <number>2</number>
                 </property>
                 <widget class="QWidget" name="page">
                  <property name="geometry">
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>173</width>
-                   <height>84</height>
+                   <width>256</width>
+                   <height>473</height>
                   </rect>
                  </property>
                  <property name="sizePolicy">
@@ -254,7 +254,7 @@
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>169</width>
+                   <width>256</width>
                    <height>473</height>
                   </rect>
                  </property>
@@ -344,225 +344,322 @@
                <number>0</number>
               </property>
               <item>
-               <widget class="QToolBox" name="toolBox_2">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
+               <widget class="QSplitter" name="splitter_3">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
                 </property>
-                <property name="currentIndex">
-                 <number>0</number>
-                </property>
-                <widget class="QWidget" name="page_5">
-                 <attribute name="label">
-                  <string>Models</string>
-                 </attribute>
-                 <layout class="QVBoxLayout" name="verticalLayout_8">
-                  <property name="leftMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>0</number>
-                  </property>
-                  <item>
-                   <widget class="QTreeWidget" name="tree_view_models">
-                    <column>
-                     <property name="text">
-                      <string notr="true">1</string>
-                     </property>
-                    </column>
-                   </widget>
-                  </item>
-                 </layout>
-                </widget>
-                <widget class="QWidget" name="page_4">
-                 <property name="geometry">
-                  <rect>
-                   <x>0</x>
-                   <y>0</y>
-                   <width>169</width>
-                   <height>473</height>
-                  </rect>
+                <widget class="ModelsTreeView" name="tree_view_models">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                   <horstretch>0</horstretch>
+                   <verstretch>1</verstretch>
+                  </sizepolicy>
                  </property>
-                 <attribute name="label">
-                  <string>Model Matrix</string>
+                 <attribute name="headerVisible">
+                  <bool>false</bool>
                  </attribute>
-                 <layout class="QFormLayout" name="formLayout_3">
-                  <item row="0" column="0">
-                   <widget class="QLabel" name="label_5">
-                    <property name="text">
-                     <string>Position</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="0">
-                   <widget class="QLabel" name="label_8">
-                    <property name="text">
-                     <string>y:</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="4" column="0">
-                   <widget class="QLabel" name="label_6">
-                    <property name="text">
-                     <string>Rotation</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="10" column="0">
-                   <spacer name="verticalSpacer_4">
-                    <property name="orientation">
-                     <enum>Qt::Vertical</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>20</width>
-                      <height>40</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                  <item row="1" column="0">
-                   <widget class="QLabel" name="label_7">
-                    <property name="text">
-                     <string>x:</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="3" column="0">
-                   <widget class="QLabel" name="label_9">
-                    <property name="text">
-                     <string>z:</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="1">
-                   <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
-                    <property name="minimum">
-                     <double>-16777215.000000000000000</double>
-                    </property>
-                    <property name="maximum">
-                     <double>16777215.000000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="1">
-                   <widget class="QDoubleSpinBox" name="doubleSpinBox_3"/>
-                  </item>
-                  <item row="3" column="1">
-                   <widget class="QDoubleSpinBox" name="doubleSpinBox_4"/>
-                  </item>
-                  <item row="0" column="1">
-                   <spacer name="horizontalSpacer">
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>40</width>
-                      <height>20</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                  <item row="4" column="1">
-                   <spacer name="horizontalSpacer_2">
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>40</width>
-                      <height>20</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                  <item row="5" column="0">
-                   <widget class="QLabel" name="label_10">
-                    <property name="text">
-                     <string>pitch:</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="6" column="0">
-                   <widget class="QLabel" name="label_11">
-                    <property name="text">
-                     <string>yaw:</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="7" column="0">
-                   <widget class="QLabel" name="label_12">
-                    <property name="text">
-                     <string>roll:</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="5" column="1">
-                   <widget class="QDoubleSpinBox" name="doubleSpinBox_5">
-                    <property name="maximum">
-                     <double>360.000000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="6" column="1">
-                   <widget class="QDoubleSpinBox" name="doubleSpinBox_6">
-                    <property name="maximum">
-                     <double>360.000000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="7" column="1">
-                   <widget class="QDoubleSpinBox" name="doubleSpinBox_7">
-                    <property name="maximum">
-                     <double>360.000000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="8" column="0">
-                   <widget class="QLabel" name="label_13">
-                    <property name="text">
-                     <string>Settings</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="9" column="0">
-                   <widget class="QLabel" name="label_14">
-                    <property name="text">
-                     <string>scale:</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="8" column="1">
-                   <spacer name="horizontalSpacer_3">
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>40</width>
-                      <height>20</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                  <item row="9" column="1">
-                   <widget class="QDoubleSpinBox" name="doubleSpinBox_8"/>
-                  </item>
-                 </layout>
                 </widget>
-                <widget class="QWidget" name="page_6">
-                 <attribute name="label">
-                  <string>Settings</string>
-                 </attribute>
+                <widget class="QToolBox" name="toolBox_2">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="currentIndex">
+                  <number>0</number>
+                 </property>
+                 <widget class="QWidget" name="page_4">
+                  <property name="geometry">
+                   <rect>
+                    <x>0</x>
+                    <y>-42</y>
+                    <width>239</width>
+                    <height>348</height>
+                   </rect>
+                  </property>
+                  <attribute name="label">
+                   <string>Model Matrix</string>
+                  </attribute>
+                  <layout class="QFormLayout" name="formLayout_3">
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_5">
+                     <property name="text">
+                      <string>Position</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="label_8">
+                     <property name="text">
+                      <string>y:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="0">
+                    <widget class="QLabel" name="label_6">
+                     <property name="text">
+                      <string>Rotation</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="12" column="0">
+                    <spacer name="verticalSpacer_4">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="label_7">
+                     <property name="text">
+                      <string>x:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="0">
+                    <widget class="QLabel" name="label_9">
+                     <property name="text">
+                      <string>z:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
+                     <property name="decimals">
+                      <number>3</number>
+                     </property>
+                     <property name="minimum">
+                      <double>-900000000000000.000000000000000</double>
+                     </property>
+                     <property name="maximum">
+                      <double>900000000000000.000000000000000</double>
+                     </property>
+                     <property name="singleStep">
+                      <double>0.100000000000000</double>
+                     </property>
+                     <property name="value">
+                      <double>0.000000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="QDoubleSpinBox" name="doubleSpinBox_3">
+                     <property name="minimum">
+                      <double>-900000000000000.000000000000000</double>
+                     </property>
+                     <property name="maximum">
+                      <double>900000000000000.000000000000000</double>
+                     </property>
+                     <property name="singleStep">
+                      <double>0.100000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="1">
+                    <widget class="QDoubleSpinBox" name="doubleSpinBox_4">
+                     <property name="minimum">
+                      <double>-900000000000000.000000000000000</double>
+                     </property>
+                     <property name="maximum">
+                      <double>900000000000000.000000000000000</double>
+                     </property>
+                     <property name="singleStep">
+                      <double>0.100000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <spacer name="horizontalSpacer">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item row="4" column="1">
+                    <spacer name="horizontalSpacer_2">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item row="5" column="0">
+                    <widget class="QLabel" name="label_10">
+                     <property name="text">
+                      <string>pitch:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="6" column="0">
+                    <widget class="QLabel" name="label_11">
+                     <property name="text">
+                      <string>yaw:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="7" column="0">
+                    <widget class="QLabel" name="label_12">
+                     <property name="text">
+                      <string>roll:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="5" column="1">
+                    <widget class="QDoubleSpinBox" name="doubleSpinBox_5">
+                     <property name="minimum">
+                      <double>0.000000000000000</double>
+                     </property>
+                     <property name="maximum">
+                      <double>360.000000000000000</double>
+                     </property>
+                     <property name="singleStep">
+                      <double>1.000000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="6" column="1">
+                    <widget class="QDoubleSpinBox" name="doubleSpinBox_6">
+                     <property name="maximum">
+                      <double>360.000000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="7" column="1">
+                    <widget class="QDoubleSpinBox" name="doubleSpinBox_7">
+                     <property name="maximum">
+                      <double>360.000000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="8" column="0">
+                    <widget class="QLabel" name="label_13">
+                     <property name="text">
+                      <string>Scale</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="9" column="0">
+                    <widget class="QLabel" name="label_14">
+                     <property name="text">
+                      <string>x:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="8" column="1">
+                    <spacer name="horizontalSpacer_3">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item row="9" column="1">
+                    <widget class="QDoubleSpinBox" name="doubleSpinBox_8">
+                     <property name="minimum">
+                      <double>-900000000000000.000000000000000</double>
+                     </property>
+                     <property name="maximum">
+                      <double>900000000000000.000000000000000</double>
+                     </property>
+                     <property name="singleStep">
+                      <double>0.100000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="10" column="0">
+                    <widget class="QLabel" name="label_16">
+                     <property name="text">
+                      <string>y:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="11" column="0">
+                    <widget class="QLabel" name="label_17">
+                     <property name="text">
+                      <string>z:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="10" column="1">
+                    <widget class="QDoubleSpinBox" name="doubleSpinBox_9">
+                     <property name="minimum">
+                      <double>-900000000000000.000000000000000</double>
+                     </property>
+                     <property name="maximum">
+                      <double>900000000000000.000000000000000</double>
+                     </property>
+                     <property name="singleStep">
+                      <double>0.100000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="11" column="1">
+                    <widget class="QDoubleSpinBox" name="doubleSpinBox_10">
+                     <property name="minimum">
+                      <double>-900000000000000.000000000000000</double>
+                     </property>
+                     <property name="maximum">
+                      <double>900000000000000.000000000000000</double>
+                     </property>
+                     <property name="singleStep">
+                      <double>0.100000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                 <widget class="QWidget" name="page_6">
+                  <property name="geometry">
+                   <rect>
+                    <x>0</x>
+                    <y>0</y>
+                    <width>256</width>
+                    <height>306</height>
+                   </rect>
+                  </property>
+                  <attribute name="label">
+                   <string>Settings</string>
+                  </attribute>
+                  <layout class="QFormLayout" name="formLayout_4">
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_15">
+                     <property name="text">
+                      <string>Visible:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QCheckBox" name="checkBox_3">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
                 </widget>
                </widget>
               </item>
@@ -590,12 +687,42 @@
     <signal>cameraSpeedChanged(double)</signal>
     <signal>cameraFOVChanged(double)</signal>
     <signal>cameraEnableMovementChanged(bool)</signal>
+    <signal>renderStructureChanged(PyQt_PyObject)</signal>
+    <signal>modelPositionXChanged(double)</signal>
+    <signal>modelPositionYChanged(double)</signal>
+    <signal>modelPositionZChanged(double)</signal>
+    <signal>modelRotationPitchChanged(double)</signal>
+    <signal>modelRotationYawChanged(double)</signal>
+    <signal>modelRotationRollChanged(double)</signal>
+    <signal>modelVisibleChanged(bool)</signal>
+    <signal>modelPositionScaleXChanged(double)</signal>
+    <signal>modelPositionScaleYChanged(double)</signal>
+    <signal>modelPositionScaleZChanged(double)</signal>
     <slot>setPointSize(double)</slot>
     <slot>show_coordinate_system(bool)</slot>
     <slot>setCameraSpeed(double)</slot>
     <slot>enableMovementChanged(bool)</slot>
     <slot>setCameraFOV(double)</slot>
-    <slot>selectCurrentModelEvent(QTreeWidgetItem*,QTreeWidgetItem*)</slot>
+    <slot>selectCurrentModel(PyQt_PyObject)</slot>
+    <slot>setModelVisible(bool)</slot>
+    <slot>setModelPositionScaleX(double)</slot>
+    <slot>setModelPositionScaleY(double)</slot>
+    <slot>setModelPositionScaleZ(double)</slot>
+    <slot>setModelPositionX(double)</slot>
+    <slot>setModelPositionY(double)</slot>
+    <slot>setModelPositionZ(double)</slot>
+    <slot>setModelPositionPitch(double)</slot>
+    <slot>setModelPositionYaw(double)</slot>
+    <slot>setModelPositionRoll(double)</slot>
+   </slots>
+  </customwidget>
+  <customwidget>
+   <class>ModelsTreeView</class>
+   <extends>QTreeView</extends>
+   <header>ba_trees.gui.project_widget.ModelsTreeView.h</header>
+   <slots>
+    <signal>selectionChangedRenderStructure(PyQt_PyObject)</signal>
+    <slot>updateRoot(PyQt_PyObject)</slot>
    </slots>
   </customwidget>
  </customwidgets>
@@ -608,8 +735,8 @@
    <slot>show_coordinate_system(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>855</x>
-     <y>53</y>
+     <x>938</x>
+     <y>83</y>
     </hint>
     <hint type="destinationlabel">
      <x>611</x>
@@ -628,8 +755,8 @@
      <y>130</y>
     </hint>
     <hint type="destinationlabel">
-     <x>855</x>
-     <y>53</y>
+     <x>938</x>
+     <y>83</y>
     </hint>
    </hints>
   </connection>
@@ -644,8 +771,8 @@
      <y>127</y>
     </hint>
     <hint type="destinationlabel">
-     <x>887</x>
-     <y>111</y>
+     <x>808</x>
+     <y>55</y>
     </hint>
    </hints>
   </connection>
@@ -656,8 +783,8 @@
    <slot>setPointSize(double)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>908</x>
-     <y>105</y>
+     <x>808</x>
+     <y>55</y>
     </hint>
     <hint type="destinationlabel">
      <x>673</x>
@@ -672,7 +799,7 @@
    <slot>setCameraSpeed(double)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>851</x>
+     <x>938</x>
      <y>195</y>
     </hint>
     <hint type="destinationlabel">
@@ -692,7 +819,7 @@
      <y>251</y>
     </hint>
     <hint type="destinationlabel">
-     <x>851</x>
+     <x>938</x>
      <y>195</y>
     </hint>
    </hints>
@@ -704,7 +831,7 @@
    <slot>enableMovementChanged(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>851</x>
+     <x>938</x>
      <y>136</y>
     </hint>
     <hint type="destinationlabel">
@@ -724,7 +851,7 @@
      <y>130</y>
     </hint>
     <hint type="destinationlabel">
-     <x>851</x>
+     <x>938</x>
      <y>136</y>
     </hint>
    </hints>
@@ -740,7 +867,7 @@
      <y>189</y>
     </hint>
     <hint type="destinationlabel">
-     <x>851</x>
+     <x>938</x>
      <y>167</y>
     </hint>
    </hints>
@@ -752,7 +879,7 @@
    <slot>setCameraFOV(double)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>851</x>
+     <x>938</x>
      <y>167</y>
     </hint>
     <hint type="destinationlabel">
@@ -762,18 +889,354 @@
    </hints>
   </connection>
   <connection>
-   <sender>tree_view_models</sender>
-   <signal>currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)</signal>
-   <receiver>opengl_widget</receiver>
-   <slot>selectCurrentModelEvent(QTreeWidgetItem*,QTreeWidgetItem*)</slot>
+   <sender>opengl_widget</sender>
+   <signal>renderStructureChanged(PyQt_PyObject)</signal>
+   <receiver>tree_view_models</receiver>
+   <slot>updateRoot(PyQt_PyObject)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>804</x>
+     <x>360</x>
      <y>172</y>
     </hint>
     <hint type="destinationlabel">
-     <x>582</x>
-     <y>172</y>
+     <x>861</x>
+     <y>190</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>tree_view_models</sender>
+   <signal>selectionChangedRenderStructure(PyQt_PyObject)</signal>
+   <receiver>opengl_widget</receiver>
+   <slot>selectCurrentModel(PyQt_PyObject)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>722</x>
+     <y>179</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>536</x>
+     <y>158</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>opengl_widget</sender>
+   <signal>modelPositionXChanged(double)</signal>
+   <receiver>doubleSpinBox_2</receiver>
+   <slot>setValue(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>618</x>
+     <y>287</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>794</x>
+     <y>256</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>opengl_widget</sender>
+   <signal>modelPositionYChanged(double)</signal>
+   <receiver>doubleSpinBox_3</receiver>
+   <slot>setValue(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>621</x>
+     <y>333</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>782</x>
+     <y>282</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>opengl_widget</sender>
+   <signal>modelPositionZChanged(double)</signal>
+   <receiver>doubleSpinBox_4</receiver>
+   <slot>setValue(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>635</x>
+     <y>392</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>811</x>
+     <y>311</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>opengl_widget</sender>
+   <signal>modelRotationPitchChanged(double)</signal>
+   <receiver>doubleSpinBox_5</receiver>
+   <slot>setValue(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>656</x>
+     <y>369</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>769</x>
+     <y>366</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>opengl_widget</sender>
+   <signal>modelRotationYawChanged(double)</signal>
+   <receiver>doubleSpinBox_6</receiver>
+   <slot>setValue(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>673</x>
+     <y>407</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>768</x>
+     <y>392</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>opengl_widget</sender>
+   <signal>modelRotationRollChanged(double)</signal>
+   <receiver>doubleSpinBox_7</receiver>
+   <slot>setValue(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>660</x>
+     <y>436</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>771</x>
+     <y>417</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>opengl_widget</sender>
+   <signal>modelVisibleChanged(bool)</signal>
+   <receiver>checkBox_3</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>573</x>
+     <y>362</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>752</x>
+     <y>300</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_3</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>opengl_widget</receiver>
+   <slot>setModelVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>774</x>
+     <y>297</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>561</x>
+     <y>348</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>opengl_widget</sender>
+   <signal>modelPositionScaleXChanged(double)</signal>
+   <receiver>doubleSpinBox_8</receiver>
+   <slot>setValue(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>676</x>
+     <y>470</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>767</x>
+     <y>475</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>opengl_widget</sender>
+   <signal>modelPositionScaleYChanged(double)</signal>
+   <receiver>doubleSpinBox_9</receiver>
+   <slot>setValue(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>665</x>
+     <y>491</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>813</x>
+     <y>511</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>opengl_widget</sender>
+   <signal>modelPositionScaleZChanged(double)</signal>
+   <receiver>doubleSpinBox_10</receiver>
+   <slot>setValue(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>676</x>
+     <y>527</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>768</x>
+     <y>538</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>doubleSpinBox_10</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>opengl_widget</receiver>
+   <slot>setModelPositionScaleZ(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>768</x>
+     <y>526</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>661</x>
+     <y>529</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>doubleSpinBox_9</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>opengl_widget</receiver>
+   <slot>setModelPositionScaleY(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>768</x>
+     <y>500</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>659</x>
+     <y>501</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>doubleSpinBox_8</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>opengl_widget</receiver>
+   <slot>setModelPositionScaleX(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>780</x>
+     <y>478</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>645</x>
+     <y>476</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>doubleSpinBox_7</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>opengl_widget</receiver>
+   <slot>setModelPositionRoll(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>809</x>
+     <y>417</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>614</x>
+     <y>419</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>doubleSpinBox_6</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>opengl_widget</receiver>
+   <slot>setModelPositionYaw(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>812</x>
+     <y>389</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>634</x>
+     <y>388</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>doubleSpinBox_5</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>opengl_widget</receiver>
+   <slot>setModelPositionPitch(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>865</x>
+     <y>365</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>603</x>
+     <y>361</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>doubleSpinBox_4</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>opengl_widget</receiver>
+   <slot>setModelPositionZ(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>791</x>
+     <y>315</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>622</x>
+     <y>315</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>doubleSpinBox_3</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>opengl_widget</receiver>
+   <slot>setModelPositionY(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>783</x>
+     <y>287</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>665</x>
+     <y>287</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>doubleSpinBox_2</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>opengl_widget</receiver>
+   <slot>setModelPositionX(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>808</x>
+     <y>253</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>578</x>
+     <y>250</y>
     </hint>
    </hints>
   </connection>

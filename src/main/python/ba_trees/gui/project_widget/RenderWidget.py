@@ -67,12 +67,6 @@ class RenderWidget(QOpenGLWidget):
         self.camera_speed: float = 0.1
         self.camera_enable_movement_speed: bool = True
         
-        self.selected_models = None
-        self.show_dense_model = True
-        self.show_sparse_model = True
-        self.show_camera_model = True
-        self.camera_scale_model = 0.4
-        
         self.selected_render_object = None
         
         self.thread = BackgroundRenderWidget(self)
