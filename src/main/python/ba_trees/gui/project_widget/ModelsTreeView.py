@@ -4,7 +4,7 @@ from PyQt6.QtCore import pyqtSignal, QItemSelection
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from PyQt6.QtWidgets import QTreeView
 
-from ba_trees.gui.project_widget.RenderSettings import (RenderObject, RenderCollection, RenderModel, RenderMesh)
+from ba_trees.gui.project_widget.render_structure.RenderObject import (RenderObject, RenderCollection, RenderModel, RenderMesh)
 
 
 class ModelsTreeView(QTreeView):

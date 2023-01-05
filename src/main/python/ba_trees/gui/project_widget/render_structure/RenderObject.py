@@ -1,13 +1,22 @@
+from typing import Callable
+
 from render.functions.RenderDataStorage import RenderDataStorages
 from render.opengl import OpenGLProgramm
-
-
+    
+    
 class RenderObject:
     def __init__(self):
         self.object = None
         
         self.name = ""
         self.visible = True
+        
+        #self.settings: list = [] # Tabs
+    
+    def isVisible(self):
+        if isinstance(self.visible, Callable):
+            return self.visible()
+        return self.visible
 
 class RenderCollection(RenderObject):
     def __init__(self):
@@ -43,6 +52,9 @@ class RenderShaderObject(RenderObject):
             return
         
         for name, value in self.shader_uniforms.items():
+            if isinstance(value, Callable):
+                value = value()
+            
             shader.uniform(name, value)
 
 class RenderModel(RenderShaderObject):

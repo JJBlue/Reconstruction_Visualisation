@@ -9,7 +9,7 @@ import glm
 
 from ba_trees.gui.background.qt.QtFunctions import QtFunctions
 from ba_trees.gui.image_pixel_widget import (PointInImageWidget, PointsInImageWidget)
-from ba_trees.gui.project_widget.RenderSettings import RenderCollection, \
+from ba_trees.gui.project_widget.render_structure.RenderObject import RenderCollection, \
     RenderModel, RenderMesh
 from ba_trees.workspace import Project
 from ba_trees.workspace.colmap.ColmapOpenGL import ColmapProjectOpenGL
@@ -116,6 +116,9 @@ class BackgroundRenderWidget(QThread):
         
         self.root_collection: RenderCollection = RenderCollection()
         self.root_collection.name = "Models"
+        
+        self.root_collection_background: RenderCollection = RenderCollection()
+        self.root_collection_background.name = "Models"
         
         # Events
         self.sizeChanged = True
@@ -373,11 +376,14 @@ class BackgroundRenderWidget(QThread):
                 render_collection_sp.name = f"Subproject [{sub_project_id}]"
                 render_collection_project.childs.append(render_collection_sp)
                 
+                def run_point_size():
+                    return self.rw.point_size
+                
                 render_mesh: RenderModel = RenderModel()
                 render_mesh.name = "Sparse Pointcloud"
                 render_mesh.model = sub_projects.point_cloud_sparse
                 render_mesh.shader_id = "point_cloud_sparse"
-                render_mesh.shader_uniforms["point_size"] = self.rw.point_size # TODO
+                render_mesh.shader_uniforms["point_size"] = run_point_size
                 render_mesh.shader_uniforms["project_id"] = project_id
                 render_mesh.shader_uniforms["sub_project_id"] = sub_project_id
                 render_mesh.shader_uniforms["object_id"] = 1
@@ -387,7 +393,7 @@ class BackgroundRenderWidget(QThread):
                 render_mesh.name = "Dense Pointcloud"
                 render_mesh.model = sub_projects.point_cloud_dense
                 render_mesh.shader_id = "point_cloud_dense"
-                render_mesh.shader_uniforms["point_size"] = self.rw.point_size # TODO
+                render_mesh.shader_uniforms["point_size"] = run_point_size
                 render_mesh.shader_uniforms["project_id"] = project_id
                 render_mesh.shader_uniforms["sub_project_id"] = sub_project_id
                 render_mesh.shader_uniforms["object_id"] = 0
@@ -511,21 +517,25 @@ class BackgroundRenderWidget(QThread):
         coordinate_system.addMeshes(OpenGLMesh(buffer_group))
         coordinate_system.getModelMatrix().scale(1000.0)
         
-            # self.rw.setting_show_coordinate_system
-        render_mesh: RenderModel = RenderModel()
-        render_mesh.name = "Coordinate System"
-        render_mesh.model = coordinate_system
-        render_mesh.shader_id = "coordinate_system"
-        self.root_collection.childs.append(render_mesh)
+        
+        render_model: RenderModel = RenderModel()
+        render_model.name = "Coordinate System"
+        render_model.model = coordinate_system
+        render_model.shader_id = "coordinate_system"
+        def run() -> bool:
+            return self.rw.setting_show_coordinate_system
+        render_model.visible = run
+        self.render_model_coordinate_system = render_model
+        self.root_collection_background.childs.append(render_model)
         
         # Point3D to Camera Lines
         self.lines = SelectionLines()
         
-        render_mesh: RenderModel = RenderModel()
-        render_mesh.name = "Lines"
-        render_mesh.model = self.lines.model
-        render_mesh.shader_id = "coordinate_system"
-        self.root_collection.childs.append(render_mesh)
+        render_model: RenderModel = RenderModel()
+        render_model.name = "Lines"
+        render_model.model = self.lines.model
+        render_model.shader_id = "coordinate_system"
+        self.root_collection.childs.append(render_model)
         
         
         self.rw.renderStructureChanged.emit(self.root_collection)
@@ -617,7 +627,7 @@ class BackgroundRenderWidget(QThread):
         # Enable OpenGL Settings
         glFrontFace(GL_CCW)
         glCullFace(GL_BACK)
-        glEnable(GL_CULL_FACE)
+        #glEnable(GL_CULL_FACE)
         
         glEnable(GL_VERTEX_PROGRAM_POINT_SIZE)
         glEnable(GL_DEPTH_TEST)
@@ -627,12 +637,13 @@ class BackgroundRenderWidget(QThread):
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO)
         
+        self.__visit_queue.put(self.root_collection_background)
         self.__visit_queue.put(self.root_collection)
         
         while not self.__visit_queue.empty():
             render_object = self.__visit_queue.get()
             
-            if not render_object.visible:
+            if not render_object.isVisible():
                 continue
             
             if isinstance(render_object, RenderCollection):

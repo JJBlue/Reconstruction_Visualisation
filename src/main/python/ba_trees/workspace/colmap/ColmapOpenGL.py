@@ -50,6 +50,7 @@ class ColmapSubProjectOpenGL:
         self.geometry_cameras = {} # O3D GeometryData
         self.mesh_cameras = {} # Meshes
         self.cameras: list = [] # Model
+        self.camera_scale = 0.4
         
         self.geometry_dense = None # O3D GeometryData
         self.point_cloud_dense = None # Model
@@ -106,7 +107,7 @@ class ColmapSubProjectOpenGL:
                                                             extrinsics=image.extrinsics,
                                                             intrinsics=image.intrinsics.K,
                                                             image=image_data,
-                                                            scale=0.4
+                                                            scale=self.camera_scale
                                                          )
             
             texture: Texture = OpenGLTexture(TextureFile(image.path))
@@ -133,6 +134,10 @@ class ColmapSubProjectOpenGL:
             self.cameras.append(camera)
     
     def reupload(self, camera_scale = 0.4):
+        if self.camera_scale == camera_scale:
+            return
+        
+        self.camera_scale = camera_scale
         reconstruction = self.project.reconstruction
         
         for image_idx in reconstruction.images.keys():
