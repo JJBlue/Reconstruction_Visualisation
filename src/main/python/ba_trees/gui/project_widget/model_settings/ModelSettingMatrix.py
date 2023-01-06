@@ -72,7 +72,7 @@ class ModelSettingMatrix(QWidget):
             return
         
         model_matrix.setPitch(value)
-        self.thread.repaint()
+        self.repaint_function()
     
     def setModelPositionYaw(self, value: float):
         model_matrix = self.__getModelMatrixFromModel()
