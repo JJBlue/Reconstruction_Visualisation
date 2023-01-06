@@ -15,8 +15,17 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QWidget" name="widget" native="true">
+    <widget class="ModelSettingCamera" name="widget" native="true">
      <layout class="QFormLayout" name="formLayout">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
       <item row="0" column="0">
        <widget class="QLabel" name="label_18">
         <property name="text">
@@ -47,24 +56,56 @@
         </property>
        </spacer>
       </item>
-      <item row="1" column="1">
-       <spacer name="verticalSpacer_6">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>40</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
      </layout>
     </widget>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ModelSettingCamera</class>
+   <extends>QWidget</extends>
+   <header>ba_trees.gui.project_widget.model_settings.ModelSettingCamera.h</header>
+   <container>1</container>
+   <slots>
+    <signal>modelScaleChanged(double)</signal>
+    <slot>setModelScale(double)</slot>
+   </slots>
+  </customwidget>
+ </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>doubleSpinBox_11</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>widget</receiver>
+   <slot>setModelScale(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>120</x>
+     <y>25</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>120</x>
+     <y>67</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>widget</sender>
+   <signal>modelScaleChanged(double)</signal>
+   <receiver>doubleSpinBox_11</receiver>
+   <slot>setValue(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>217</x>
+     <y>45</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>215</x>
+     <y>30</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
