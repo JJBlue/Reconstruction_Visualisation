@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Form</class>
- <widget class="QWidget" name="Form">
+ <class>settings_tab</class>
+ <widget class="QWidget" name="settings_tab">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -15,7 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="ModelSettingCamera" name="widget" native="true">
+    <widget class="ModelSettingCamera" name="root_setting_tab" native="true">
      <layout class="QFormLayout" name="formLayout">
       <property name="leftMargin">
        <number>0</number>
@@ -78,7 +78,7 @@
   <connection>
    <sender>doubleSpinBox_11</sender>
    <signal>valueChanged(double)</signal>
-   <receiver>widget</receiver>
+   <receiver>root_setting_tab</receiver>
    <slot>setModelScale(double)</slot>
    <hints>
     <hint type="sourcelabel">
@@ -92,7 +92,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>widget</sender>
+   <sender>root_setting_tab</sender>
    <signal>modelScaleChanged(double)</signal>
    <receiver>doubleSpinBox_11</receiver>
    <slot>setValue(double)</slot>

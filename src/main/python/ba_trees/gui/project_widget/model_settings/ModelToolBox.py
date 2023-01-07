@@ -34,6 +34,14 @@ class ModelToolBox(QToolBox):
             
             self.addPage("Model Matrix", page)
         
+        for rgs in render_object.settings_gui:
+            page = rgs.qt_create_gui()
+            widget = page.findChild(QWidget, "root_setting_tab")
+            
+            widget.setRenderObject(render_object, self.__repaintWorld)
+            
+            self.addPage(rgs.name, page)
+        
         if current_index < self.count():
             self.setCurrentIndex(current_index)
     

@@ -11,7 +11,8 @@ class RenderObject:
         self.name = ""
         self.visible = True
         
-        #self.settings: list = [] # Tabs
+        self.settings_gui: list = [] # Tabs
+        self.values: dict = {} # Some unessacry Values (not be used for rendering, only for infos)
     
     def isVisible(self):
         if isinstance(self.visible, Callable):

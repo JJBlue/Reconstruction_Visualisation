@@ -28,12 +28,10 @@ class ColmapProjectOpenGL:
     def create(self):
         for project in self.sub_projects:
             project.create()
-            break # TODO
     
     def delete(self):
         for project in self.sub_projects:
             project.delete()
-            break # TODO
     
     def getSubProjects(self) -> list:
         return self.sub_projects
@@ -163,6 +161,9 @@ class ColmapSubProjectOpenGL:
             geometry_lines = GeometryO3DLineSet(line_set)
             self.geometry_cameras[image_idx] = geometry_lines
             OpenGLBufferGroup.reupload_GeometryToMesh(mesh_camera, geometry_lines)
+    
+    def getCameraScale(self) -> float:
+        return self.camera_scale
     
     def delete(self):
         # TODO delete buffers in Model

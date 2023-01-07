@@ -9,8 +9,9 @@ import glm
 
 from ba_trees.gui.background.qt.QtFunctions import QtFunctions
 from ba_trees.gui.image_pixel_widget import (PointInImageWidget, PointsInImageWidget)
-from ba_trees.gui.project_widget.render_structure.RenderObject import RenderCollection, \
-    RenderModel, RenderMesh
+from ba_trees.gui.project_widget.model_settings.ModelSettingCamera import ModelSettingCameraWidget
+from ba_trees.gui.project_widget.render_structure.RenderGuiSettings import RenderGuiSetting
+from ba_trees.gui.project_widget.render_structure.RenderObject import (RenderCollection, RenderModel, RenderMesh)
 from ba_trees.workspace import Project
 from ba_trees.workspace.colmap.ColmapOpenGL import ColmapProjectOpenGL
 import numpy as np
@@ -399,9 +400,19 @@ class BackgroundRenderWidget(QThread):
                 render_mesh.shader_uniforms["object_id"] = 0
                 render_collection_project.childs.append(render_mesh)
                 
+                
                 render_collection_camera: RenderCollection = RenderCollection()
                 render_collection_camera.name = f"Cameras"
+                
+                render_setting = RenderGuiSetting()
+                render_setting.name = "Camera"
+                render_setting.qt_create_gui = ModelSettingCameraWidget
+                render_collection_camera.settings_gui.append(render_setting)
+                
+                render_collection_camera.values["sub_project"] = sub_projects
+                
                 render_collection_sp.childs.append(render_collection_camera)
+                
                 
                 for camera_id in range(len(sub_projects.cameras)):
                     render_collection_camera_x: RenderCollection = RenderCollection()
