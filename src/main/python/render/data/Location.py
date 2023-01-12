@@ -2,7 +2,31 @@ from __future__ import annotations
 
 import glm
 
+from enum import Enum
 from typing import overload
+
+
+class AngleType(Enum):
+    RADIANS = 0
+    DEGREES = 1
+    
+    @staticmethod
+    def convert(value: float, from_type: AngleType, to_type: AngleType):
+        if from_type == to_type:
+            return value
+        
+        if from_type == AngleType.RADIANS:
+            if to_type == AngleType.DEGREES:
+                return value * 180 / glm.pi()
+            else:
+                raise NotImplementedError()
+        elif from_type == AngleType.DEGREES:
+            if to_type == AngleType.RADIANS:
+                return value * glm.pi() / 180
+            else:
+                raise NotImplementedError()
+        
+        raise NotImplementedError()
 
 class Position:
     def __init__(self, x = 0, y = 0, z = 0):
@@ -61,22 +85,22 @@ class Location(Position):
     def getPitch(self) -> float:
         return self.orientation.y
     
-    def setPitch(self, pitch: float):
-        self.orientation.y = pitch
+    def setPitch(self, pitch: float, angle_type = AngleType.RADIANS):
+        self.orientation.y = AngleType.convert(pitch, angle_type, AngleType.RADIANS)
         self.updateModel()
     
     def getYaw(self) -> float:
         return self.orientation.z
     
-    def setYaw(self, yaw: float):
-        self.orientation.z = yaw
+    def setYaw(self, yaw: float, angle_type = AngleType.RADIANS):
+        self.orientation.z = AngleType.convert(yaw, angle_type, AngleType.RADIANS)
         self.updateModel()
     
     def getRoll(self) -> float:
         return self.orientation.x
     
-    def setRoll(self, roll: float):
-        self.orientation.x = roll
+    def setRoll(self, roll: float, angle_type = AngleType.RADIANS):
+        self.orientation.x = AngleType.convert(roll, angle_type, AngleType.RADIANS)
         self.updateModel()
     
     def getOrientation(self) -> glm.vec3:

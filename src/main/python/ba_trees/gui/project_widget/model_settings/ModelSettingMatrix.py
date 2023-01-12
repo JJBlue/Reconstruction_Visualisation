@@ -2,6 +2,7 @@ from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QWidget
 
 from ba_trees.gui.project_widget.model_settings.ModelSettingMatrixSetup import Ui_settings_tab
+from render.data.Location import AngleType
 
 
 class ModelSettingMatrixWidget(QWidget):
@@ -71,7 +72,7 @@ class ModelSettingMatrix(QWidget):
         if model_matrix == None:
             return
         
-        model_matrix.setPitch(value)
+        model_matrix.setPitch(value, AngleType.DEGREES)
         self.repaint_function()
     
     def setModelPositionYaw(self, value: float):
@@ -79,7 +80,7 @@ class ModelSettingMatrix(QWidget):
         if model_matrix == None:
             return
         
-        model_matrix.setYaw(value)
+        model_matrix.setYaw(value, AngleType.DEGREES)
         self.repaint_function()
     
     def setModelPositionRoll(self, value: float):
@@ -87,7 +88,7 @@ class ModelSettingMatrix(QWidget):
         if model_matrix == None:
             return
         
-        model_matrix.setRoll(value)
+        model_matrix.setRoll(value, AngleType.DEGREES)
         self.repaint_function()
     
     def setModelPositionScaleX(self, value: float):
