@@ -362,7 +362,7 @@ class BackgroundRenderWidget(QThread):
         # Add Project to OpenGL
         def __addProjectGL(project = project):
             cogl = ColmapProjectOpenGL(project)
-            cogl.create()
+            cogl.create(self.repaint)
             project_id = len(self.opengl_project_data)
             self.opengl_project_data.append(cogl)
             
@@ -563,7 +563,8 @@ class BackgroundRenderWidget(QThread):
         texture_data.setUnpackAlignment(False)
         texture_data.setPoorFiltering(True)
         
-        self.outputTexture = OpenGLTexture(texture_data)
+        self.outputTexture = OpenGLTexture()
+        self.outputTexture.upload(texture_data)
         self.framebuffer.addTexture(self.outputTexture)
         
         # Texture: Output of the MousePicking Color Texture
@@ -573,7 +574,8 @@ class BackgroundRenderWidget(QThread):
         texture_data.setUnpackAlignment(False)
         texture_data.setPoorFiltering(True)
         
-        self.outputMousePickingTexture = OpenGLTexture(texture_data)
+        self.outputMousePickingTexture = OpenGLTexture()
+        self.outputMousePickingTexture.upload(texture_data)
         self.framebuffer.addTexture(self.outputMousePickingTexture)
         
         # Add Depth Buffer

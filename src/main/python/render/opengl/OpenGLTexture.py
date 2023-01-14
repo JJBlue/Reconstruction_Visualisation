@@ -8,7 +8,7 @@ from typing import overload
 
 
 class OpenGLTexture(Texture):
-    def __init__(self, data: TextureData):
+    def __init__(self, data: TextureData = None):
         super().__init__(data)
         self.id: GL_INT = None
         
@@ -17,7 +17,6 @@ class OpenGLTexture(Texture):
         self.img_type = None
         
         self.id = glGenTextures(1)
-        self.upload()
     
     def __del__(self):
         try:
@@ -36,7 +35,10 @@ class OpenGLTexture(Texture):
     def unbind(self):
         glBindTexture(GL_TEXTURE_2D, 0)
     
-    def upload(self):
+    def upload(self, data: TextureData):
+        if data != None:
+            self.image = data
+        
         if self.image.getUnpackAlignment():
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
         

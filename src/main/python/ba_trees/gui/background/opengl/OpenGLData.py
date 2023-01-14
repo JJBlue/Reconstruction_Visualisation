@@ -16,11 +16,11 @@ class OpenGLBackgroundUploadData(QThread):
     signal = QWaitCondition()
     mutex = QMutex()
     
-    def __init__(self):
+    def __init__(self, queue_functions):
         super().__init__()
         
         self.running = False
-        self.queue = queue.Queue()
+        self.queue = queue_functions
         self.queue_context = queue.Queue()
         
         surface_format = QSurfaceFormat()
@@ -89,29 +89,52 @@ class OpenGLBackgroundUploadData(QThread):
             self.mutex.unlock()
 
 class OpenGLData:
+    __started = False
     __loaded = False
-    __background_task = None
+    __background_tasks: list = []
+    
+    __queue = None
+    
     
     @staticmethod
     @synchronized
     def start():
-        if OpenGLData.__background_task == None:
-            OpenGLData.__background_task = OpenGLBackgroundUploadData()
-            OpenGLData.__background_task.start()
-            
-            OpenGLData.add(OpenGLData.__load)
+        if OpenGLData.__started:
+            return
+        
+        OpenGLData.__started = True
+        
+        OpenGLData.__queue = queue.Queue()
+        
+        if not OpenGLData.__background_tasks:
+            for _ in range(5):
+                thread = OpenGLBackgroundUploadData(OpenGLData.__queue)
+                thread.start()
+                
+                OpenGLData.__background_tasks.append(thread)
+        
+        OpenGLData.runLater(OpenGLData.__load)
     
     @staticmethod
     @synchronized
     def stop():
-        OpenGLData.__background_task.stop()
+        if not OpenGLData.__started:
+            return
+        
+        OpenGLData.__started = False
+        
+        for thread in OpenGLData.__background_tasks:
+            thread.stop()
+        
+        OpenGLData.__background_tasks.clear()
     
     @staticmethod
-    def add(function):
-        if not OpenGLData.__background_task.isRunning():
-            OpenGLData.__background_task.start()
+    def runLater(function):
+        if not OpenGLData.__started:
+            return
         
-        OpenGLData.__background_task.add(function)
+        OpenGLData.__queue.put(function)
+        OpenGLBackgroundUploadData.signal.wakeAll()
     
     @staticmethod
     def addShareContext(context):

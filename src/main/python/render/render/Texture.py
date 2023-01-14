@@ -2,8 +2,8 @@ from render.data import TextureData
 
 
 class Texture:
-    def __init__(self, image: TextureData):
-        self.image = image
+    def __init__(self, data: TextureData = None):
+        self.image = data
     
     def bind(self, image_id):
         pass

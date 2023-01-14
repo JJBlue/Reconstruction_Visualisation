@@ -10,6 +10,7 @@ from render.data import (GeometryO3DPointCloud, GeometryO3DLineSet, GeometryO3DT
 from render.opengl import OpenGLMesh, OpenGLTexture
 from render.opengl.OpenGLBuffer import OpenGLBufferGroup
 from render.render import Model, Texture
+from ba_trees.gui.background.opengl.OpenGLData import OpenGLData
 
 
 class ColmapProjectOpenGL:
@@ -25,9 +26,9 @@ class ColmapProjectOpenGL:
     def upload(self):
         pass
     
-    def create(self):
+    def create(self, repaintFunction = None):
         for project in self.sub_projects:
-            project.create()
+            project.create(repaintFunction)
     
     def delete(self):
         for project in self.sub_projects:
@@ -55,8 +56,6 @@ class ColmapSubProjectOpenGL:
         
         self.geometry_sparse = None # O3D GeometryData
         self.point_cloud_sparse = None # Model
-        
-        
     
     def __del__(self):
         self.delete()
@@ -64,7 +63,7 @@ class ColmapSubProjectOpenGL:
     def upload(self):
         pass
     
-    def create(self):
+    def create(self, repaintFunction = None):
         reconstruction = self.project.reconstruction
         
         self.point_cloud_dense = Model()
@@ -108,7 +107,14 @@ class ColmapSubProjectOpenGL:
                                                             scale=self.camera_scale
                                                          )
             
-            texture: Texture = OpenGLTexture(TextureFile(image.path))
+            texture: Texture = OpenGLTexture()
+            
+            def uploadTexture(texture = texture, repaintFunction = repaintFunction):
+                texture.upload(TextureFile(image.path))
+                
+                if repaintFunction:
+                    repaintFunction()
+            OpenGLData.runLater(uploadTexture)
             
             image_model = Model()
             image_model.getModelMatrix().scale(glm.fvec3(1, -1, -1))
