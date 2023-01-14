@@ -614,13 +614,14 @@ class BackgroundRenderWidget(QThread):
         del context
     
     def __update(self):
-        # Update Objects
-        self.camera.update()
-        
         # Resize
         if self.sizeChanged:
             self.sizeChanged = False
             self.framebuffer.resize(self.width, self.height)
+            glViewport(0, 0, self.width, self.height)
+        
+        # Update Objects
+        self.camera.update()
         
         # Run Runnables
         while len(self.runnables) > 0:
@@ -630,7 +631,7 @@ class BackgroundRenderWidget(QThread):
     def __render(self):
         # Start Binding
         self.framebuffer.bind()
-        glViewport(0, 0, self.width, self.height);
+        glViewport(0, 0, self.width, self.height)
         
         # Clear OpenGL Frame
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -704,7 +705,7 @@ class BackgroundRenderWidget(QThread):
         glFlush() # Start Rendering if it is not happend yet
         glFinish() # Wait for finished rendering
         
-        #self.saveImage(GL_COLOR_ATTACHMENT0, 0)
+        self.saveImage(GL_COLOR_ATTACHMENT0, 0)
         #self.saveImage(GL_COLOR_ATTACHMENT1, 1)
         
         # Send Signal for finishing

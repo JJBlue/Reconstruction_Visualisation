@@ -73,8 +73,10 @@ class OpenGLTexture(Texture):
         pass
     
     def resize(self, width = None, height = None):
-        if width == None or height == None:
+        if width == None:
             width = self.image.getWidth()
+        
+        if height == None:
             height = self.image.getHeight()
         
         glBindTexture(GL_TEXTURE_2D, self.id)

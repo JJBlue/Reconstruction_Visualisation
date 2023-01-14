@@ -17,7 +17,7 @@ class Camera:
         self.bottom: float = -100
         self.top: float = 100
         
-        self.fov: float = 90 # in degree: default 70
+        self.fov: float = 70 # in degree: default 70
         
         self.perspective = True
         

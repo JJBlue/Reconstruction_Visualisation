@@ -1,5 +1,3 @@
-import numpy as np
-
 from typing import overload
 
 from OpenGL.GL import *

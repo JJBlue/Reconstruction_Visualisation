@@ -1,4 +1,5 @@
 from OpenGL.GL import *
+from PyQt6 import QtGui
 from PyQt6.QtCore import Qt, QPoint, pyqtSignal, QTimer
 from PyQt6.QtOpenGLWidgets import QOpenGLWidget
 
@@ -54,7 +55,6 @@ class RenderWidget(QOpenGLWidget):
         self.thread.start()
         
         QTimer.singleShot(1, self.runEmit)
-        #QTimer.singleShot(500, self.runEmit)
     
     def __del__(self):
         self.thread.stop()
