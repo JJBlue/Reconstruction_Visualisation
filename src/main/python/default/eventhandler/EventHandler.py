@@ -1,5 +1,5 @@
 from enum import Enum
-import time
+
 from concurrent.futures import ThreadPoolExecutor
 from typing import Callable
 
@@ -37,7 +37,10 @@ class EventManager:
     def __del__(self):
         self.executor.shutdown(wait = False, cancel_futures = True)
     
-    def register(self, event_class, function: Callable, event_handler = EventHandler()):
+    def register(self, event_class, function: Callable, event_handler = None):
+        if event_handler == None:
+            event_handler = EventHandler()
+        
         if function == None and event_handler.function == None:
             return
         

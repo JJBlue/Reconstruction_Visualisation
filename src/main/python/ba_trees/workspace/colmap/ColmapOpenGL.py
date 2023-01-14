@@ -1,16 +1,17 @@
-import glm
-import numpy as np
-
 from colmap_wrapper.colmap.camera import ImageInformation
 from colmap_wrapper.visualization import draw_camera_viewport
+import glm
 
+from ba_trees.gui.background.opengl.OpenGLData import OpenGLData
+from ba_trees.status_information import StatusInformation
+from ba_trees.status_information.StatusInformation import StatusInformationChild, \
+    Status, StatusInformations
 from ba_trees.workspace.colmap import ColmapProject
-
+import numpy as np
 from render.data import (GeometryO3DPointCloud, GeometryO3DLineSet, GeometryO3DTriangleMesh, TextureFile)
 from render.opengl import OpenGLMesh, OpenGLTexture
 from render.opengl.OpenGLBuffer import OpenGLBufferGroup
 from render.render import Model, Texture
-from ba_trees.gui.background.opengl.OpenGLData import OpenGLData
 
 
 class ColmapProjectOpenGL:
@@ -21,7 +22,7 @@ class ColmapProjectOpenGL:
         projs = self.project.getProjects()
         
         for sub_project in projs:
-            self.sub_projects.append(ColmapSubProjectOpenGL(sub_project))
+            self.sub_projects.append(ColmapSubProjectOpenGL(self, sub_project))
     
     def upload(self):
         pass
@@ -38,7 +39,8 @@ class ColmapProjectOpenGL:
         return self.sub_projects
 
 class ColmapSubProjectOpenGL:
-    def __init__(self, project):
+    def __init__(self, parent, project):
+        self.parent = parent
         self.project = project
         
         self.image_type = 'image'
@@ -90,10 +92,10 @@ class ColmapSubProjectOpenGL:
         self.point_cloud_sparse.addMeshes(point_cloud_mesh)
         
         
+        status_texture = StatusInformation()
+        status_texture.text = f"Upload Texture {self.parent.project.getProjectName()}"
+        
         for image_idx in reconstruction.images.keys():
-            if image_idx % 10 == 0:
-                print(f"Load Image: {image_idx}")
-            
             image: ImageInformation = reconstruction.images[image_idx]
             image_data = np.asarray([], dtype=np.uint8)
             
@@ -109,8 +111,12 @@ class ColmapSubProjectOpenGL:
             
             texture: Texture = OpenGLTexture()
             
-            def uploadTexture(texture = texture, repaintFunction = repaintFunction):
+            status_texture_child = StatusInformationChild()
+            status_texture.add(status_texture_child)
+            def uploadTexture(texture = texture, repaintFunction = repaintFunction, status_texture_child = status_texture_child):
+                status_texture_child.setStatus(Status.STARTED)
                 texture.upload(TextureFile(image.path))
+                status_texture_child.setStatus(Status.FINISHED)
                 
                 if repaintFunction:
                     repaintFunction()
@@ -136,7 +142,9 @@ class ColmapSubProjectOpenGL:
                 camera.addMeshes(OpenGLMesh(OpenGLBufferGroup.createBufferGroup(GeometryO3DTriangleMesh(s))))
             
             self.cameras.append(camera)
-    
+        
+        StatusInformations.addStatus(status_texture)
+        
     def reupload(self, camera_scale = 0.4):
         if self.camera_scale == camera_scale:
             return

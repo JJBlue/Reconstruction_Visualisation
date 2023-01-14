@@ -62,23 +62,20 @@ class Ui_window(object):
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem)
-        self.status_bar_label = QtWidgets.QLabel(self.widget)
-        self.status_bar_label.setEnabled(True)
-        self.status_bar_label.setObjectName("status_bar_label")
-        self.horizontalLayout_2.addWidget(self.status_bar_label)
-        self.status_bar = QtWidgets.QProgressBar(self.widget)
-        self.status_bar.setEnabled(True)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Minimum)
+        self.widget_2 = StatusWidget(self.widget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.status_bar.sizePolicy().hasHeightForWidth())
-        self.status_bar.setSizePolicy(sizePolicy)
-        self.status_bar.setLayoutDirection(QtCore.Qt.LayoutDirection.LeftToRight)
-        self.status_bar.setProperty("value", 100)
-        self.status_bar.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTrailing|QtCore.Qt.AlignmentFlag.AlignVCenter)
-        self.status_bar.setTextVisible(True)
-        self.status_bar.setObjectName("status_bar")
-        self.horizontalLayout_2.addWidget(self.status_bar)
+        sizePolicy.setHeightForWidth(self.widget_2.sizePolicy().hasHeightForWidth())
+        self.widget_2.setSizePolicy(sizePolicy)
+        self.widget_2.setMinimumSize(QtCore.QSize(200, 0))
+        self.widget_2.setObjectName("widget_2")
+        self.horizontalLayout = QtWidgets.QHBoxLayout(self.widget_2)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.label = QtWidgets.QLabel(self.widget_2)
+        self.label.setObjectName("label")
+        self.horizontalLayout.addWidget(self.label)
+        self.horizontalLayout_2.addWidget(self.widget_2)
         self.verticalLayout.addWidget(self.widget)
         window.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(window)
@@ -118,18 +115,18 @@ class Ui_window(object):
 
         self.retranslateUi(window)
         self.tabs.setCurrentIndex(-1)
-        self.import_reconstruction.triggered.connect(window.importReconstruction) # type: ignore
-        self.close_workspace.triggered.connect(window.closeWorkspace) # type: ignore
-        self.open_workspace.triggered.connect(window.openWorkspace) # type: ignore
-        self.create_workspace.triggered.connect(window.createWorkspace) # type: ignore
-        self.projects.doubleClicked['QModelIndex'].connect(self.projects.doubleClickedEvent) # type: ignore
-        self.tabs.tabCloseRequested['int'].connect(window.tabClose) # type: ignore
+        self.import_reconstruction.triggered.connect(window.importReconstruction)
+        self.close_workspace.triggered.connect(window.closeWorkspace)
+        self.open_workspace.triggered.connect(window.openWorkspace)
+        self.create_workspace.triggered.connect(window.createWorkspace)
+        self.projects.doubleClicked['QModelIndex'].connect(self.projects.doubleClickedEvent)
+        self.tabs.tabCloseRequested['int'].connect(window.tabClose)
         QtCore.QMetaObject.connectSlotsByName(window)
 
     def retranslateUi(self, window):
         _translate = QtCore.QCoreApplication.translate
         window.setWindowTitle(_translate("window", "Visualization"))
-        self.status_bar_label.setText(_translate("window", "TextLabel"))
+        self.label.setText(_translate("window", "Status ..."))
         self.menuFile.setTitle(_translate("window", "File"))
         self.menuWorkspace.setTitle(_translate("window", "Workspace"))
         self.menuHilfe.setTitle(_translate("window", "Hilfe"))
@@ -140,3 +137,4 @@ class Ui_window(object):
         self.import_reconstruction.setText(_translate("window", "Import"))
         self.create_workspace.setText(_translate("window", "Create"))
 from ba_trees.gui.main_window.ProjectTreeView import ProjectTreeView
+from ba_trees.gui.status.StatusWidget import StatusWidget
