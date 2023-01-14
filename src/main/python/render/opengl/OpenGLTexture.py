@@ -17,6 +17,7 @@ class OpenGLTexture(Texture):
         self.img_type = None
         
         self.id = glGenTextures(1)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, 0, GL_RGBA, GL_UNSIGNED_BYTE, [])
     
     def __del__(self):
         try:
