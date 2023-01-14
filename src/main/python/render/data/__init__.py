@@ -9,9 +9,9 @@ from .GeometryStructures import *
 try:
     from .GeometryO3D import *
 except:
-    pass
+    print("Can't load GeometryO3D")
 
 try:
     from .TextureDataFile import *
 except:
-    pass
+    print("Can't load TextureDataFile")

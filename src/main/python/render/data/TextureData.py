@@ -2,12 +2,6 @@ from __future__ import annotations
 
 from enum import Enum
 
-try:
-    from enum import StrEnum
-except:
-    from strenum import StrEnum
-
-
 class TextureData:
     def __init__(self, internal_format: TextureInternalFormat, img_format: TextureFormat, img_type: TextureType, width: int, height: int, data: object):
         self.internal_format: TextureInternalFormat = internal_format
@@ -63,33 +57,6 @@ class TextureData:
     
     def getData(self, resize: float = 1.0) -> object:
         return self.data
-
-# Missing modes from Pillow
-# I (32-bit signed integer pixels)
-# F (32-bit floating point pixels)
-# La (L with premultiplied alpha)
-# RGBX (true color with padding)
-# RGBa (true color with premultiplied alpha)
-# I;16 (16-bit unsigned integer pixels)
-# I;16L (16-bit little endian unsigned integer pixels)
-# I;16B (16-bit big endian unsigned integer pixels)
-# I;16N (16-bit native endian unsigned integer pixels)
-# BGR;15 (15-bit reversed true colour)
-# BGR;16 (16-bit reversed true colour)
-# BGR;24 (24-bit reversed true colour)
-# BGR;32 (32-bit reversed true colour)
-class ImageFormat(StrEnum):
-    BLACK_WHITE_BIT = "1"
-    BLACK_WHITE = "L"
-    BLACK_WHITE_ALPHA = "LA"
-    MAPPED_COLOR_PALETTE = "P"
-    MAPPED_COLOR_PALETTE_ALPHA = "PA"
-    RGB = "RGB"
-    RGBA = "RGBA"
-    CMYK = "CMYK"
-    YCbCr = "YCbCr"
-    LAB = "LAB"
-    HSV = "HSV"
 
 class TextureFormat(Enum):
     RED = 0

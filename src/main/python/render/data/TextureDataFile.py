@@ -3,106 +3,76 @@ import numpy as np
 from pathlib import Path
 from PIL import Image
 
-from render.data import TextureData, TextureFormat, TextureType, TextureInternalFormat, ImageFormat
+from render.data import TextureData, TextureFormat, TextureType, TextureInternalFormat
 
 
-class TextureFile(TextureData):
-    def __init__(self, file: Path):
+class AbstractTexturePILImage(TextureData):
+    def __init__(self):
         super().__init__(None, None, None, None, None, None)
-        self.file = file
-        self.file_loaded = False
         
-        self.image_type: ImageFormat = None
+        self.file_loaded = False
         
         self.use_mipmap: bool = True
         self.repeat_image: bool = True
         self.unpack_alignment: bool = True
         self.poor_filtering = False
+        
+        self.converted_image = None
     
     def load(self):
-        if self.file_loaded:
-            return
-        self.file_loaded = True
-        
-        img = Image.open(self.file)
-        
+        pass
+    
+    def __loadImage(self, img):
         width, height = img.size
         
         mode: str = img.mode
-        image_type: ImageFormat = None
         mode_type: TextureFormat = None
         img_type: TextureType = None
         img_internal_format: TextureInternalFormat = None
         dtype: np.dtype = None
         
-        if mode == "1":
-            image_type = ImageFormat.BLACK_WHITE_BIT
-            dtype = np.bit
+        if mode in ["LA", "PA"]:
+            img = img.convert("RGBA")
+            mode = "RGBA"
+            self.converted_image = img
+        elif mode in ["1", "L", "P", "CMYK", "YCbCr", "LAB", "HSV"]:
+            img = img.convert("RGB")
+            mode = "RGB"
+            self.converted_image = img
+        elif mode in ["RGB", "RGBA", "BGR", "BGRA"]:
+            pass
+        else:
             raise NotImplementedError()
-        elif mode == "L":
-            image_type = ImageFormat.BLACK_WHITE
-            dtype = np.int8
-            img_type = TextureType.UNSIGNED_BYTE
-            raise NotImplementedError()
-        elif mode == "P":
-            image_type = ImageFormat.MAPPED_COLOR_PALETTE
-            dtype = np.int8
-            img_type = TextureType.UNSIGNED_BYTE
-            raise NotImplementedError()
-        elif mode == "LA":
-            image_type = ImageFormat.BLACK_WHITE_ALPHA
-            dtype = np.int8
-            img_type = TextureType.UNSIGNED_BYTE
-            raise NotImplementedError()
-        elif mode == "PA":
-            image_type = ImageFormat.MAPPED_COLOR_PALETTE_ALPHA
-            dtype = np.int8
-            img_type = TextureType.UNSIGNED_BYTE
-            raise NotImplementedError()
-        elif mode == "RGB":
-            image_type = ImageFormat.RGB
+        
+        if mode == "RGB":
             mode_type = TextureFormat.RGB
             dtype = np.uint8
             img_type = TextureType.UNSIGNED_BYTE
             img_internal_format = TextureInternalFormat.RGB8
         elif mode == "RGBA":
-            image_type = ImageFormat.RGBA
             mode_type = TextureFormat.RGBA
             dtype = np.uint8
             img_type = TextureType.UNSIGNED_BYTE
             img_internal_format = TextureInternalFormat.RGBA8
-        elif mode == "CMYK":
-            image_type = ImageFormat.CMYK
-            dtype = np.int8
+        elif mode == "BGR":
+            mode_type = TextureFormat.BGR
+            dtype = np.uint8
             img_type = TextureType.UNSIGNED_BYTE
-            raise NotImplementedError()
-        elif mode == "YCbCr":
-            image_type = ImageFormat.YCbCr
-            dtype = np.int8
+            img_internal_format = TextureInternalFormat.RGB8
+        elif mode == "BGRA":
+            mode_type = TextureFormat.BGRA
+            dtype = np.uint8
             img_type = TextureType.UNSIGNED_BYTE
-            raise NotImplementedError()
-        elif mode == "LAB":
-            image_type = ImageFormat.LAB
-            dtype = np.int8
-            img_type = TextureType.UNSIGNED_BYTE
-            raise NotImplementedError()
-        elif mode == "HSV":
-            image_type = ImageFormat.HSV
-            dtype = np.int8
-            img_type = TextureType.UNSIGNED_BYTE
-            raise NotImplementedError()
-        else:
-            raise NotImplementedError()
+            img_internal_format = TextureInternalFormat.RGBA8
         
         self.dtype = dtype
         
-        self.image_type = image_type
         self.internal_format: TextureInternalFormat = img_internal_format
         self.img_format: TextureFormat = mode_type
         self.img_type: TextureType = img_type
         self.width: int = width
         self.height: int = height
-    
+
     def getInternalFormat(self) -> TextureInternalFormat:
         self.load()
         return self.internal_format
@@ -122,15 +92,51 @@ class TextureFile(TextureData):
     def getHeight(self, resize=0.3) -> int:
         self.load()
         return super().getHeight(resize)
-    
-    def getData(self, resize=0.3) -> np.ndarray:
+
+    def __getDataImage(self, resize, image) -> np.ndarray:
         self.load()
         
+        if self.converted_image:
+            image = self.converted_image
+        
+        image = image.resize((self.getWidth(resize), self.getHeight(resize)))
+        array = np.asarray(image, dtype=self.dtype).flatten()
+        return array
+
+class TextureFile(AbstractTexturePILImage):
+    def __init__(self, file: Path):
+        super().__init__()
+        self.file = file
+
+    def load(self):
+        if self.file_loaded:
+            return
+        
+        self.file_loaded = True
+        
         with Image.open(self.file) as img:
-            img = img.resize((self.getWidth(resize), self.getHeight(resize)))
-            array = np.asarray(img, dtype=self.dtype).flatten()
-            return array
+            self._AbstractTexturePILImage__loadImage(img)
+    
+    def getData(self, resize=0.3) -> np.ndarray:
+        with Image.open(self.file) as img:
+            return self._AbstractTexturePILImage__getDataImage(resize, img)
         
         return None
         #img = Image.open(self.file)
         #return np.array(list(img.getdata()), self.dtype)
+
+class TexturePILImage(AbstractTexturePILImage):
+    def __init__(self, image: Image):
+        super().__init__()
+        self.image = image
+    
+    def load(self):
+        if self.file_loaded:
+            return
+        
+        self.file_loaded = True
+        
+        self._AbstractTexturePILImage__loadImage(self.image)
+    
+    def getData(self, resize=0.3) -> np.ndarray:
+        return self._AbstractTexturePILImage__getDataImage(resize, self.image)

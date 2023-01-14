@@ -21,7 +21,7 @@ class ColmapProject(Project):
         
         self.reconstruction = COLMAP(
                                         project_path=self.folder.absolute(),
-                                        load_images=True,
+                                        #load_depth=True,
                                         image_resize=0.3
                                     )
         

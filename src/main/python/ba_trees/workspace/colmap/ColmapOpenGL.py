@@ -115,6 +115,25 @@ class ColmapSubProjectOpenGL:
             status_texture.add(status_texture_child)
             def uploadTexture(texture = texture, repaintFunction = repaintFunction, status_texture_child = status_texture_child):
                 status_texture_child.setStatus(Status.STARTED)
+                #from pathlib import Path
+                #from PIL import Image
+                #from colmap_wrapper.colmap import read_array
+                #from render.data import TexturePILImage
+                #import cv2
+                
+                #path = Path(image.path.parent.parent, f"stereo/depth_maps/{image.name}.photometric.bin")
+                
+                #image_data = read_array(path)
+                
+                #min_depth, max_depth = np.percentile(image_data, [5, 95])
+                #image_data[image_data < min_depth] = min_depth
+                #image_data[image_data > max_depth] = max_depth
+                #image_data = cv2.cvtColor(image_data, cv2.COLOR_GRAY2BGR)
+                #image_data = (image_data / reconstruction.max_depth_scaler_photometric * 255).astype(np.uint8)
+                #image_data = cv2.cvtColor(image_data, cv2.COLOR_BGR2RGB)
+                #img = Image.fromarray(image_data, "RGB")
+                
+                #texture.upload(TexturePILImage(img))
                 texture.upload(TextureFile(image.path))
                 status_texture_child.setStatus(Status.FINISHED)
                 
