@@ -707,7 +707,7 @@ class BackgroundRenderWidget(QThread):
         glFlush() # Start Rendering if it is not happend yet
         glFinish() # Wait for finished rendering
         
-        self.saveImage(GL_COLOR_ATTACHMENT0, 0)
+        #self.saveImage(GL_COLOR_ATTACHMENT0, 0)
         #self.saveImage(GL_COLOR_ATTACHMENT1, 1)
         
         # Send Signal for finishing
