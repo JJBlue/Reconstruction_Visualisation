@@ -26,6 +26,8 @@ from render.render import FrameBuffer, RenderBuffer, Model
 from render.render.Buffer import BufferGroup
 
 
+import datetime
+
 class SelectionLines():
     def __init__(self):
         self.amount = 0
@@ -435,7 +437,7 @@ class BackgroundRenderWidget(QThread):
                     render_mesh.shader_uniforms["project_id"] = project_id
                     render_mesh.shader_uniforms["sub_project_id"] = sub_project_id
                     render_mesh.shader_uniforms["object_id"] = camera_id + 2
-                    render_collection_camera_x.childs.append(render_mesh)
+                    #render_collection_camera_x.childs.append(render_mesh)
             
                 sub_project_id += 1
             
@@ -651,8 +653,12 @@ class BackgroundRenderWidget(QThread):
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO)
         
+        a = datetime.datetime.now()
+        
         self.__visit_queue.put(self.root_collection_background)
         self.__visit_queue.put(self.root_collection)
+        
+        tmp_render_structure: dict = {}
         
         while not self.__visit_queue.empty():
             render_object = self.__visit_queue.get()
@@ -670,15 +676,13 @@ class BackgroundRenderWidget(QThread):
                 if model == None or shader == None:
                     continue
                 
-                shader.bind()
-                self.camera.updateShaderUniform(shader)
-                render_object.setShaderUniforms()
+                if not (shader in tmp_render_structure):
+                    tmp_render_structure[shader] = {}
                 
-                model.bind(shader)
-                model.draw()
-                model.unbind()
+                if not (model in tmp_render_structure[shader]):
+                    tmp_render_structure[shader][model] = []
                 
-                shader.unbind()
+                tmp_render_structure[shader][model].append(render_object)
             elif isinstance(render_object, RenderMesh):
                 mesh = render_object.mesh
                 shader = render_object.getShader()
@@ -686,15 +690,36 @@ class BackgroundRenderWidget(QThread):
                 if model == None or shader == None:
                     continue
                 
-                shader.bind()
-                self.camera.updateShaderUniform(shader)
-                render_object.setShaderUniforms()
+                if not (shader in tmp_render_structure):
+                    tmp_render_structure[shader] = {}
                 
-                mesh.bind()
-                mesh.draw()
-                mesh.unbind()
+                if not (mesh in tmp_render_structure[shader]):
+                    tmp_render_structure[shader][mesh] = []
                 
-                shader.unbind()
+                tmp_render_structure[shader][mesh].append(render_object)
+        
+        
+        for shader, ms in tmp_render_structure.items():
+            shader.bind()
+            self.camera.updateShaderUniform(shader)
+            
+            for m, render_objects in ms.items():
+                if isinstance(render_object, RenderModel):
+                    m.bind(shader)
+                elif isinstance(render_object, RenderMesh):
+                    m.bind()
+                
+                for render_object in render_objects:
+                    render_object.setShaderUniforms()
+                
+                m.draw()
+                m.unbind()
+            
+            shader.unbind()
+        
+        
+        b = datetime.datetime.now()
+        print(f"#3 {(b - a)}")
         
         # Disable OpenGL Settings
         glDisable(GL_BLEND)
@@ -702,10 +727,15 @@ class BackgroundRenderWidget(QThread):
         glDisable(GL_VERTEX_PROGRAM_POINT_SIZE)
         glDisable(GL_DEPTH_TEST)
         
+        a = datetime.datetime.now()
+        
         # Finish Draw
         self.framebuffer.unbind()
         glFlush() # Start Rendering if it is not happend yet
         glFinish() # Wait for finished rendering
+        
+        b = datetime.datetime.now()
+        print(f"#5 {(b - a)}")
         
         #self.saveImage(GL_COLOR_ATTACHMENT0, 0)
         #self.saveImage(GL_COLOR_ATTACHMENT1, 1)
