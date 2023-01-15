@@ -26,8 +26,6 @@ from render.render import FrameBuffer, RenderBuffer, Model
 from render.render.Buffer import BufferGroup
 
 
-import datetime
-
 class SelectionLines():
     def __init__(self):
         self.amount = 0
@@ -437,7 +435,7 @@ class BackgroundRenderWidget(QThread):
                     render_mesh.shader_uniforms["project_id"] = project_id
                     render_mesh.shader_uniforms["sub_project_id"] = sub_project_id
                     render_mesh.shader_uniforms["object_id"] = camera_id + 2
-                    #render_collection_camera_x.childs.append(render_mesh)
+                    render_collection_camera_x.childs.append(render_mesh)
             
                 sub_project_id += 1
             
@@ -653,8 +651,6 @@ class BackgroundRenderWidget(QThread):
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO)
         
-        a = datetime.datetime.now()
-        
         self.__visit_queue.put(self.root_collection_background)
         self.__visit_queue.put(self.root_collection)
         
@@ -717,25 +713,16 @@ class BackgroundRenderWidget(QThread):
             
             shader.unbind()
         
-        
-        b = datetime.datetime.now()
-        print(f"#3 {(b - a)}")
-        
         # Disable OpenGL Settings
         glDisable(GL_BLEND)
         glDisable(GL_CULL_FACE)
         glDisable(GL_VERTEX_PROGRAM_POINT_SIZE)
         glDisable(GL_DEPTH_TEST)
         
-        a = datetime.datetime.now()
-        
         # Finish Draw
         self.framebuffer.unbind()
         glFlush() # Start Rendering if it is not happend yet
         glFinish() # Wait for finished rendering
-        
-        b = datetime.datetime.now()
-        print(f"#5 {(b - a)}")
         
         #self.saveImage(GL_COLOR_ATTACHMENT0, 0)
         #self.saveImage(GL_COLOR_ATTACHMENT1, 1)
