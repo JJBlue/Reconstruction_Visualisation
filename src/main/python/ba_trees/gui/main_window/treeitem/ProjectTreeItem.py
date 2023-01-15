@@ -5,9 +5,6 @@ from PyQt6 import QtCore
 from ba_trees.gui.background.qt.QtFunctions import QtFunctions
 from ba_trees.gui.main_window.treeitem import Event, CustomTreeItem, PathTreeItem
 from ba_trees.gui.project_widget.ProjectWidget import ProjectWidget
-from ba_trees.status_information import StatusInformation
-from ba_trees.status_information.StatusInformation import StatusInformationChild, \
-    StatusInformations, Status
 from ba_trees.workspace import Project
 
 
@@ -20,18 +17,8 @@ class Runnable_Open_Project(QtCore.QThread):
         self.event = event
         
     def run(self):
-        status = StatusInformation()
-        status.text = f"Open Project: {self.project.getProjectName()}"
-        status_child = StatusInformationChild()
-        status.add(status_child)
-        StatusInformations.addStatus(status)
-        
-        status_child.setStatus(Status.STARTED)
-        
         self.project.open()
         self.project.load()
-        
-        status_child.setStatus(Status.FINISHED)
         
         QtFunctions.runLater(self.runLater)
     

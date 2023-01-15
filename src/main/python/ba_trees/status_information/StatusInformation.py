@@ -34,6 +34,9 @@ class StatusInformation:
         self.childs.append(child)
         self.max_amount = len(self.childs)
     
+    def get(self, index: int):
+        return self.childs[index]
+    
     def getChildsAmount(self):
         return self.max_amount
     
