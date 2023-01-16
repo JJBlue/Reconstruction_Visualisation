@@ -12,15 +12,23 @@ class Status(Enum):
 
 class StatusInformationChild:
     def __init__(self, parent = None):
-        self.parent = parent
+        self.parents: list = []
+        if parent != None:
+            self.parents.append(parent)
+        
         self.status = Status.NOT_STARTED
     
     def setStatus(self, status: Status):
-        self.status = status
-        EventManager.getEventManager().callAsync(StatusChangedEvent(self.parent, self))
+        if self.status == status:
+            return
         
-        if self.parent != None and self.parent.getChildsAmount() == self.parent.getFinishedAmount():
-            StatusInformations.removeStatus(self.parent)
+        self.status = status
+        
+        for parent in self.parents:
+            EventManager.getEventManager().callAsync(StatusChangedEvent(parent, self))
+            
+            if parent.getChildsAmount() == parent.getFinishedAmount():
+                StatusInformations.removeStatus(parent)
 
 class StatusInformation:
     def __init__(self):
@@ -30,7 +38,7 @@ class StatusInformation:
         self.max_amount = 0
     
     def add(self, child: StatusInformationChild):
-        child.parent = self
+        child.parents.append(self)
         self.childs.append(child)
         self.max_amount = len(self.childs)
     
@@ -48,13 +56,16 @@ class StatusInformation:
                 count += 1
         
         return count
+    
+    def isFinished(self):
+        return self.getChildsAmount() == self.getFinishedAmount()
 
 class StatusInformations:
-    __status: list = []
+    __status: list = set()
     
     @staticmethod
     def addStatus(status: StatusInformation):
-        StatusInformations.__status.append(status)
+        StatusInformations.__status.add(status)
         EventManager.getEventManager().callAsync(AddedStatusEvent(status))
         
         if status.getChildsAmount() == status.getFinishedAmount():
@@ -62,7 +73,7 @@ class StatusInformations:
     
     @staticmethod
     def removeStatus(status: StatusInformation):
-        StatusInformations.__status.remove(status)
+        StatusInformations.__status.discard(status)
         EventManager.getEventManager().callAsync(RemovedStatusEvent(status))
     
     @staticmethod

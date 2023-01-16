@@ -30,9 +30,6 @@ class ColmapProject(Project):
         status_project = StatusInformation()
         status_project.text = f"Open Project: {self.getProjectName()}"
         for data in LoadElement:
-            if data in [LoadElement.DEPTH_IMAGE, LoadElement.IMAGE_INFO]:
-                continue
-            
             child = StatusInformationChild()
             child.setStatus(Status.NOT_STARTED)
             status_project.add(child)
@@ -84,9 +81,6 @@ class ColmapProject(Project):
         
         status_dict = self.__status[key_project]
         
-        #if event.isStarted():
-        #    print(event.element)
-        
         if key in [LoadElement.DEPTH_IMAGE, LoadElement.IMAGE_INFO]:
             if not event.isFinished():
                 self.__lock.acquire() # Maybe for each dict a seperate Lock?
@@ -111,6 +105,9 @@ class ColmapProject(Project):
                     status = status_dict[key]
                     child = status.get(event.current_id)
                     child.setStatus(Status.FINISHED)
+                    
+                    if status.isFinished():
+                        self.__status_child[key].setStatus(Status.FINISHED)
             
             return
         

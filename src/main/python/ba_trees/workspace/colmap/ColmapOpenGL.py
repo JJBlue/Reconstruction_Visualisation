@@ -68,6 +68,32 @@ class ColmapSubProjectOpenGL:
     def create(self, repaintFunction = None):
         reconstruction = self.project.reconstruction
         
+        
+        status = StatusInformation()
+        status.text = f"Upload OpenGL Data: {self.parent.project.getProjectName()}"
+        
+        status_dense_cloud = StatusInformationChild()
+        status.add(status_dense_cloud)
+        
+        status_sparse_cloud = StatusInformationChild()
+        status.add(status_sparse_cloud)
+        
+        status_images = StatusInformationChild()
+        status.add(status_images)
+        
+        status_textures = StatusInformationChild()
+        status.add(status_textures)
+        
+        StatusInformations.addStatus(status)
+        
+        
+        # Dense Cloud
+        status2 = StatusInformation()
+        status2.text = f"Upload DenseCloud: {self.parent.project.getProjectName()}"
+        status2.add(status_dense_cloud)
+        StatusInformations.addStatus(status2)
+        status_dense_cloud.setStatus(Status.STARTED)
+        
         self.point_cloud_dense = Model()
         self.point_cloud_dense.getModelMatrix().scale(glm.fvec3(1, -1, -1))
         self.geometry_dense = GeometryO3DPointCloud(reconstruction.get_dense())
@@ -84,6 +110,15 @@ class ColmapSubProjectOpenGL:
         #opengl_mesh = OpenGLMesh(OpenGLBufferGroup.createBufferGroup(GeometryO3DTriangleMesh(p_mesh_crop)))
         #self.point_cloud_dense.addMeshes(opengl_mesh)
         
+        status_dense_cloud.setStatus(Status.FINISHED)
+        
+        
+        # Sparse Cloud
+        status2 = StatusInformation()
+        status2.text = f"Upload SparseCloud: {self.parent.project.getProjectName()}"
+        status2.add(status_sparse_cloud)
+        StatusInformations.addStatus(status2)
+        status_sparse_cloud.setStatus(Status.STARTED)
         
         self.point_cloud_sparse = Model()
         self.point_cloud_sparse.getModelMatrix().scale(glm.fvec3(1, -1, -1))
@@ -91,6 +126,15 @@ class ColmapSubProjectOpenGL:
         point_cloud_mesh = OpenGLMesh(OpenGLBufferGroup.createBufferGroup(self.geometry_sparse))
         self.point_cloud_sparse.addMeshes(point_cloud_mesh)
         
+        status_sparse_cloud.setStatus(Status.FINISHED)
+        
+        
+        # Textures / Images / Cameras
+        status2 = StatusInformation()
+        status2.text = f"Upload Camera / Image: {self.parent.project.getProjectName()}"
+        status2.add(status_images)
+        StatusInformations.addStatus(status2)
+        status_images.setStatus(Status.STARTED)
         
         status_texture = StatusInformation()
         status_texture.text = f"Upload Texture {self.parent.project.getProjectName()}"
@@ -137,6 +181,9 @@ class ColmapSubProjectOpenGL:
                 texture.upload(TextureFile(image.path))
                 status_texture_child.setStatus(Status.FINISHED)
                 
+                if status_texture.isFinished():
+                    status_textures.setStatus(Status.FINISHED)
+                
                 if repaintFunction:
                     repaintFunction()
             OpenGLData.runLater(uploadTexture)
@@ -162,6 +209,7 @@ class ColmapSubProjectOpenGL:
             
             self.cameras.append(camera)
         
+        status_images.setStatus(Status.FINISHED)
         StatusInformations.addStatus(status_texture)
         
     def reupload(self, camera_scale = 0.4):
