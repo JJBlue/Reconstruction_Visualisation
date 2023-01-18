@@ -87,8 +87,9 @@ class PointsInImageImageWidget(QTableWidget):
         
         item = QLabel()
         with Img.open(Path(sub_project.reconstruction._src_image_path, image.name)) as img:
+            width, height = img.size
             draw = ImageDraw.Draw(img)
-            size = 4
+            size = (width / 1920) * 4
             
             for point3D_id, point3D in sub_project.pycolmap.points3D.items():
                 if not image.has_point3D(point3D_id):
@@ -106,7 +107,18 @@ class PointsInImageImageWidget(QTableWidget):
             item.setScaledContents(True)
             item.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
             
+            nw = max(0, min(1200, width))
+            nh = max(0, min(675, height))
+            
+            sw = nw / width
+            sh = nh / height
+            
+            scale = sw if sw < sh else sh
+            
         self.setCellWidget(row, 0, item)
         
         self.resizeColumnsToContents()
         self.resizeRowsToContents()
+        
+        self.setColumnWidth(0, int(width * scale))
+        self.setRowHeight(0, int(height * scale))

@@ -81,9 +81,10 @@ class PointInImageTableWidget(QTableWidget):
         #scale = 0
         
         with Img.open(Path(sub_project.reconstruction._src_image_path, image.name)) as img:
+            width, _ = img.size
             draw = ImageDraw.Draw(img)
             
-            size = 30
+            size = (width / 1920) * 30
             draw.line([uv[0] - size, uv[1] - size, uv[0] + size, uv[1] + size], fill=128, width=5)
             draw.line([uv[0] + size, uv[1] - size, uv[0] - size, uv[1] + size], fill=128, width=5)
             draw.arc([uv[0] - size, uv[1] - size, uv[0] + size, uv[1] + size], 0, 360, fill=128, width=5)
