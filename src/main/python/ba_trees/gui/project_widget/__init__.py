@@ -1,3 +1,4 @@
+from .RenderWidgetTest import *
 from .render_structure import *
 from .model_settings import *
 from .RenderWidgetBackgroundTask import *

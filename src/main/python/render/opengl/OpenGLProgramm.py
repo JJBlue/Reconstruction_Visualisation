@@ -82,8 +82,14 @@ class OpenGLProgramm(Programm):
         elif isinstance(value, glm.mat3):
             glUniformMatrix3fv(location, 1, GL_FALSE, glm.value_ptr(value))
             return
+        elif isinstance(value, glm.mat3x4):
+            glUniformMatrix3x4fv(location, 1, GL_FALSE, glm.value_ptr(value))
+            return
         elif isinstance(value, glm.mat4):
             glUniformMatrix4fv(location, 1, GL_FALSE, glm.value_ptr(value))
+            return
+        elif isinstance(value, glm.mat4x3):
+            glUniformMatrix4x3fv(location, 1, GL_FALSE, glm.value_ptr(value))
             return
         
         elif isinstance(value, Texture):
