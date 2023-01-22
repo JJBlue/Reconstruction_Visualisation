@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow)
 from ba_trees.gui.background.opengl.OpenGLData import OpenGLData
 from ba_trees.gui.background.qt.QtFunctions import QtFunctions
 from ba_trees.gui.main_window import MainWindow
-from ba_trees.gui.project_widget import RenderWidgetTest
+#from ba_trees.gui.project_widget import RenderWidgetTest
 
 
 class Application:

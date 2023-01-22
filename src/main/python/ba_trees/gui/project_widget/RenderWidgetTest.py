@@ -49,82 +49,101 @@ class RenderWidgetTest(QOpenGLWidget):
         
         
         subproject = self.project.getProjects()[0].reconstruction
-        self.image = subproject.images[3]
-        
-        self.color = self.image.getData(1.0)
-        self.depth = self.image.depth_image_photometric
-        
-        extrinsics = self.image.extrinsics
-        intrinsics = self.image.intrinsics.K
         
         
-        print(self.image.name)
-        print(self.image.extrinsics)
-        print()
-        print(self.image.intrinsics.K)
-        print()
+        self.images = []
         
-        # Extrinsic parameters
-        #R, t = extrinsics[:3, :3], extrinsics[:3, 3]
-        # intrinsic points
-        #fx, fy, cx, cy = intrinsics[0, 0], intrinsics[1, 1], intrinsics[0, 2], intrinsics[1, 2]
-        
-        
-        
-        
-        self.mat_extrinsics = glm.mat4x4(1.0)
-        row = 0
-        for array_row in extrinsics:
-            column = 0
-            for value in array_row:
-                self.mat_extrinsics[column][row] = value
-                column += 1
-            row += 1
-        
-        self.mat_intrinsics = glm.mat3x3(1.0)
-        row = 0
-        for array_row in intrinsics:
-            column = 0
-            for value in array_row:
-                self.mat_intrinsics[column][row] = value
-                column += 1
-            row += 1
-        
-        
-        self.mat_extrinsics_inverse = glm.inverse(self.mat_extrinsics)
-        self.mat_intrinsics_inverse = glm.mat3x4(glm.inverse(self.mat_intrinsics))
-        
-        self.mat_intrinsics = glm.mat4x3(self.mat_intrinsics)
-        
-        
-        print(self.mat_extrinsics)
-        print()
-        print(self.mat_intrinsics)
-        print()
-        print(self.mat_extrinsics_inverse)
-        print()
-        print(self.mat_intrinsics_inverse)
-        print()
-        
-        # -0.20903162 0.69027902 0.59727322
-        # ~ 464 311
-        
-        
-        #vec = glm.vec4(-0.20903162, 0.69027902, 0.59727322, 1.0)
-        vec = glm.vec4(-0.644066, 1.83333, -2.59496, 1.0)
-        print(f"Vec:\t\t{vec}")
-        camera_vec = self.mat_extrinsics * vec
-        print(f"Camera Vec:\t{camera_vec}")
-        image_plane = self.mat_intrinsics * camera_vec
-        print(f"Image:\t\t{image_plane}")
-        print()
-        
-        
-        camera_vec = self.mat_intrinsics_inverse * image_plane
-        print(f"org1:\t\t{camera_vec}")
-        vec = self.mat_extrinsics_inverse * glm.vec4(camera_vec.xyz, 1.0)
-        print(f"org2:\t\t{vec}")
-        #exit(0)
+        for image in subproject.images.values():
+            if len(self.images) >= 2:
+                break
+            
+            data = {}
+            self.images.append(data)
+            data["image"] = image
+            
+            color = image.getData(1.0)
+            data["color"] = color
+            
+            #depth = self.image.depth_image_photometric
+            depth = image.depth_image_geometric
+            data["depth"] = depth
+            
+            extrinsics = image.extrinsics
+            intrinsics = image.intrinsics.K
+            
+            
+            #print(image.name)
+            #print(image.extrinsics)
+            #print()
+            #print(image.intrinsics.K)
+            #print()
+            
+            # Extrinsic parameters
+            #R, t = extrinsics[:3, :3], extrinsics[:3, 3]
+            # intrinsic points
+            #fx, fy, cx, cy = intrinsics[0, 0], intrinsics[1, 1], intrinsics[0, 2], intrinsics[1, 2]
+            
+            
+            
+            
+            mat_extrinsics = glm.mat4x4(1.0)
+            row = 0
+            for array_row in extrinsics:
+                column = 0
+                for value in array_row:
+                    mat_extrinsics[column][row] = value
+                    column += 1
+                row += 1
+            
+            mat_intrinsics = glm.mat3x3(1.0)
+            row = 0
+            for array_row in intrinsics:
+                column = 0
+                for value in array_row:
+                    mat_intrinsics[column][row] = value
+                    column += 1
+                row += 1
+            
+            
+            mat_extrinsics_inverse = glm.inverse(mat_extrinsics)
+            data["mat_extrinsics_inverse"] = mat_extrinsics_inverse
+            
+            mat_intrinsics_inverse = glm.mat3x4(glm.inverse(mat_intrinsics))
+            data["mat_intrinsics_inverse"] = mat_intrinsics_inverse
+            
+            mat_intrinsics = glm.mat4x3(mat_intrinsics)
+            
+            
+            print(mat_extrinsics)
+            print()
+            print(mat_intrinsics)
+            print()
+            #print(mat_extrinsics_inverse)
+            #print()
+            #print(mat_intrinsics_inverse)
+            #print()
+            
+            #R, t = extrinsics[:3, :3], extrinsics[:3, 3]
+            
+            # -0.20903162 0.69027902 0.59727322
+            # ~ 464 311
+            
+            
+            #vec = glm.vec4(-0.20903162, 0.69027902, 0.59727322, 1.0)
+            #vec = glm.vec4(-0.08, 0.39, 0.38, 1.0)
+            #print(f"Vec:\t\t{vec}")
+            #camera_vec = mat_extrinsics * vec
+            #print(f"Camera Vec:\t{camera_vec}")
+            #image_plane = mat_intrinsics * camera_vec
+            #print(f"Image:\t\t{image_plane}")
+            #print()
+            
+            
+            #camera_vec = mat_intrinsics_inverse * image_plane
+            #print(f"org1:\t\t{camera_vec}")
+            #vec = mat_extrinsics_inverse * glm.vec4(camera_vec.xyz, 1.0)
+            #print(f"org2:\t\t{vec}")
+            #exit(0)
         
     
     ##########################
@@ -243,48 +262,54 @@ class RenderWidgetTest(QOpenGLWidget):
         self.shader = OpenGLProgramm(shadergroup)
         
         
-        lists = []
-        for u in range(len(self.depth)):
-            for v in range(len(self.depth[0])):
-                lists.append([u, v])
-        
-        data_uv = GeometryData(2, numpy.asarray(lists).flatten().astype(numpy.float32), PrimitiveType.FLOAT)
-        data_depth = GeometryData(1, self.depth.flatten().astype(numpy.float32), PrimitiveType.FLOAT)
-        data_color = GeometryData(3, self.color.flatten().astype(numpy.float32), PrimitiveType.FLOAT)
-        
-        geo = Geometry()
-        geo.primtive = Primitves.POINTS
-        
-        geo.uv = data_uv
-        geo.all_vertices.append(geo.uv)
-        
-        geo.depth = data_depth
-        geo.all_vertices.append(geo.depth)
-        
-        geo.color = data_color
-        geo.all_vertices.append(geo.color)
-        
-        self.mesh = OpenGLMesh(OpenGLBufferGroup.createBufferGroup(geo))
-        
-        
-        
-        
-        
-        image_data = numpy.asarray([], dtype=numpy.uint8)
-        line_set, sphere, _ = draw_camera_viewport(
-                                                            extrinsics=self.image.extrinsics,
-                                                            intrinsics=self.image.intrinsics.K,
-                                                            image=image_data,
-                                                            scale=1.0
-                                                         )
-        
-        self.cam = Model()
-        self.cam.getModelMatrix().scale(glm.fvec3(1, -1, -1))
-        camera_mesh = OpenGLMesh(OpenGLBufferGroup.createBufferGroup(GeometryO3DLineSet(line_set)))
-        self.cam.addMeshes(camera_mesh)
-        
-        for s in sphere:
-            self.cam.addMeshes(OpenGLMesh(OpenGLBufferGroup.createBufferGroup(GeometryO3DTriangleMesh(s))))
+        for data in self.images:
+            depth = data["depth"]
+            color = data["color"]
+            image = data["image"]
+            
+            lists = []
+            for u in range(len(depth)):
+                for v in range(len(depth[0])):
+                    lists.append([v, u])
+            
+            data_uv = GeometryData(2, numpy.asarray(lists).flatten().astype(numpy.float32), PrimitiveType.FLOAT)
+            data_depth = GeometryData(1, depth.flatten().astype(numpy.float32), PrimitiveType.FLOAT)
+            data_color = GeometryData(3, color.flatten().astype(numpy.float32), PrimitiveType.FLOAT)
+            
+            geo = Geometry()
+            geo.primtive = Primitves.POINTS
+            
+            geo.uv = data_uv
+            geo.all_vertices.append(geo.uv)
+            
+            geo.depth = data_depth
+            geo.all_vertices.append(geo.depth)
+            
+            geo.color = data_color
+            geo.all_vertices.append(geo.color)
+            
+            mesh = OpenGLMesh(OpenGLBufferGroup.createBufferGroup(geo))
+            data["mesh"] = mesh
+            
+            
+            
+            
+            image_data = numpy.asarray([], dtype=numpy.uint8)
+            line_set, sphere, _ = draw_camera_viewport(
+                                                                extrinsics=image.extrinsics,
+                                                                intrinsics=image.intrinsics.K,
+                                                                image=image_data,
+                                                                scale=1.0
+                                                             )
+            
+            cam = Model()
+            #cam.getModelMatrix().scale(glm.fvec3(1, -1, -1))
+            camera_mesh = OpenGLMesh(OpenGLBufferGroup.createBufferGroup(GeometryO3DLineSet(line_set)))
+            cam.addMeshes(camera_mesh)
+            
+            for s in sphere:
+                cam.addMeshes(OpenGLMesh(OpenGLBufferGroup.createBufferGroup(GeometryO3DTriangleMesh(s))))
+            data["cam"] = cam
         
     
     def paintGL(self):
@@ -307,27 +332,32 @@ class RenderWidgetTest(QOpenGLWidget):
         
         self.camera.update()
         
-        
         self.shader_cam.bind()
         self.camera.updateShaderUniform(self.shader_cam)
-        
-        self.cam.bind(self.shader_cam)
-        self.cam.draw()
-        self.cam.unbind()
-        
+        for data in self.images:
+            cam = data["cam"]
+            cam.bind(self.shader_cam)
+            cam.draw()
+            cam.unbind()
+            
         self.shader_cam.unbind()
         
         
         
         self.shader.bind()
         self.camera.updateShaderUniform(self.shader)
-        #self.shader.uniform("extrinsics", self.mat_extrinsics)
-        #self.shader.uniform("intrinsics", self.mat_intrinsics)
-        self.shader.uniform("extrinsics", self.mat_extrinsics_inverse)
-        self.shader.uniform("intrinsics", self.mat_intrinsics_inverse)
-        
-        self.mesh.bind()
-        self.mesh.draw()
-        self.mesh.unbind()
+        for data in self.images:
+            mesh = data["mesh"]
+            mat_extrinsics_inverse = data["mat_extrinsics_inverse"]
+            mat_intrinsics_inverse = data["mat_intrinsics_inverse"]
+            
+            #self.shader.uniform("extrinsics", self.mat_extrinsics)
+            #self.shader.uniform("intrinsics", self.mat_intrinsics)
+            self.shader.uniform("extrinsics", mat_extrinsics_inverse)
+            self.shader.uniform("intrinsics", mat_intrinsics_inverse)
+            
+            mesh.bind()
+            mesh.draw()
+            mesh.unbind()
         
         self.shader.unbind()
