@@ -5,8 +5,7 @@ from PyQt6.QtCore import Qt, QPoint
 from PyQt6.QtOpenGLWidgets import QOpenGLWidget
 from colmap_wrapper.visualization.visualization import draw_camera_viewport
 import glm
-import numpy
-from numpy.array_api._data_type_functions import astype
+import numpy as np
 
 from ba_trees.gui.background.opengl.OpenGLData import OpenGLData
 from ba_trees.workspace.colmap.ColmapProject import ColmapProject
@@ -79,11 +78,23 @@ class RenderWidgetTest(QOpenGLWidget):
             #print()
             
             # Extrinsic parameters
-            #R, t = extrinsics[:3, :3], extrinsics[:3, 3]
+            R, t = extrinsics[:3, :3], extrinsics[:3, 3]
+        
             # intrinsic points
-            #fx, fy, cx, cy = intrinsics[0, 0], intrinsics[1, 1], intrinsics[0, 2], intrinsics[1, 2]
+            fx, fy, cx, cy = intrinsics[0, 0], intrinsics[1, 1], intrinsics[0, 2], intrinsics[1, 2]
+        
+            # Normalize to 1
+            max_norm = max(fx, fy, cx, cy)
+        
+            points = [
+                t,
+                t + np.asarray([cx, cy, fx]) / max_norm @ R.T,
+                t + np.asarray([cx, -cy, fx]) / max_norm @ R.T,
+                t + np.asarray([-cx, -cy, fx]) / max_norm @ R.T,
+                t + np.asarray([-cx, cy, fx]) / max_norm @ R.T,
+            ]
             
-            
+            #print(points)
             
             
             mat_extrinsics = glm.mat4x4(1.0)
@@ -105,6 +116,8 @@ class RenderWidgetTest(QOpenGLWidget):
                 row += 1
             
             
+            #mat_intrinsics = mat_intrinsics / max_norm
+            
             mat_extrinsics_inverse = glm.inverse(mat_extrinsics)
             data["mat_extrinsics_inverse"] = mat_extrinsics_inverse
             
@@ -114,10 +127,10 @@ class RenderWidgetTest(QOpenGLWidget):
             mat_intrinsics = glm.mat4x3(mat_intrinsics)
             
             
-            print(mat_extrinsics)
-            print()
-            print(mat_intrinsics)
-            print()
+            #print(mat_extrinsics)
+            #print()
+            #print(mat_intrinsics)
+            #print()
             #print(mat_extrinsics_inverse)
             #print()
             #print(mat_intrinsics_inverse)
@@ -130,18 +143,18 @@ class RenderWidgetTest(QOpenGLWidget):
             
             
             #vec = glm.vec4(-0.20903162, 0.69027902, 0.59727322, 1.0)
-            #vec = glm.vec4(-0.08, 0.39, 0.38, 1.0)
+            #vec = glm.vec4(-2.02027431, -0.76609883,  0.96236055, 1.0)
             #print(f"Vec:\t\t{vec}")
-            #camera_vec = mat_extrinsics * vec
+            #camera_vec = mat_extrinsics @ vec
             #print(f"Camera Vec:\t{camera_vec}")
-            #image_plane = mat_intrinsics * camera_vec
+            #image_plane = mat_intrinsics @ camera_vec
             #print(f"Image:\t\t{image_plane}")
             #print()
             
             
-            #camera_vec = mat_intrinsics_inverse * image_plane
+            #camera_vec = mat_intrinsics_inverse @ image_plane
             #print(f"org1:\t\t{camera_vec}")
-            #vec = mat_extrinsics_inverse * glm.vec4(camera_vec.xyz, 1.0)
+            #vec = mat_extrinsics_inverse @ glm.vec4(camera_vec.xyz, 1.0)
             #print(f"org2:\t\t{vec}")
             #exit(0)
         
@@ -272,9 +285,9 @@ class RenderWidgetTest(QOpenGLWidget):
                 for v in range(len(depth[0])):
                     lists.append([v, u])
             
-            data_uv = GeometryData(2, numpy.asarray(lists).flatten().astype(numpy.float32), PrimitiveType.FLOAT)
-            data_depth = GeometryData(1, depth.flatten().astype(numpy.float32), PrimitiveType.FLOAT)
-            data_color = GeometryData(3, color.flatten().astype(numpy.float32), PrimitiveType.FLOAT)
+            data_uv = GeometryData(2, np.asarray(lists).flatten().astype(np.float32), PrimitiveType.FLOAT)
+            data_depth = GeometryData(1, depth.flatten().astype(np.float32), PrimitiveType.FLOAT)
+            data_color = GeometryData(3, color.flatten().astype(np.float32), PrimitiveType.FLOAT)
             
             geo = Geometry()
             geo.primtive = Primitves.POINTS
@@ -294,7 +307,7 @@ class RenderWidgetTest(QOpenGLWidget):
             
             
             
-            image_data = numpy.asarray([], dtype=numpy.uint8)
+            image_data = np.asarray([], dtype=np.uint8)
             line_set, sphere, _ = draw_camera_viewport(
                                                                 extrinsics=image.extrinsics,
                                                                 intrinsics=image.intrinsics.K,

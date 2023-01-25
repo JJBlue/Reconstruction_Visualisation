@@ -226,17 +226,10 @@ class BackgroundRenderWidget(QThread):
                         selected_pixels.append(pick_result)
                         break
         
+        self.lines.clearLines()
         if len(selected_pixels) <= 0:
             print("nothing found")
-            self.lines.clearLines()
             return
-        
-        # Test Files
-        # 9383 <Point3D 'xyz=[0.0222964  0.811361  0.574178], track_length=3, error=0.276763'> [0.02229639 0.8113615  0.57417846]
-        # 4073 vec3(    0.0222964,     0.811361,     0.574178 )
-        # Three Cameras (x x 0 x)
-        #selected_pixels = [MousePickInfo(0, 0, 4073)]
-        self.lines.clearLines()
         
         # Add To Result Window (tmp_list)
         piig_list = []
@@ -257,40 +250,22 @@ class BackgroundRenderWidget(QThread):
             # Dense
             if object_id == 0:
                 vertices = sub_project_opengl.geometry_dense.vertices.data
-                point3D_glm = glm.vec3(vertices[point_id * 3], vertices[point_id * 3 + 1], vertices[point_id * 3 + 2])
-                
-                # Dense Point to nearest Sparse Point
-                sparse_id_nearest = -1
-                sparse_last_distance = -1
-                
-                geometry_data = sub_project_opengl.geometry_sparse.vertices
-                vertices_sparse = geometry_data.data
-                for i in range(geometry_data.getSize()):
-                    point3D_sparse_glm = glm.vec3(vertices_sparse[i * 3], vertices_sparse[i * 3 + 1], vertices_sparse[i * 3 + 2])
-                    
-                    distance = glm.distance2(point3D_glm, point3D_sparse_glm)
-                    if sparse_last_distance == -1 or sparse_last_distance > distance:
-                        sparse_id_nearest = i
-                        sparse_last_distance = distance
+                _, sparse_id_nearest = sub_project_opengl.tree_sparse.query([[vertices[point_id * 3], vertices[point_id * 3 + 1], vertices[point_id * 3 + 2]]], k=1)
                 
                 # Set for next Step in Sparse
                 object_id = 1
-                point_id = sparse_id_nearest
+                point_id = sparse_id_nearest[0][0]
                 object_id = 1
             
             # Sparse
             if object_id == 1:
-                vertices = sub_project_opengl.geometry_sparse.vertices.data
-                point3D_glm = glm.vec3(vertices[point_id * 3], vertices[point_id * 3 + 1], vertices[point_id * 3 + 2])
+                point3D_array = sub_project_opengl.tree_sparse_coords[point_id]
+                _, point3d_id_nearest = sub_project_opengl.tree_point3d.query([point3D_array], k=1)
+                point3d_id_nearest = point3d_id_nearest[0][0]
                 
                 # World to Image
-                point3d_id = None
-                point3D = None
-                for i, p in sub_project.pycolmap.points3D.items():
-                    pf = np.asarray(p.xyz, dtype=np.float32)
-                    if pf[0] == point3D_glm.x and pf[1] == point3D_glm.y and pf[2] == point3D_glm.z:
-                        point3d_id = i
-                        point3D = p
+                point3d_id = sub_project_opengl.tree_point3d_ids[point3d_id_nearest]
+                point3D = sub_project_opengl.tree_point3d_points[point3d_id_nearest]
                 
                 if point3d_id == None:
                     print("point3d_id not found")
@@ -310,11 +285,11 @@ class BackgroundRenderWidget(QThread):
                     point3D_camera = glm.vec3(vertices[0], vertices[1], vertices[2])
             
                     # Create OpenGL Lines
-                    self.lines.addLine(glm.vec3(point3D_glm.x, -point3D_glm.y, -point3D_glm.z), glm.vec3(point3D_camera.x, -point3D_camera.y, -point3D_camera.z))
+                    self.lines.addLine(glm.vec3(point3D_array[0], -point3D_array[1], -point3D_array[2]), glm.vec3(point3D_camera.x, -point3D_camera.y, -point3D_camera.z))
                     
                     # Add To Result Window
                     piig_list.append([sub_project, camera, image, point3D, point3d_id])
-            
+                
             # Camera/Images
             elif object_id >= 2:
                 selected_image = None
@@ -334,28 +309,27 @@ class BackgroundRenderWidget(QThread):
                 camera = sub_project.pycolmap.cameras[camera_id]
                 
                 psiig_list.append([sub_project, camera, image])
-                
         
         if piig_list:
             # Add Tab (Run Later in Qt-Thread)
-            def lambda_window_tab():
+            def lambda_window_tab(piig_list=piig_list):
                 piig = PointInImageWidget()
+                point_id = None
                 
                 for piig_arg in piig_list:
                     piig.addImage(piig_arg[0], piig_arg[1], piig_arg[2], piig_arg[3])
-                
-                window.ui.tabs.addTab(piig, f"ProjectName - {piig_arg[4]}")
+                    point_id = piig_arg[4]
+                    
+                window.ui.tabs.addTab(piig, f"ProjectName - {point_id}")
             QtFunctions.runLater(lambda_window_tab)
         
         if psiig_list:
             # Add Tab (Run Later in Qt-Thread)
-            def lambda_window_tab():
-                piig = PointsInImageWidget()
-                
+            def lambda_window_tab(psiig_list=psiig_list):
                 for piig_arg in psiig_list:
+                    piig = PointsInImageWidget()
                     piig.addImage(piig_arg[0], piig_arg[1], piig_arg[2])
-                
-                window.ui.tabs.addTab(piig, f"ProjectName - {piig_arg[2].name}")
+                    window.ui.tabs.addTab(piig, f"ProjectName - {piig_arg[2].name}")
             QtFunctions.runLater(lambda_window_tab)
     
     def addProject(self, project: Project):

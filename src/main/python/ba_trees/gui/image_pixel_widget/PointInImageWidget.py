@@ -1,3 +1,5 @@
+from threading import Thread
+
 from pathlib import Path
 
 from PIL import Image as Img, ImageDraw
@@ -6,6 +8,7 @@ from PyQt6.QtWidgets import (QWidget, QTableWidgetItem, QTableWidget, QLabel, QS
 from pycolmap import Camera, Image, Point3D
 
 from ba_trees.gui.image_pixel_widget.PointInImageSetup import Ui_point_in_image_form
+from ba_trees.gui.background.qt.QtFunctions import QtFunctions
 
 
 class PointInImageWidget(QWidget):
@@ -78,33 +81,38 @@ class PointInImageTableWidget(QTableWidget):
         
         item = QLabel()
         uv = camera.world_to_image(image.project(point.xyz))
-        #scale = 0
         
-        with Img.open(Path(sub_project.reconstruction._src_image_path, image.name)) as img:
-            width, _ = img.size
-            draw = ImageDraw.Draw(img)
+        def runLater(item=item, row=row, uv=uv):
+            with Img.open(Path(sub_project.reconstruction._src_image_path, image.name)) as img:
+                width, _ = img.size
+                draw = ImageDraw.Draw(img)
+                
+                factor = (width / 1920)
+                size = factor * 30
+                thickness = 5 if factor < 1 else int(5*factor)
+                
+                draw.line([uv[0] - size, uv[1] - size, uv[0] + size, uv[1] + size], fill=128, width=thickness)
+                draw.line([uv[0] + size, uv[1] - size, uv[0] - size, uv[1] + size], fill=128, width=thickness)
+                draw.arc([uv[0] - size, uv[1] - size, uv[0] + size, uv[1] + size], 0, 360, fill=128, width=thickness)
+                
+                img2 = img.convert("RGBA")
+                data = img2.tobytes("raw", "BGRA")
+                scale = float(img2.height) / float(img2.width)
+                qimg = QImage(data, img2.width, img2.height, QImage.Format.Format_ARGB32)
+                pixmap = QPixmap(qimg)
+                
+                item.setPixmap(pixmap)
+                item.setScaledContents(True)
+                item.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
             
-            size = (width / 1920) * 30
-            draw.line([uv[0] - size, uv[1] - size, uv[0] + size, uv[1] + size], fill=128, width=5)
-            draw.line([uv[0] + size, uv[1] - size, uv[0] - size, uv[1] + size], fill=128, width=5)
-            draw.arc([uv[0] - size, uv[1] - size, uv[0] + size, uv[1] + size], 0, 360, fill=128, width=5)
-            
-            img2 = img.convert("RGBA")
-            data = img2.tobytes("raw", "BGRA")
-            scale = float(img2.height) / float(img2.width)
-            qimg = QImage(data, img2.width, img2.height, QImage.Format.Format_ARGB32)
-            pixmap = QPixmap(qimg)
-            
-            item.setPixmap(pixmap)
-            item.setScaledContents(True)
-            item.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
+            def runLaterLater(item=item, row=row, scale=scale):
+                self.setCellWidget(row, 2, item)
+                self.setRowHeight(row, int(scale * self.columnWidth(2)))
+                
+                item = QTableWidgetItem(image.name)
+                self.setItem(row, 3, item)
+                
+            QtFunctions.runLater(runLaterLater)
         
-        self.setCellWidget(row, 2, item)
-        
-        item = QTableWidgetItem(image.name)
-        self.setItem(row, 3, item)
-        
-        #self.resizeColumnsToContents()
-        #self.resizeRowsToContents()
-        
-        self.setRowHeight(row, int(scale * self.columnWidth(2)))
+        thread = Thread(target=runLater)
+        thread.start()

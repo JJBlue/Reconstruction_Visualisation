@@ -1,13 +1,16 @@
+import glm
+import numpy as np
+
+from sklearn.neighbors import KDTree
+
 from colmap_wrapper.colmap.camera import ImageInformation
 from colmap_wrapper.visualization import draw_camera_viewport
-import glm
 
 from ba_trees.gui.background.opengl.OpenGLData import OpenGLData
 from ba_trees.status_information import StatusInformation
-from ba_trees.status_information.StatusInformation import StatusInformationChild, \
-    Status, StatusInformations
+from ba_trees.status_information.StatusInformation import (StatusInformationChild, Status, StatusInformations)
 from ba_trees.workspace.colmap import ColmapProject
-import numpy as np
+
 from render.data import (GeometryO3DPointCloud, GeometryO3DLineSet, GeometryO3DTriangleMesh, TextureFile)
 from render.opengl import OpenGLMesh, OpenGLTexture
 from render.opengl.OpenGLBuffer import OpenGLBufferGroup
@@ -58,6 +61,15 @@ class ColmapSubProjectOpenGL:
         
         self.geometry_sparse = None # O3D GeometryData
         self.point_cloud_sparse = None # Model
+        
+        
+        self.tree_sparse = None
+        self.tree_sparse_coords = []
+        
+        self.tree_point3d = None
+        self.tree_point3d_coords = []
+        self.tree_point3d_points = []
+        self.tree_point3d_ids = []
     
     def __del__(self):
         self.delete()
@@ -67,6 +79,7 @@ class ColmapSubProjectOpenGL:
     
     def create(self, repaintFunction = None):
         reconstruction = self.project.reconstruction
+        pycolmap = self.project.pycolmap
         
         
         status = StatusInformation()
@@ -86,6 +99,18 @@ class ColmapSubProjectOpenGL:
         
         StatusInformations.addStatus(status)
         
+        # Create PyColmap Point3D KD-Tree
+        self.tree_point3d_coords = []
+        self.tree_point3d_points = []
+        self.tree_point3d_ids = []
+        for i, p in pycolmap.points3D.items():
+            self.tree_point3d_coords.append([p.x, p.y, p.z])
+            self.tree_point3d_points.append(p)
+            self.tree_point3d_ids.append(i)
+        
+        self.tree_point3d = KDTree(self.tree_point3d_coords, leaf_size=2)
+
+
         
         # Dense Cloud
         status2 = StatusInformation()
@@ -120,6 +145,11 @@ class ColmapSubProjectOpenGL:
         StatusInformations.addStatus(status2)
         status_sparse_cloud.setStatus(Status.STARTED)
         
+        # Create KD-Tree
+        self.tree_sparse_coords = np.asarray(reconstruction.get_sparse().points)
+        self.tree_sparse = KDTree(self.tree_sparse_coords, leaf_size=2)
+        
+        # Create OpenGL
         self.point_cloud_sparse = Model()
         self.point_cloud_sparse.getModelMatrix().scale(glm.fvec3(1, -1, -1))
         self.geometry_sparse = GeometryO3DPointCloud(reconstruction.get_sparse()) # Saved for later usage (for example: Information for MouseClick)

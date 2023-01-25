@@ -14,7 +14,7 @@ out vec3 col;
 out float disc;
 
 void main() {
-	vec4 pos = extrinsics * vec4((intrinsics * vec3(uv.x, uv.y, depth / 50 )).xyz, 1.0);
+	vec4 pos = extrinsics * vec4((intrinsics * vec3(uv.x, uv.y, depth / 10)).xyz, 1.0);
 	//pos = vec4(uv.x, uv.y, 0.0, 1.0);
 	//pos = vec4(pos.x, -pos.y, -pos.z, pos.w);
 	gl_Position = proj * view * pos;

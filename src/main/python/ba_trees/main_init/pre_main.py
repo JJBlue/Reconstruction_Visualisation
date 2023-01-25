@@ -27,7 +27,7 @@ def loadArgs():
 def loadDependencies():
     print("Check Dependencies")
     
-    packages = ["PyQt6", "configparser", "PyOpenGL", "PyGLM", "numpy", "Pillow", "open3d", "pycolmap", "opencv-python", "colmap-wrapper"] # PyQt6-Qt6, PyQt6-sip, PyQt6
+    packages = ["PyQt6", "configparser", "PyOpenGL", "PyGLM", "numpy", "Pillow", "open3d", "pycolmap", "opencv-python", "colmap-wrapper", "scikit-learn"] # PyQt6-Qt6, PyQt6-sip, PyQt6
     if not check_installation(packages) :
         print("%installation.failed%")
         sys.exit(1)

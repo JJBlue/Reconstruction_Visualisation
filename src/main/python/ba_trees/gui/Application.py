@@ -6,7 +6,6 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow)
 from ba_trees.gui.background.opengl.OpenGLData import OpenGLData
 from ba_trees.gui.background.qt.QtFunctions import QtFunctions
 from ba_trees.gui.main_window import MainWindow
-#from ba_trees.gui.project_widget import RenderWidgetTest
 
 
 class Application:
@@ -18,6 +17,8 @@ class Application:
         OpenGLData.start()
         
         self.window = MainWindow()
+        
+        #from ba_trees.gui.project_widget import RenderWidgetTest
         #widget = RenderWidgetTest()
         #self.window.ui.tabs.addTab(widget, "Project")
     
