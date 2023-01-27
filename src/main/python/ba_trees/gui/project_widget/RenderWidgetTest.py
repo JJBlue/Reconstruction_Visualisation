@@ -81,20 +81,16 @@ class RenderWidgetTest(QOpenGLWidget):
             R, t = extrinsics[:3, :3], extrinsics[:3, 3]
         
             # intrinsic points
-            fx, fy, cx, cy = intrinsics[0, 0], intrinsics[1, 1], intrinsics[0, 2], intrinsics[1, 2]
+            fx, fy, S, cx, cy = intrinsics[0, 0], intrinsics[1, 1], intrinsics[0, 1], intrinsics[0, 2], intrinsics[1, 2]
         
-            # Normalize to 1
-            max_norm = max(fx, fy, cx, cy)
-        
-            points = [
-                t,
-                t + np.asarray([cx, cy, fx]) / max_norm @ R.T,
-                t + np.asarray([cx, -cy, fx]) / max_norm @ R.T,
-                t + np.asarray([-cx, -cy, fx]) / max_norm @ R.T,
-                t + np.asarray([-cx, cy, fx]) / max_norm @ R.T,
-            ]
-            
-            #print(points)
+            # Same as mat_intrinsics_inverse
+            intrinsics_inverse = glm.mat4x4()
+            intrinsics_inverse[0, 0] = 1.0 / fx
+            intrinsics_inverse[1, 0] = -S / (fx * fy)
+            intrinsics_inverse[2, 0] = (S * cy - cx * fy) / (fx * fy)
+            intrinsics_inverse[1, 1] = 1.0 / fy
+            intrinsics_inverse[2, 1] = -cy / fy
+            intrinsics_inverse[2, 2] = 1
             
             
             mat_extrinsics = glm.mat4x4(1.0)
