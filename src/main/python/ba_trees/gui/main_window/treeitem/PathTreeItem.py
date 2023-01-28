@@ -2,9 +2,9 @@ from pathlib import Path
 import subprocess
 
 from PyQt6.QtGui import QPixmap
-from PyQt6.QtWidgets import QLabel, QScrollArea
 
 from ba_trees.gui.main_window.treeitem import CustomTreeItem, Event
+from ba_trees.gui.selection_widget import ImageView
 
 
 class PathTreeItem(CustomTreeItem):
@@ -28,16 +28,13 @@ class PathTreeItem(CustomTreeItem):
         if self.path.exists():
             if self.path.is_file():
                 # Open Image
-                if self.path.suffix.lower() in [".jpg", ".jpeg", ".jfif", ".pjpeg", ".pjp", ".png", ".bmp", ".raw"]:
+                if self.path.suffix.lower() in [".jpg", ".jpeg", ".jfif", ".pjpeg", ".pjp", ".png", ".bmp", ".raw", ".ppm"]:
                     pixmap: QPixmap = QPixmap(str(self.path))
                     
-                    image: QLabel = QLabel()
-                    image.setPixmap(pixmap)
+                    view = ImageView()
+                    view.setImage(pixmap)
                     
-                    area: QScrollArea = QScrollArea()
-                    area.setWidget(image)
-                    
-                    window.ui.tabs.addTab(area, self.text())
+                    window.ui.tabs.addTab(view, self.text())
                 else:
                     subprocess.Popen(r'explorer /select,"' + str(self.path) + '"')
             elif self.path.is_dir():

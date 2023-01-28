@@ -79,7 +79,7 @@ class RenderWidgetTest(QOpenGLWidget):
             
             # Extrinsic parameters
             R, t = extrinsics[:3, :3], extrinsics[:3, 3]
-        
+            
             # intrinsic points
             fx, fy, S, cx, cy = intrinsics[0, 0], intrinsics[1, 1], intrinsics[0, 1], intrinsics[0, 2], intrinsics[1, 2]
         
@@ -139,20 +139,28 @@ class RenderWidgetTest(QOpenGLWidget):
             
             
             #vec = glm.vec4(-0.20903162, 0.69027902, 0.59727322, 1.0)
-            #vec = glm.vec4(-2.02027431, -0.76609883,  0.96236055, 1.0)
-            #print(f"Vec:\t\t{vec}")
-            #camera_vec = mat_extrinsics @ vec
-            #print(f"Camera Vec:\t{camera_vec}")
-            #image_plane = mat_intrinsics @ camera_vec
-            #print(f"Image:\t\t{image_plane}")
-            #print()
+            vec = glm.vec4(-2.02027431, -0.76609883,  0.96236055, 1.0)
+            print(f"Vec:\t\t{vec}")
+            camera_vec = mat_extrinsics @ vec
+            print(f"Camera Vec:\t{camera_vec}")
+            mat_intrinsics = glm.mat4x4(mat_intrinsics)
+            image_plane = mat_intrinsics @ camera_vec
+            print(f"Image:\t\t{image_plane}")
+            image_uv = (1.0/vec.z) * image_plane
+            #image_uv = image_uv / image_uv.z
+            image_uv = glm.vec4(image_uv.x, image_uv.y, 1.0, 1.0/vec.z)
+            print(f"UV:\t\t{image_uv}")
+            print()
             
             
             #camera_vec = mat_intrinsics_inverse @ image_plane
             #print(f"org1:\t\t{camera_vec}")
             #vec = mat_extrinsics_inverse @ glm.vec4(camera_vec.xyz, 1.0)
-            #print(f"org2:\t\t{vec}")
-            #exit(0)
+            
+            mat_intrinsics_inverse = glm.mat4x4(mat_intrinsics_inverse)
+            vec = (1.0/image_uv.w) * mat_intrinsics_inverse @ image_uv
+            print(f"org:\t\t{vec}")
+            exit(0)
         
     
     ##########################

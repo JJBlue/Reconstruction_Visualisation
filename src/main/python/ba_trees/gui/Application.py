@@ -18,6 +18,11 @@ class Application:
         
         self.window = MainWindow()
         
+        #from ba_trees.gui.selection_widget import SelectionPointsImageWidget
+        #widget = SelectionPointsImageWidget()
+        #widget.setImage("")
+        #self.window.ui.tabs.addTab(widget, "test")
+        
         #from ba_trees.gui.project_widget import RenderWidgetTest
         #widget = RenderWidgetTest()
         #self.window.ui.tabs.addTab(widget, "Project")
