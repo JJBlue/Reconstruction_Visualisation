@@ -13,6 +13,7 @@ class ImageView(QScrollArea):
         # Variables
         self.image: QPixmap = None
         self.scale_factor: float = 1.0
+        self.boundWidth = False # TODo
         self.__resized = False
         
         

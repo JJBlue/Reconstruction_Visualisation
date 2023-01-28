@@ -65,6 +65,12 @@
           </property>
          </widget>
          <widget class="QWidget" name="widget_2" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <layout class="QVBoxLayout" name="verticalLayout_4">
            <property name="leftMargin">
             <number>0</number>
@@ -87,16 +93,17 @@
               </sizepolicy>
              </property>
              <property name="currentIndex">
-              <number>1</number>
+              <number>0</number>
              </property>
-             <widget class="QWidget" name="tab_3">
+             <widget class="SelectionPointsInImageWidget" name="tab_3">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <attribute name="title">
-               <string>Tab 1</string>
-              </attribute>
-             </widget>
-             <widget class="QWidget" name="tab_4">
-              <attribute name="title">
-               <string>Tab 2</string>
+               <string>Selection</string>
               </attribute>
              </widget>
             </widget>
@@ -254,8 +261,8 @@
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>256</width>
-                   <height>547</height>
+                   <width>155</width>
+                   <height>96</height>
                   </rect>
                  </property>
                  <attribute name="label">
@@ -480,6 +487,12 @@
     <signal>modelVisibleChanged(bool)</signal>
     <slot>setModelVisible(bool)</slot>
    </slots>
+  </customwidget>
+  <customwidget>
+   <class>SelectionPointsInImageWidget</class>
+   <extends>QWidget</extends>
+   <header>ba_trees.gui.selection_widget.SelectionPointsInImageWidget.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -1,10 +1,10 @@
 from PyQt6.QtCore import QPoint
 from PyQt6.QtGui import QPainter, QPen, QColor
 
-from ba_trees.gui.selection_widget import ImageView
+from ba_trees.gui.imageview import ImageView
 
 
-class SelectionPointsImageWidget(ImageView):
+class SelectedImageWidget(ImageView):
     def __init__(self, *args):
         super().__init__(*args)
         

@@ -32,6 +32,11 @@ class Ui_root(object):
         self.opengl_widget.setSizePolicy(sizePolicy)
         self.opengl_widget.setObjectName("opengl_widget")
         self.widget_2 = QtWidgets.QWidget(self.splitter)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.MinimumExpanding, QtWidgets.QSizePolicy.Policy.MinimumExpanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.widget_2.sizePolicy().hasHeightForWidth())
+        self.widget_2.setSizePolicy(sizePolicy)
         self.widget_2.setObjectName("widget_2")
         self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.widget_2)
         self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
@@ -43,12 +48,14 @@ class Ui_root(object):
         sizePolicy.setHeightForWidth(self.tabWidget_2.sizePolicy().hasHeightForWidth())
         self.tabWidget_2.setSizePolicy(sizePolicy)
         self.tabWidget_2.setObjectName("tabWidget_2")
-        self.tab_3 = QtWidgets.QWidget()
+        self.tab_3 = SelectionPointsInImageWidget()
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.MinimumExpanding, QtWidgets.QSizePolicy.Policy.MinimumExpanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.tab_3.sizePolicy().hasHeightForWidth())
+        self.tab_3.setSizePolicy(sizePolicy)
         self.tab_3.setObjectName("tab_3")
         self.tabWidget_2.addTab(self.tab_3, "")
-        self.tab_4 = QtWidgets.QWidget()
-        self.tab_4.setObjectName("tab_4")
-        self.tabWidget_2.addTab(self.tab_4, "")
         self.verticalLayout_4.addWidget(self.tabWidget_2)
         self.widget_3 = QtWidgets.QWidget(self.splitter_2)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.MinimumExpanding, QtWidgets.QSizePolicy.Policy.MinimumExpanding)
@@ -112,7 +119,7 @@ class Ui_root(object):
         self.formLayout.setWidget(0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.setting_point_cloud)
         self.toolBox.addItem(self.page_2, "")
         self.page_3 = QtWidgets.QWidget()
-        self.page_3.setGeometry(QtCore.QRect(0, 0, 256, 547))
+        self.page_3.setGeometry(QtCore.QRect(0, 0, 155, 96))
         self.page_3.setObjectName("page_3")
         self.formLayout_2 = QtWidgets.QFormLayout(self.page_3)
         self.formLayout_2.setObjectName("formLayout_2")
@@ -192,7 +199,7 @@ class Ui_root(object):
         self.verticalLayout.addWidget(self.widget)
 
         self.retranslateUi(root)
-        self.tabWidget_2.setCurrentIndex(1)
+        self.tabWidget_2.setCurrentIndex(0)
         self.tabWidget.setCurrentIndex(1)
         self.toolBox.setCurrentIndex(2)
         self.model_settings.setCurrentIndex(0)
@@ -216,8 +223,7 @@ class Ui_root(object):
     def retranslateUi(self, root):
         _translate = QtCore.QCoreApplication.translate
         root.setWindowTitle(_translate("root", "Form"))
-        self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.tab_3), _translate("root", "Tab 1"))
-        self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.tab_4), _translate("root", "Tab 2"))
+        self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.tab_3), _translate("root", "Selection"))
         self.checkBox.setText(_translate("root", "Show Coordinate System"))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page), _translate("root", "Default System"))
         self.label.setText(_translate("root", "Point Size:"))
@@ -234,3 +240,4 @@ from ba_trees.gui.project_widget.ModelsTreeView import ModelsTreeView
 from ba_trees.gui.project_widget.RenderWidget import RenderWidget
 from ba_trees.gui.project_widget.model_settings.ModelSettingDefault import ModelSettingDefault
 from ba_trees.gui.project_widget.model_settings.ModelToolBox import ModelToolBox
+from ba_trees.gui.selection_widget.SelectionPointsInImageWidget import SelectionPointsInImageWidget

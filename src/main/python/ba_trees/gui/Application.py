@@ -20,7 +20,7 @@ class Application:
         
         #from ba_trees.gui.selection_widget import SelectionPointsImageWidget
         #widget = SelectionPointsImageWidget()
-        #widget.setImage("")
+        #widget.setImage("J:/Codes/git/BA_Trees/config/workspace/reconstruction/dense/0/images/DSC_6103.JPG")
         #self.window.ui.tabs.addTab(widget, "test")
         
         #from ba_trees.gui.project_widget import RenderWidgetTest

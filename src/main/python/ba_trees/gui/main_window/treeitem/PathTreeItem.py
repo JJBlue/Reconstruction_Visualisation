@@ -4,7 +4,7 @@ import subprocess
 from PyQt6.QtGui import QPixmap
 
 from ba_trees.gui.main_window.treeitem import CustomTreeItem, Event
-from ba_trees.gui.selection_widget import ImageView
+from ba_trees.gui.imageview import ImageView
 
 
 class PathTreeItem(CustomTreeItem):

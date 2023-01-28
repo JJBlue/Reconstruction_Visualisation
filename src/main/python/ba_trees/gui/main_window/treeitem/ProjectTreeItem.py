@@ -23,7 +23,7 @@ class Runnable_Open_Project(QtCore.QThread):
         QtFunctions.runLater(self.runLater)
     
     def runLater(self):
-        self.project_widget.ui.opengl_widget.addProject(self.project)
+        self.project_widget.setProject(self.project)
 
 class ProjectTreeItem(CustomTreeItem):
     def __init__(self, project: Project):

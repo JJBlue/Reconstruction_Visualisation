@@ -1,2 +1,4 @@
-from .ImageView import *
-from .SelectionPointsImageWidget import *
+from .SelectionInformation import *
+from .SelectedImageWidget import *
+from .SelectionPointsInImageWidgetSetup import *
+from .SelectionPointsInImageWidget import *
