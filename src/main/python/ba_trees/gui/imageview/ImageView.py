@@ -13,12 +13,22 @@ class ImageView(QScrollArea):
         # Variables
         self.image: QPixmap = None
         self.scale_factor: float = 1.0
-        self.boundWidth = False # TODo
+        self.boundWidth = False # TODO
+        self.boundHeight = False
+        
+        self.boundsSizeFunctions = []
+        self.boundsWidthFunctions = []
+        self.boundsHeightFunctions = []
+        
+        self.disableScroll = False
+        
         self.__resized = False
+        self.__resizeevent = False
         
         
         # Qt Widgets
         self.setBackgroundRole(QPalette.ColorRole.Dark)
+        self.setWidgetResizable(True)
         
         self.image_widget = QLabel()
         self.image_widget.setScaledContents(True)
@@ -27,10 +37,53 @@ class ImageView(QScrollArea):
         
         self.painter: QPainter = None
         self.pixmap: QPixmap = None
+        
+        self.size_hint = QSize(1, 1)
     
     def __del__(self):
         del self.painter
         del self.pixmap
+    
+    def resizeEvent(self, event):
+        if self.image == None or self.__resizeevent:
+            return
+        
+        self.__resizeevent = True
+        
+        size: QSize = event.size()
+        
+        
+        if self.boundWidth:
+            scale = size.width() / self.image.width()
+        elif self.boundHeight:
+            scale = size.height() / self.image.height()
+        else:
+            scaleWidth = size.width() / self.image.width()
+            scaleHeight = size.height() / self.image.height()
+            
+            scale = scaleWidth if scaleWidth < scaleHeight or scaleHeight <= 0 else scaleHeight
+            scale = scale if scale > 0 else self.scale_factor
+        
+        self.resizeImage(scale)
+        
+        self.size_hint.setWidth(size.width() if self.boundWidth else self.pixmap.width())
+        self.size_hint.setHeight(size.height() if self.boundHeight else self.pixmap.height())
+        
+        self.resize(self.size_hint)
+        
+        for func in self.boundsSizeFunctions:
+            func(self.size_hint)
+        
+        for func in self.boundsWidthFunctions:
+            func(QSize(self.size_hint.width(), 0))
+        
+        for func in self.boundsHeightFunctions:
+            func(QSize(0, self.size_hint.height()))
+        
+        self.__resizeevent = False
+    
+    def sizeHint(self):
+        return self.size_hint
     
     def setImage(self, image):
         if isinstance(image, str):
@@ -87,6 +140,9 @@ class ImageView(QScrollArea):
         pass
     
     def wheelEvent(self, event):
+        if self.disableScroll:
+            return
+        
         delta = event.angleDelta().y() / 2400.0
         pos = self.mapFromGlobal(QCursor.pos())
         
