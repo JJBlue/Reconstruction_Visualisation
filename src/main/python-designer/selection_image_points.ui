@@ -40,26 +40,10 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="SelectedImageWidget" name="scrollArea">
+        <widget class="SelectedImageWidget" name="selected_image">
          <property name="widgetResizable">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
-         <widget class="QWidget" name="scrollAreaWidgetContents">
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>87</width>
-            <height>229</height>
-           </rect>
-          </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-         </widget>
         </widget>
        </item>
       </layout>
@@ -218,5 +202,30 @@
   </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>listview_all_images</sender>
+   <signal>itemDoubleClicked(QListWidgetItem*)</signal>
+   <receiver>Form</receiver>
+   <slot>selectImageItem(QListWidgetItem*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>182</x>
+     <y>66</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>208</x>
+     <y>-10</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <signal>pointSelectionChanged()</signal>
+  <signal>imageSelectionChanged()</signal>
+  <slot>addPoint()</slot>
+  <slot>selectPoint()</slot>
+  <slot>selectImage(int)</slot>
+  <slot>selectImageItem(QListWidgetItem*)</slot>
+ </slots>
 </ui>
