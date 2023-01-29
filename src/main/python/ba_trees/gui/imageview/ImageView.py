@@ -45,6 +45,14 @@ class ImageView(QScrollArea):
         del self.painter
         del self.pixmap
     
+    def setBoundWidth(self, value: bool):
+        self.boundWidth = value
+        self.setWidgetResizable(self.boundWidth or self.boundHeight)
+    
+    def setBoundHeight(self, value: bool):
+        self.boundHeight = value
+        self.setWidgetResizable(self.boundWidth or self.boundHeight)    
+    
     def resizeEvent(self, event):
         if self.image == None or self.__resizeevent:
             return
@@ -113,6 +121,10 @@ class ImageView(QScrollArea):
         if scaleFactor <= 0 and self.image != None:
             return
         
+        width, height = int(self.image.width() * scaleFactor), int(self.image.height() * scaleFactor)
+        if width <= 0 or height <= 0:
+            return
+        
         self.__resized = True
         self.scale_factor = scaleFactor
         
@@ -141,7 +153,7 @@ class ImageView(QScrollArea):
         self.image_widget.setPixmap(self.pixmap)
         
         if self.__resized:
-            #self.__resized = False
+            self.__resized = False
             self.image_widget.resize(self.pixmap.size())
         
         self.__resizeevent_repaint = True

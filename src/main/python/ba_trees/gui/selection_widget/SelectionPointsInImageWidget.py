@@ -37,7 +37,7 @@ class SelectionPointsInImageWidget(QWidget):
         item = QListWidgetItem()
         
         image_view = ImageView()
-        image_view.boundWidth = True
+        image_view.setBoundWidth(True)
         image_view.disableScroll = True
         image_view.setImage(image.pixmap)
         
