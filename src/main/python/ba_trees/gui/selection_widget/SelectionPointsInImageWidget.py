@@ -1,57 +1,66 @@
-from PIL import Image as Img
-from PyQt6.QtGui import QImage, QPixmap
-from PyQt6.QtWidgets import QWidget, QListView, QListWidgetItem
-from colmap_wrapper.colmap.camera import ImageInformation
+from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtWidgets import QWidget, QListWidgetItem, QListWidget
 
 from ba_trees.gui.imageview import ImageView
-from ba_trees.gui.selection_widget import SelectionInformation
+from ba_trees.gui.selection_widget import (SelectionInformation, SelectedImageWidget)
+from ba_trees.gui.selection_widget.SelectionInformation import Point, Image
 from ba_trees.gui.selection_widget.SelectionPointsInImageWidgetSetup import Ui_Form
 
 
 class SelectionPointsInImageWidget(QWidget):
+    pointSelectionChanged = pyqtSignal()
+    imageSelectionChanged = pyqtSignal()
+    
     def __init__(self):
         super().__init__()
         
         self.ui = Ui_Form()
         self.ui.setupUi(self)
         
-        self.images = {}
-        self.selections = SelectionInformation()
+        self.project = None
+        self.selections = []
         
     def setProject(self, project):
-        subprojects = []
-        self.images[project] = subprojects
+        self.project = project
         
         for sub_project in project.getProjects():
-            reconstruction = sub_project.reconstruction
-            
-            list_images = []
-            subprojects.append(list_images)
-            
-            for image_idx in reconstruction.images.keys():
-                image: ImageInformation = reconstruction.images[image_idx]
-                    
-                with Img.open(image.path) as img:
-                    img2 = img.convert("RGBA")
-                    data = img2.tobytes("raw", "BGRA")
-                    qimg = QImage(data, img2.width, img2.height, QImage.Format.Format_ARGB32)
-                    pixmap = QPixmap(qimg)
-                        
-                    list_images.append(pixmap)
-                    self.addImage(pixmap)
+            selection = SelectionInformation(sub_project)
+            self.selections.append(selection)
+        
+        selection = self.selections[0]
+        for image in selection.images:
+            self.__addImage(image)
     
-    def addImage(self, pixmap):
-        list_all_images = self.findChild(QListView, "listview_all_images")
+    def __addImage(self, image: Image):
+        list_all_images = self.findChild(QListWidget, "listview_all_images")
         
         item = QListWidgetItem()
         
         image_view = ImageView()
         image_view.boundWidth = True
         image_view.disableScroll = True
-        image_view.setImage(pixmap)
+        image_view.setImage(image.pixmap)
         
         #item.setSizeHint(image_view.sizeHint())
         image_view.boundsHeightFunctions.append(item.setSizeHint)
         
         list_all_images.addItem(item)
         list_all_images.setItemWidget(item, image_view)
+
+    def addPoint(self, point: Point):
+        
+        pass
+    
+    def selectPoint(self):
+        pass
+    
+    def selectImageItem(self, item: QListWidgetItem):
+        list_all_images = self.findChild(QListWidget, "listview_all_images")
+        self.selectImage(list_all_images.row(item))
+    
+    def selectImage(self, index: int):
+        selection = self.selections[0]
+        image = selection.images[index]
+        
+        view = self.findChild(SelectedImageWidget, "selected_image")
+        view.setImage2(selection, image)

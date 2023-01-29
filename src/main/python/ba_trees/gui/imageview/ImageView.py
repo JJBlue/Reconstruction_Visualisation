@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from PIL import Image as Img
-from PyQt6.QtCore import Qt, QSize, QPoint
+from PyQt6.QtCore import Qt, QSize, QEvent
 from PyQt6.QtGui import QImage, QPixmap, QPainter, QPalette, QCursor
 from PyQt6.QtWidgets import QScrollArea, QLabel, QSizePolicy
 
@@ -13,7 +13,7 @@ class ImageView(QScrollArea):
         # Variables
         self.image: QPixmap = None
         self.scale_factor: float = 1.0
-        self.boundWidth = False # TODO
+        self.boundWidth = False
         self.boundHeight = False
         
         self.boundsSizeFunctions = []
@@ -24,11 +24,12 @@ class ImageView(QScrollArea):
         
         self.__resized = False
         self.__resizeevent = False
+        self.__resizeevent_repaint = False
         
         
         # Qt Widgets
         self.setBackgroundRole(QPalette.ColorRole.Dark)
-        self.setWidgetResizable(True)
+        #self.setWidgetResizable(True)
         
         self.image_widget = QLabel()
         self.image_widget.setScaledContents(True)
@@ -46,6 +47,13 @@ class ImageView(QScrollArea):
     
     def resizeEvent(self, event):
         if self.image == None or self.__resizeevent:
+            return
+        
+        if not self.boundHeight and not self.boundWidth:
+            return
+        
+        if self.__resizeevent_repaint:
+            self.__resizeevent_repaint = False
             return
         
         self.__resizeevent = True
@@ -122,9 +130,6 @@ class ImageView(QScrollArea):
             
             self.pixmap = QPixmap(new_image.width(), new_image.height())
             self.painter = QPainter(self.pixmap)
-            
-            self.image_widget.resize(self.pixmap.size())
-        
         
         painter = self.painter
         
@@ -134,10 +139,20 @@ class ImageView(QScrollArea):
         self.repaintImageOverride(painter)
         
         self.image_widget.setPixmap(self.pixmap)
-    
+        
+        if self.__resized:
+            #self.__resized = False
+            self.image_widget.resize(self.pixmap.size())
+        
+        self.__resizeevent_repaint = True
     
     def repaintImageOverride(self, painter: QPainter):
         pass
+    
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.Type.Wheel and self.disableScroll:
+            return True
+        return super().eventFilter(obj, event)
     
     def wheelEvent(self, event):
         if self.disableScroll:
@@ -147,9 +162,6 @@ class ImageView(QScrollArea):
         pos = self.mapFromGlobal(QCursor.pos())
         
         image_point = [(self.horizontalScrollBar().value() + pos.x()) / self.scale_factor, (self.verticalScrollBar().value() + pos.y()) / self.scale_factor]
-        
-        self.painter.drawEllipse(QPoint(int(image_point[0] * self.scale_factor), int(image_point[1] * self.scale_factor)), 5, 5)
-        self.image_widget.setPixmap(self.pixmap)
         
         self.resizeImage(self.scale_factor + delta)
         

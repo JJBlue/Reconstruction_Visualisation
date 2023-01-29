@@ -2,6 +2,7 @@ from PyQt6.QtCore import QPoint
 from PyQt6.QtGui import QPainter, QPen, QColor
 
 from ba_trees.gui.imageview import ImageView
+from ba_trees.gui.selection_widget import Image, SelectionInformation
 
 
 class SelectedImageWidget(ImageView):
@@ -9,6 +10,11 @@ class SelectedImageWidget(ImageView):
         super().__init__(*args)
         
         self.list_points = []
+    
+    def setImage2(self, selection: SelectionInformation, image: Image):
+        self.selectioninfo = selection
+        self.imageinfo = image
+        self.setImage(self.imageinfo.pixmap)
     
     def repaintImageOverride(self, painter: QPainter):
         size = 5
@@ -25,8 +31,8 @@ class SelectedImageWidget(ImageView):
             return
         
         pos = event.pos()
-        x = pos.x() / self.scale_factor
-        y = pos.y() / self.scale_factor
+        x = (self.horizontalScrollBar().value() + pos.x()) / self.scale_factor
+        y = (self.verticalScrollBar().value() + pos.y()) / self.scale_factor
         
         if x < 0 or x > self.image.width():
             return

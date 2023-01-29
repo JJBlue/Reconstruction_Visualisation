@@ -18,8 +18,8 @@ class Application:
         
         self.window = MainWindow()
         
-        #from ba_trees.gui.selection_widget import SelectionPointsImageWidget
-        #widget = SelectionPointsImageWidget()
+        #from ba_trees.gui.selection_widget import SelectedImageWidget
+        #widget = SelectedImageWidget()
         #widget.setImage("J:/Codes/git/BA_Trees/config/workspace/reconstruction/dense/0/images/DSC_6103.JPG")
         #self.window.ui.tabs.addTab(widget, "test")
         

@@ -38,9 +38,9 @@ class Ui_Form(object):
         self.verticalLayout = QtWidgets.QVBoxLayout(self.widget_2)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.scrollArea = SelectedImageWidget(self.widget_2)
-        self.scrollArea.setWidgetResizable(True)
-        self.scrollArea.setObjectName("scrollArea")
+        self.selected_image = SelectedImageWidget(self.widget_2)
+        self.selected_image.setWidgetResizable(True)
+        self.selected_image.setObjectName("selected_image")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
         self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 87, 229))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
@@ -49,8 +49,8 @@ class Ui_Form(object):
         sizePolicy.setHeightForWidth(self.scrollAreaWidgetContents.sizePolicy().hasHeightForWidth())
         self.scrollAreaWidgetContents.setSizePolicy(sizePolicy)
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
-        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
-        self.verticalLayout.addWidget(self.scrollArea)
+        self.selected_image.setWidget(self.scrollAreaWidgetContents)
+        self.verticalLayout.addWidget(self.selected_image)
         self.widget_3 = QtWidgets.QWidget(self.splitter_2)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.MinimumExpanding, QtWidgets.QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -138,6 +138,7 @@ class Ui_Form(object):
         self.verticalLayout_2.addWidget(self.splitter_2)
 
         self.retranslateUi(Form)
+        self.listview_all_images.itemDoubleClicked['QListWidgetItem*'].connect(Form.selectImageItem)
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def retranslateUi(self, Form):
