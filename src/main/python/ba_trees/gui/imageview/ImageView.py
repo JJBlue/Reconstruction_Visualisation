@@ -1,6 +1,5 @@
 from pathlib import Path
 
-from PIL import Image as Img
 from PyQt6.QtCore import Qt, QSize, QEvent
 from PyQt6.QtGui import QImage, QPixmap, QPainter, QPalette, QCursor
 from PyQt6.QtWidgets import QScrollArea, QLabel, QSizePolicy
@@ -29,7 +28,6 @@ class ImageView(QScrollArea):
         
         # Qt Widgets
         self.setBackgroundRole(QPalette.ColorRole.Dark)
-        #self.setWidgetResizable(True)
         
         self.image_widget = QLabel()
         self.image_widget.setScaledContents(True)
@@ -106,15 +104,10 @@ class ImageView(QScrollArea):
             image = Path(image)
             
         if isinstance(image, Path):
-            with Img.open(image) as img:
-                img2 = img.convert("RGBA")
-                data = img2.tobytes("raw", "BGRA")
-                qimg = QImage(data, img2.width, img2.height, QImage.Format.Format_ARGB32)
-                image = QPixmap(qimg)
+            image = QImage(str(image))
         
-        if isinstance(image, QPixmap):
+        if isinstance(image, QPixmap) or isinstance(image, QImage):
             self.image = image
-            
             self.resizeImage(self.scale_factor)
     
     def resizeImage(self, scaleFactor: float = 1.0):
@@ -146,7 +139,11 @@ class ImageView(QScrollArea):
         painter = self.painter
         
         painter.setViewport(0, 0, new_image.width(), new_image.height())
-        painter.drawPixmap(0, 0, new_image)
+        
+        if isinstance(image, QImage):
+            painter.drawImage(0, 0, new_image)
+        elif isinstance(image, QPixmap):
+            painter.drawPixmap(0, 0, new_image)
         
         self.repaintImageOverride(painter)
         
