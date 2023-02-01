@@ -39,7 +39,7 @@ class SelectionPointsInImageWidget(QWidget):
         image_view = ImageView()
         image_view.setBoundWidth(True)
         image_view.disableScroll = True
-        image_view.setImage(image.pixmap)
+        image_view.setImage(image.image)
         
         #item.setSizeHint(image_view.sizeHint())
         image_view.boundsHeightFunctions.append(item.setSizeHint)
