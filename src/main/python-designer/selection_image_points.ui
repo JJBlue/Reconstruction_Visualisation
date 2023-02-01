@@ -199,6 +199,10 @@
    <extends>QScrollArea</extends>
    <header>ba_trees.gui.selection_widget.SelectedImageWidget.h</header>
    <container>1</container>
+   <slots>
+    <signal>addPointSignal(PyQt_PyObject)</signal>
+    <signal>selectPointSignal(PyQt_PyObject)</signal>
+   </slots>
   </customwidget>
  </customwidgets>
  <resources/>
@@ -219,12 +223,42 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>selected_image</sender>
+   <signal>addPointSignal(PyQt_PyObject)</signal>
+   <receiver>Form</receiver>
+   <slot>addPoint(PyQt_PyObject)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>52</x>
+     <y>30</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>118</x>
+     <y>4</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>selected_image</sender>
+   <signal>selectPointSignal(PyQt_PyObject)</signal>
+   <receiver>Form</receiver>
+   <slot>selectPoint(PyQt_PyObject)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>93</x>
+     <y>80</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>302</x>
+     <y>3</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
-  <signal>pointSelectionChanged()</signal>
-  <signal>imageSelectionChanged()</signal>
-  <slot>addPoint()</slot>
-  <slot>selectPoint()</slot>
+  <slot>addPoint(PyQt_PyObject)</slot>
+  <slot>selectPoint(PyQt_PyObject)</slot>
   <slot>selectImage(int)</slot>
   <slot>selectImageItem(QListWidgetItem*)</slot>
  </slots>
