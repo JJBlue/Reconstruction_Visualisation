@@ -1,33 +1,16 @@
-from PyQt6.QtCore import QPoint
-from PyQt6.QtGui import QPainter, QPen, QColor
+from PyQt6.QtCore import pyqtSignal
 from sklearn.neighbors import KDTree
 
-from ba_trees.gui.imageview import ImageView
-from ba_trees.gui.selection_widget import Image, SelectionInformation
+from ba_trees.gui.selection_widget import SelectedImageWidget
 from ba_trees.gui.selection_widget.SelectionInformation import Point
 
 
-class SelectedImageWidget(ImageView):
+class SelectedImageWidget(SelectedImageWidget):
+    addPointSignal = pyqtSignal(Point)
+    selectPointSignal = pyqtSignal(Point)
+    
     def __init__(self, *args):
         super().__init__(*args)
-        
-        self.selectioninfo = None
-        self.imageinfo = None
-    
-    def setImage2(self, selection: SelectionInformation, imageinfo: Image):
-        self.selectioninfo = selection
-        self.imageinfo = imageinfo
-        self.setImage(self.imageinfo.image)
-    
-    def repaintImageOverride(self, painter: QPainter):
-        size = 5
-        
-        pen: QPen = QPen()
-        pen.setColor(QColor(255, 0, 0, 255))
-        painter.setPen(pen)
-        
-        for points in self.imageinfo.get2DPoints():
-            painter.drawEllipse(QPoint(int(points[0] * self.scale_factor), int(points[1] * self.scale_factor)), size, size)
     
     def mouseDoubleClickEvent(self, event):
         if self.image == None:
@@ -71,7 +54,8 @@ class SelectedImageWidget(ImageView):
             return
         
         point = Point(point3D_id, point3D)
-        self.selectioninfo.addPoint(point)
+        self.addPointSignal.emit(point)
+        self.selectioninfo.addPoint(point) # TODO
         
         self.repaintImage()
     
