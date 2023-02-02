@@ -3,6 +3,7 @@ from sklearn.neighbors import KDTree
 
 from ba_trees.gui.selection_widget import Point
 from ba_trees.gui.selection_widget.SelectedImagePreviewWidget import SelectedImagePreviewWidget
+from ba_trees.gui.selection_widget.SelectionInformation import Image
 
 
 class SelectedImageWidget(SelectedImagePreviewWidget):
@@ -11,6 +12,11 @@ class SelectedImageWidget(SelectedImagePreviewWidget):
     
     def __init__(self, *args):
         super().__init__(*args)
+    
+    def setImage2(self, imageinfo: Image):
+        self.selectioninfo = imageinfo.selectionInformation
+        self.imageinfo = imageinfo
+        self.setImage(self.imageinfo.image)
     
     def __getNearestPoint(self, event):
         if self.image == None:

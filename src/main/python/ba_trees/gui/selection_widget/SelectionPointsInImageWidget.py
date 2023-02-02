@@ -1,9 +1,12 @@
+from threading import Thread
+
 from PyQt6.QtWidgets import QWidget, QListWidgetItem, QListWidget
 
 from ba_trees.gui.selection_widget import (SelectionInformation, SelectedImageWidget,
     SelectedImagePreviewWidget)
 from ba_trees.gui.selection_widget.SelectionInformation import Point, Image
 from ba_trees.gui.selection_widget.SelectionPointsInImageWidgetSetup import Ui_Form
+from ba_trees.gui.background.qt.QtFunctions import QtFunctions
 
 
 class SelectionPointsInImageWidget(QWidget):
@@ -20,14 +23,20 @@ class SelectionPointsInImageWidget(QWidget):
     def setProject(self, project):
         self.project = project
         
-        for sub_project in project.getProjects():
-            selection = SelectionInformation(sub_project)
-            self.selections.append(selection)
+        def run():
+            for sub_project in project.getProjects():
+                selection = SelectionInformation(sub_project)
+                self.selections.append(selection)
+            
+            selection = self.selections[0]
+            self.imageviews.clear()
+            for image in selection.images:
+                def qtRun(image=image):
+                    self.__addImage(image)
+                QtFunctions.runLater(qtRun)
         
-        selection = self.selections[0]
-        self.imageviews.clear()
-        for image in selection.images:
-            self.__addImage(image)
+        thread = Thread(target=run)
+        thread.start()
     
     def __addImage(self, image: Image):
         list_all_images = self.findChild(QListWidget, "listview_all_images")
@@ -48,9 +57,7 @@ class SelectionPointsInImageWidget(QWidget):
 
     def addPoint(self, point: Point):
         point.selectionInformation.addPoint(point)
-        self.refreshImageForPoint(point)
-    
-    def refreshImageForPoint(self, point: Point):
+        
         images = point.points.keys()
         
         for image_view in self.imageviews:
@@ -60,8 +67,17 @@ class SelectionPointsInImageWidget(QWidget):
             image_view.repaintImage()
     
     def selectPoint(self, point: Point):
+        images = [p.points.keys() for p in point.selectionInformation.selected_points.values()]
+        images.append(point.points.keys())
+        images = [item for sublist in images for item in sublist]
+        
         point.selectionInformation.selectPoint(point)
-        self.refreshImageForPoint(point)
+        
+        for image_view in self.imageviews:
+            if not (image_view.imageinfo in images):
+                continue
+            
+            image_view.repaintImage()
         
         list_found_images = self.findChild(QListWidget, "listview_point_found_images")
         

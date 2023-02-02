@@ -1,6 +1,8 @@
 from concurrent.futures import ThreadPoolExecutor
+
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QImage, QImageReader
 from colmap_wrapper.colmap.camera import ImageInformation
-from PyQt6.QtGui import QImage
 
 
 class Point:
@@ -23,6 +25,7 @@ class Image:
         self.imageinfo: ImageInformation = imageinfo
         self.pyimage = pyimage
         self.image: QImage = image
+        self.preview: QImage = image.scaled(1920, 1080, Qt.AspectRatioMode.KeepAspectRatio)
         self.points: list = [] # Point
     
     def get2DPoints(self):
@@ -46,14 +49,15 @@ class SelectionInformation:
         
         reconstruction = sub_project.reconstruction
         
-        executor = ThreadPoolExecutor(max_workers=5)
+        executor = ThreadPoolExecutor(max_workers=5) # os.cpu_count()
         
         for image_idx in reconstruction.images.keys():
             def run(sub_project = sub_project, reconstruction = reconstruction, image_idx = image_idx):
                 imageinfo: ImageInformation = reconstruction.images[image_idx]
                 
                 pyimage = sub_project.pycolmap.images[image_idx]
-                image = QImage(str(imageinfo.path))
+                reader: QImageReader = QImageReader(str(imageinfo.path))
+                image = reader.read()
                 
                 image_info = Image(imageinfo, pyimage, image)
                 image_info.selectionInformation = self
