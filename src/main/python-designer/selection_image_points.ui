@@ -255,11 +255,28 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>listview_point_found_images</sender>
+   <signal>itemDoubleClicked(QListWidgetItem*)</signal>
+   <receiver>Form</receiver>
+   <slot>selectImageItem2(QListWidgetItem*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>282</x>
+     <y>201</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>409</x>
+     <y>225</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>addPoint(PyQt_PyObject)</slot>
   <slot>selectPoint(PyQt_PyObject)</slot>
   <slot>selectImage(int)</slot>
   <slot>selectImageItem(QListWidgetItem*)</slot>
+  <slot>selectImageItem2(QListWidgetItem*)</slot>
  </slots>
 </ui>

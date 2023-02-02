@@ -20,6 +20,8 @@ class SelectionPointsInImageWidget(QWidget):
         self.selections = []
         self.imageviews = []
         
+        self.found_images = []
+        
     def setProject(self, project):
         self.project = project
         
@@ -82,6 +84,7 @@ class SelectionPointsInImageWidget(QWidget):
         list_found_images = self.findChild(QListWidget, "listview_point_found_images")
         
         list_found_images.clear()
+        self.found_images.clear()
         
         for image in point.points.keys():
             item = QListWidgetItem()
@@ -91,6 +94,7 @@ class SelectionPointsInImageWidget(QWidget):
             image_view.disableScroll = True
             image_view.setImage2(image)
             
+            self.found_images.append(image)
             image_view.boundsHeightFunctions.append(item.setSizeHint)
             
             list_found_images.addItem(item)
@@ -101,11 +105,17 @@ class SelectionPointsInImageWidget(QWidget):
     
     def selectImageItem(self, item: QListWidgetItem):
         list_all_images = self.findChild(QListWidget, "listview_all_images")
-        self.selectImage(list_all_images.row(item))
+        self.selectImageByIndex(list_all_images.row(item))
     
-    def selectImage(self, index: int):
+    def selectImageItem2(self, item: QListWidgetItem):
+        list_found_images = self.findChild(QListWidget, "listview_point_found_images")
+        self.selectImage(self.found_images[list_found_images.row(item)])
+    
+    def selectImageByIndex(self, index: int):
         selection = self.selections[0]
         image = selection.images[index]
-        
+        self.selectImage(image)
+    
+    def selectImage(self, image: Image):
         view = self.findChild(SelectedImageWidget, "selected_image")
         view.setImage2(image)
