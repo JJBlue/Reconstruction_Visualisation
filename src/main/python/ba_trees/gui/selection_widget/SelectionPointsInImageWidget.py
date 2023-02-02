@@ -37,7 +37,7 @@ class SelectionPointsInImageWidget(QWidget):
         image_view = SelectedImagePreviewWidget()
         image_view.setBoundWidth(True)
         image_view.disableScroll = True
-        image_view.setImage(image.image)
+        image_view.setImage2(image)
         self.imageviews.append(image_view)
         
         #item.setSizeHint(image_view.sizeHint())
@@ -47,6 +47,10 @@ class SelectionPointsInImageWidget(QWidget):
         list_all_images.setItemWidget(item, image_view)
 
     def addPoint(self, point: Point):
+        point.selectionInformation.addPoint(point)
+        self.refreshImageForPoint(point)
+    
+    def refreshImageForPoint(self, point: Point):
         images = point.points.keys()
         
         for image_view in self.imageviews:
@@ -56,7 +60,28 @@ class SelectionPointsInImageWidget(QWidget):
             image_view.repaintImage()
     
     def selectPoint(self, point: Point):
-        pass
+        point.selectionInformation.selectPoint(point)
+        self.refreshImageForPoint(point)
+        
+        list_found_images = self.findChild(QListWidget, "listview_point_found_images")
+        
+        list_found_images.clear()
+        
+        for image in point.points.keys():
+            item = QListWidgetItem()
+            
+            image_view = SelectedImagePreviewWidget()
+            image_view.setBoundWidth(True)
+            image_view.disableScroll = True
+            image_view.setImage2(image)
+            
+            image_view.boundsHeightFunctions.append(item.setSizeHint)
+            
+            list_found_images.addItem(item)
+            list_found_images.setItemWidget(item, image_view)
+        
+        view = self.findChild(SelectedImageWidget, "selected_image")
+        view.repaintImage()
     
     def selectImageItem(self, item: QListWidgetItem):
         list_all_images = self.findChild(QListWidget, "listview_all_images")
@@ -67,4 +92,4 @@ class SelectionPointsInImageWidget(QWidget):
         image = selection.images[index]
         
         view = self.findChild(SelectedImageWidget, "selected_image")
-        view.setImage2(selection, image)
+        view.setImage2(image)

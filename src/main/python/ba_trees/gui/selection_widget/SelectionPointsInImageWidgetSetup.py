@@ -31,6 +31,7 @@ class Ui_Form(object):
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout.setObjectName("verticalLayout")
         self.selected_image = SelectedImageWidget(self.widget_2)
+        self.selected_image.setWidgetResizable(False)
         self.selected_image.setObjectName("selected_image")
         self.verticalLayout.addWidget(self.selected_image)
         self.widget_3 = QtWidgets.QWidget(self.splitter_2)
@@ -121,6 +122,8 @@ class Ui_Form(object):
 
         self.retranslateUi(Form)
         self.listview_all_images.itemDoubleClicked['QListWidgetItem*'].connect(Form.selectImageItem)
+        self.selected_image.addPointSignal['PyQt_PyObject'].connect(Form.addPoint)
+        self.selected_image.selectPointSignal['PyQt_PyObject'].connect(Form.selectPoint)
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def retranslateUi(self, Form):

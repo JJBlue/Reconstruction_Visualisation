@@ -1,25 +1,24 @@
 from PyQt6.QtCore import pyqtSignal
 from sklearn.neighbors import KDTree
 
-from ba_trees.gui.selection_widget import SelectedImageWidget
-from ba_trees.gui.selection_widget.SelectionInformation import Point
+from ba_trees.gui.selection_widget import Point
+from ba_trees.gui.selection_widget.SelectedImagePreviewWidget import SelectedImagePreviewWidget
 
 
-class SelectedImageWidget(SelectedImageWidget):
+class SelectedImageWidget(SelectedImagePreviewWidget):
     addPointSignal = pyqtSignal(Point)
     selectPointSignal = pyqtSignal(Point)
     
     def __init__(self, *args):
         super().__init__(*args)
     
-    def mouseDoubleClickEvent(self, event):
+    def __getNearestPoint(self, event):
         if self.image == None:
-            return
+            return None, None
         
         pos = event.pos()
         x = (self.horizontalScrollBar().value() + pos.x()) / self.scale_factor
         y = (self.verticalScrollBar().value() + pos.y()) / self.scale_factor
-        
         
         sub_project = self.selectioninfo.sub_project
         pycolmap_image = sub_project.pycolmap.images[self.imageinfo.imageinfo.id]
@@ -46,34 +45,34 @@ class SelectedImageWidget(SelectedImageWidget):
         point3D = points_3D[point3d_id_nearest]
         x, y = pycolmap_camera.world_to_image(pycolmap_image.project(point3D.xyz))
         
-        
         if x < 0 or x > self.image.width():
-            return
+            return None, None
         
         if y < 0 or y > self.image.height():
+            return None, None
+        
+        return point3D_id, point3D
+    
+    def mouseDoubleClickEvent(self, event):
+        point3D_id, point3D = self.__getNearestPoint(event)
+        
+        if point3D_id == None or point3D == None:
             return
         
         point = Point(point3D_id, point3D)
+        point.selectionInformation = self.selectioninfo
         self.addPointSignal.emit(point)
-        self.selectioninfo.addPoint(point) # TODO
         
         self.repaintImage()
     
     def mouseReleaseEvent(self, event):
-        if self.image == None:
+        point3D_id, point3D = self.__getNearestPoint(event)
+        
+        if point3D_id == None or point3D == None:
             return
         
-        pos = event.pos()
-        x = pos.x() / self.scale_factor
-        y = pos.y() / self.scale_factor
-        
-        if x < 0 or x > self.image.width():
+        if not (point3D_id in self.selectioninfo.points):
             return
         
-        if y < 0 or y > self.image.height():
-            return
-        
-        
-        
-        
-        pass
+        point = self.selectioninfo.points[point3D_id]
+        self.selectPointSignal.emit(point)
