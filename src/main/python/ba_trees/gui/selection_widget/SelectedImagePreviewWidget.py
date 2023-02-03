@@ -15,7 +15,7 @@ class SelectedImagePreviewWidget(ImageView):
     def setImage2(self, imageinfo: Image):
         self.selectioninfo = imageinfo.selectionInformation
         self.imageinfo = imageinfo
-        self.setImage(imageinfo.preview)
+        self.setImage(imageinfo.getPreviewImage())
     
     def repaintImageOverride(self, painter: QPainter):
         size = 5
@@ -25,7 +25,7 @@ class SelectedImagePreviewWidget(ImageView):
         painter.setPen(pen)
         
         if self.imageinfo.preview == self.image:
-            scale_factor = (self.imageinfo.preview.width() / self.imageinfo.image.width()) * self.scale_factor
+            scale_factor = (self.imageinfo.preview.width() / self.imageinfo.getWidth()) * self.scale_factor
         else:
             scale_factor = self.scale_factor
         

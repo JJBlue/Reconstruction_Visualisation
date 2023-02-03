@@ -1,5 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 
+from PIL import Image as Img
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QImage, QImageReader
 from colmap_wrapper.colmap.camera import ImageInformation
@@ -17,13 +19,53 @@ class Point:
         image.points.append(self)
 
 class Image:
-    def __init__(self, imageinfo: ImageInformation, pyimage, image: QImage):
+    def __init__(self, imageinfo: ImageInformation, pyimage, path: Path):
         self.selectionInformation = None
         self.imageinfo: ImageInformation = imageinfo
         self.pyimage = pyimage
-        self.image: QImage = image
-        self.preview: QImage = image.scaled(1920, 1080, Qt.AspectRatioMode.KeepAspectRatio)
+        
+        #reader: QImageReader = QImageReader(str(path))
+        #image = reader.read()
+        
+        self.path: Path = path
+        self.width = 0
+        self.height = 0
+        self.image: QImage = None
+        self.preview: QImage = None
+        #self.image: QImage = image
+        #self.preview: QImage = image.scaled(1920, 1080, Qt.AspectRatioMode.KeepAspectRatio)
+        
         self.points: list = [] # Point
+    
+    def getImage(self):
+        if self.image == None:
+            self.image = QImage(str(self.path))
+        return self.image
+    
+    def getPreviewImage(self):
+        if self.preview == None:
+            with Img.open(self.path) as img:
+                width, height = img.size
+                
+                self.width = width
+                self.height = height
+                
+                img.thumbnail([1920, 1080])
+                img2 = img.convert("RGBA")
+                data = img2.tobytes("raw", "BGRA")
+                self.preview = QImage(data, img2.width, img2.height, QImage.Format.Format_ARGB32)
+        
+        return self.preview
+    
+    def getWidth(self):
+        if self.width <= 0:
+            self.getPreviewImage()
+        return self.width
+    
+    def getHeight(self):
+        if self.width <= 0:
+            self.getPreviewImage()
+        return self.height
     
     def get2DPoints(self):
         ps = [p.points[self] for p in self.points]
@@ -52,10 +94,9 @@ class SelectionInformation:
                 imageinfo: ImageInformation = reconstruction.images[image_idx]
                 
                 pyimage = sub_project.pycolmap.images[image_idx]
-                reader: QImageReader = QImageReader(str(imageinfo.path))
-                image = reader.read()
                 
-                image_info = Image(imageinfo, pyimage, image)
+                image_info = Image(imageinfo, pyimage, imageinfo.path)
+                image_info.getPreviewImage()
                 image_info.selectionInformation = self
                 
                 self.images.append(image_info)

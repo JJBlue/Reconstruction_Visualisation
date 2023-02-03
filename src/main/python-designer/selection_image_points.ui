@@ -202,6 +202,7 @@
    <slots>
     <signal>addPointSignal(PyQt_PyObject)</signal>
     <signal>selectPointSignal(PyQt_PyObject)</signal>
+    <signal>removePointSignal(PyQt_PyObject)</signal>
    </slots>
   </customwidget>
  </customwidgets>
@@ -271,6 +272,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>selected_image</sender>
+   <signal>removePointSignal(PyQt_PyObject)</signal>
+   <receiver>Form</receiver>
+   <slot>removePoint(PyQt_PyObject)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>23</x>
+     <y>47</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>24</x>
+     <y>-10</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>addPoint(PyQt_PyObject)</slot>
@@ -278,5 +295,6 @@
   <slot>selectImage(int)</slot>
   <slot>selectImageItem(QListWidgetItem*)</slot>
   <slot>selectImageItem2(QListWidgetItem*)</slot>
+  <slot>removePoint(PyQt_PyObject)</slot>
  </slots>
 </ui>

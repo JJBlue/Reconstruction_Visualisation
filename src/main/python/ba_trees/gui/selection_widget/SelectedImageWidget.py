@@ -17,7 +17,7 @@ class SelectedImageWidget(SelectedImagePreviewWidget):
     def setImage2(self, imageinfo: Image):
         self.selectioninfo = imageinfo.selectionInformation
         self.imageinfo = imageinfo
-        self.setImage(self.imageinfo.image)
+        self.setImage(self.imageinfo.getImage())
     
     def __getNearestPoint(self, event):
         if self.image == None:
