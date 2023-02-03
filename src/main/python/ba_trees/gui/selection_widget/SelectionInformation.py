@@ -13,10 +13,7 @@ class Point:
         self.points: dict = {} # Image: [uv1, uv2]
     
     def add2DPoint(self, image, uv):
-        if not (image in self.points):
-            self.points[image] = []
-        self.points[image].append(uv)
-        
+        self.points[image] = uv
         image.points.append(self)
 
 class Image:
@@ -30,12 +27,11 @@ class Image:
     
     def get2DPoints(self):
         ps = [p.points[self] for p in self.points]
-        ps = [item for sublist in ps for item in sublist] # https://stackoverflow.com/questions/952914/how-do-i-make-a-flat-list-out-of-a-list-of-lists
+        #ps = [item for sublist in ps for item in sublist] # https://stackoverflow.com/questions/952914/how-do-i-make-a-flat-list-out-of-a-list-of-lists
         return ps
     
     def getSelected2DPoints(self):
         ps = [p.points[self] for p in self.points if p.point3D_id in self.selectionInformation.selected_points]
-        ps = [item for sublist in ps for item in sublist] # https://stackoverflow.com/questions/952914/how-do-i-make-a-flat-list-out-of-a-list-of-lists
         return ps
 
 class SelectionInformation:
@@ -104,3 +100,9 @@ class SelectionInformation:
                 image.points.append(point)
         
         self.points[point.point3D_id] = point
+    
+    def removePoint(self, point: Point):
+        del self.points[point.point3D_id]
+        
+        for image in point.points.keys():
+            image.points.remove(point)

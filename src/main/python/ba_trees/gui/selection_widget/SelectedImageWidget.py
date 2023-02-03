@@ -1,4 +1,4 @@
-from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtCore import pyqtSignal, Qt
 from sklearn.neighbors import KDTree
 
 from ba_trees.gui.selection_widget import Point
@@ -8,6 +8,7 @@ from ba_trees.gui.selection_widget.SelectionInformation import Image
 
 class SelectedImageWidget(SelectedImagePreviewWidget):
     addPointSignal = pyqtSignal(Point)
+    removePointSignal = pyqtSignal(Point)
     selectPointSignal = pyqtSignal(Point)
     
     def __init__(self, *args):
@@ -59,6 +60,41 @@ class SelectedImageWidget(SelectedImagePreviewWidget):
         
         return point3D_id, point3D
     
+    def __getNearestPointFromSelections(self, event):
+        if self.image == None:
+            return None
+        
+        if len(self.imageinfo.points) <= 0:
+            return None
+        
+        pos = event.pos()
+        x = (self.horizontalScrollBar().value() + pos.x()) / self.scale_factor
+        y = (self.verticalScrollBar().value() + pos.y()) / self.scale_factor
+        
+        points_xy = []
+        points = []
+        
+        for point in self.imageinfo.points:
+            points_xy.append(point.points[self.imageinfo])
+            points.append(point)
+        
+        tree = KDTree(points_xy, leaf_size=2)
+        _, point3d_id_nearest = tree.query([[x, y]], k=1)
+        point3d_id_nearest = point3d_id_nearest[0][0]
+        
+        point = points[point3d_id_nearest]
+        
+        return point
+    
+    def keyReleaseEvent(self, event):
+        key = event.key()
+        
+        if key == Qt.Key.Key_Delete or key == Qt.Key.Key_Backspace:
+            for point in self.selectioninfo.selected_points.values():
+                self.removePointSignal.emit(point)
+        
+        self.repaintImage()
+    
     def mouseDoubleClickEvent(self, event):
         point3D_id, point3D = self.__getNearestPoint(event)
         
@@ -72,13 +108,9 @@ class SelectedImageWidget(SelectedImagePreviewWidget):
         self.repaintImage()
     
     def mouseReleaseEvent(self, event):
-        point3D_id, point3D = self.__getNearestPoint(event)
+        point = self.__getNearestPointFromSelections(event)
         
-        if point3D_id == None or point3D == None:
+        if point == None:
             return
         
-        if not (point3D_id in self.selectioninfo.points):
-            return
-        
-        point = self.selectioninfo.points[point3D_id]
         self.selectPointSignal.emit(point)

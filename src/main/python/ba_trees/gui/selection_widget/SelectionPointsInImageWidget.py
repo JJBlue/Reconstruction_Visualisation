@@ -7,6 +7,7 @@ from ba_trees.gui.selection_widget import (SelectionInformation, SelectedImageWi
 from ba_trees.gui.selection_widget.SelectionInformation import Point, Image
 from ba_trees.gui.selection_widget.SelectionPointsInImageWidgetSetup import Ui_Form
 from ba_trees.gui.background.qt.QtFunctions import QtFunctions
+from scipy.constants._constants import point
 
 
 class SelectionPointsInImageWidget(QWidget):
@@ -61,6 +62,16 @@ class SelectionPointsInImageWidget(QWidget):
         point.selectionInformation.addPoint(point)
         
         images = point.points.keys()
+        
+        for image_view in self.imageviews:
+            if not (image_view.imageinfo in images):
+                continue
+            
+            image_view.repaintImage()
+    
+    def removePoint(self, point: Point):
+        images = point.points.keys()
+        point.selectionInformation.removePoint(point)
         
         for image_view in self.imageviews:
             if not (image_view.imageinfo in images):

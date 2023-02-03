@@ -133,6 +133,7 @@ class Ui_Form(object):
         self.selected_image.addPointSignal['PyQt_PyObject'].connect(Form.addPoint)
         self.selected_image.selectPointSignal['PyQt_PyObject'].connect(Form.selectPoint)
         self.listview_point_found_images.itemDoubleClicked['QListWidgetItem*'].connect(Form.selectImageItem2)
+        self.selected_image.removePointSignal['PyQt_PyObject'].connect(Form.removePoint)
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def retranslateUi(self, Form):
