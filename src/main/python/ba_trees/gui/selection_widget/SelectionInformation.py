@@ -2,8 +2,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from PIL import Image as Img
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QImage, QImageReader
+from PyQt6.QtGui import QImage
 from colmap_wrapper.colmap.camera import ImageInformation
 
 
@@ -24,16 +23,11 @@ class Image:
         self.imageinfo: ImageInformation = imageinfo
         self.pyimage = pyimage
         
-        #reader: QImageReader = QImageReader(str(path))
-        #image = reader.read()
-        
         self.path: Path = path
         self.width = 0
         self.height = 0
         self.image: QImage = None
         self.preview: QImage = None
-        #self.image: QImage = image
-        #self.preview: QImage = image.scaled(1920, 1080, Qt.AspectRatioMode.KeepAspectRatio)
         
         self.points: list = [] # Point
     
