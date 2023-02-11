@@ -16,14 +16,8 @@ void main() {
 	//vec4 pos = extrinsics * vec4((intrinsics * vec3(uv.x, uv.y, depth / 10)).xyz, 1.0);
 
 
-
 	float z = depth;
-
-	mat4 intrinsics2 = mat4(intrinsics);
-	intrinsics2[3][3] = 1;
-
-	vec4 pos = z * intrinsics2 * vec4(uv.x, uv.y, 1, 1/z);
-
+	vec4 pos = z * extrinsics * mat4(intrinsics) * vec4(uv.x, uv.y, 1, 1/z);
 	
 	//pos = vec4(uv.x, uv.y, 0.0, 1.0);
 	//pos = vec4(pos.x, -pos.y, -pos.z, pos.w);
