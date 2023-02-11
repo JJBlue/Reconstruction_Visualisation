@@ -98,6 +98,10 @@ class PointsInImageImageWidget(QTableWidget):
                 size = factor * 4
                 thickness = 2 if factor < 1 else int(1*factor)
                 
+                for point2D in image.points2D:
+                    uv = point2D.xy
+                    draw.arc([uv[0] - size, uv[1] - size, uv[0] + size, uv[1] + size], 0, 360, fill="pink", width=thickness)
+                
                 for point3D_id, point3D in sub_project.pycolmap.points3D.items():
                     if not image.has_point3D(point3D_id):
                         continue
