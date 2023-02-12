@@ -1,23 +1,21 @@
+import glm
+import numpy as np
+
 from pathlib import Path
 
 from OpenGL.GL import *
 from PyQt6.QtCore import Qt, QPoint
 from PyQt6.QtOpenGLWidgets import QOpenGLWidget
 from colmap_wrapper.visualization.visualization import draw_camera_viewport
-import glm
-import numpy as np
 
 from ba_trees.gui.background.opengl.OpenGLData import OpenGLData
 from ba_trees.workspace.colmap.ColmapProject import ColmapProject
 from render.data import Geometry
 from render.data.Geometry import GeometryData
 from render.data.GeometryO3D import GeometryO3DLineSet, GeometryO3DTriangleMesh
-from render.data.GeometryStructures import Cube
 from render.data.PrimitiveTypes import PrimitiveType, Primitves
-from render.functions import RenderDataStorages
-from render.opengl import OpenGLMesh, OpenGLProgramm, OpenGLCamera, OpenGLBufferGroup, \
-    OpenGLShader
-from render.render import Texture, Model
+from render.opengl import OpenGLMesh, OpenGLProgramm, OpenGLCamera, OpenGLBufferGroup, OpenGLShader
+from render.render import Model
 from render.render.Shader import ShaderGroup
 
 
@@ -122,13 +120,9 @@ class RenderWidgetTest(QOpenGLWidget):
             print(f"Image:\t\t{image_plane}")
             depth = image_plane.z
             image_uv = glm.vec2(image_plane.xy) / depth
-            #image_uv = (1.0/vec.z) * image_plane
-            #image_uv = image_uv / image_uv.z
-            #image_uv = glm.vec4(image_uv.x, image_uv.y, 1.0, 1.0/vec.z)
             print(f"UV:\t\t{image_uv}")
             print()
             
-            #vec = mat_extrinsics_inverse @ mat_intrinsics_inverse @ glm.vec3(image_uv.xy, depth)
             vec = depth * mat_extrinsics_inverse @ glm.mat4x4(mat_intrinsics_inverse) @ glm.vec4(image_uv.xy, 1.0, 1.0/depth)
             print(f"org:\t\t{vec}")
             print()

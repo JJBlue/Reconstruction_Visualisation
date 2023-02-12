@@ -1,4 +1,6 @@
-from concurrent.futures import ThreadPoolExecutor
+import glm
+import uuid
+
 from pathlib import Path
 
 from PIL import Image as Img
@@ -7,10 +9,10 @@ from colmap_wrapper.colmap.camera import ImageInformation
 
 
 class Point:
-    def __init__(self, point3D_id, point3D):
+    def __init__(self, position: glm.vec3):
         self.selectionInformation = None
-        self.point3D_id = point3D_id
-        self.point3D = point3D
+        self.id = uuid.uuid4() # TODO: Should be unique
+        self.position: glm.vec3 = position
         self.points: dict = {} # Image: [uv1, uv2]
     
     def add2DPoint(self, image, uv):
@@ -18,8 +20,8 @@ class Point:
         image.points.append(self)
 
 class Image:
-    def __init__(self, imageinfo: ImageInformation, pyimage, path: Path):
-        self.selectionInformation = None
+    def __init__(self, selectionInformation, imageinfo: ImageInformation, pyimage, path: Path):
+        self.selectionInformation = selectionInformation
         self.imageinfo: ImageInformation = imageinfo
         self.pyimage = pyimage
         
@@ -30,6 +32,35 @@ class Image:
         self.preview: QImage = None
         
         self.points: list = [] # Point
+        
+        
+        # Matrix & Depth Map
+        self.depth_map = self.imageinfo.depth_image_geometric
+        #extrinsics = self.imageinfo.extrinsics
+        intrinsics = self.imageinfo.intrinsics.K
+        
+        self.mat_extrinsics = glm.mat4x4(1.0)
+        row = 0
+        for array_row in self.selectionInformation.sub_project.pycolmap.images[self.imageinfo.id].projection_matrix(): # TODO to self.imageinfo.extrinsics (Currently broken)
+            column = 0
+            for value in array_row:
+                self.mat_extrinsics[column][row] = value
+                column += 1
+            row += 1
+        
+        self.mat_intrinsics = glm.mat3x3(1.0)
+        row = 0
+        for array_row in intrinsics:
+            column = 0
+            for value in array_row:
+                self.mat_intrinsics[column][row] = value
+                column += 1
+            row += 1
+        
+        
+        self.mat_extrinsics_inverse = glm.inverse(self.mat_extrinsics)
+        self.mat_intrinsics_inverse = glm.mat3x4(glm.inverse(self.mat_intrinsics))
+        self.mat_intrinsics = glm.mat4x3(self.mat_intrinsics)
     
     def getImage(self):
         if self.image == None:
@@ -67,8 +98,27 @@ class Image:
         return ps
     
     def getSelected2DPoints(self):
-        ps = [p.points[self] for p in self.points if p.point3D_id in self.selectionInformation.selected_points]
+        ps = [p.points[self] for p in self.points if p.id in self.selectionInformation.selected_points]
         return ps
+    
+    def toUV(self, xyz: glm.vec3) -> list:
+        image_plane = self.mat_intrinsics @ self.mat_extrinsics @ glm.vec4(xyz, 1.0)
+        depth = image_plane.z
+        image_uv = glm.vec2(image_plane.xy) / depth
+        
+        return image_uv, depth
+    
+    def toXYZ(self, uv: glm.vec2, depth) -> glm.vec3:
+        if depth <= 0:
+            return glm.vec3(float('nan'))
+        
+        return glm.vec3(depth * self.mat_extrinsics_inverse @ glm.mat4x4(self.mat_intrinsics_inverse) @ glm.vec4(uv.xy, 1.0, 1.0/depth))
+    
+    def toXYZFromDepthMap(self, uv: glm.vec2) -> glm.vec3:
+        return self.toXYZ(uv, self.getDepth(uv))
+    
+    def getDepth(self, uv: glm.vec2) -> float:
+        return self.depth_map[round(uv.y)][round(uv.x)]
 
 class SelectionInformation:
     def __init__(self, sub_project):
@@ -78,66 +128,57 @@ class SelectionInformation:
         
         self.selected_points: dict = {}
         
-        
         reconstruction = sub_project.reconstruction
         
-        executor = ThreadPoolExecutor(max_workers=5) # os.cpu_count()
-        
         for image_idx in reconstruction.images.keys():
-            def run(sub_project = sub_project, reconstruction = reconstruction, image_idx = image_idx):
-                imageinfo: ImageInformation = reconstruction.images[image_idx]
-                
-                pyimage = sub_project.pycolmap.images[image_idx]
-                
-                image_info = Image(imageinfo, pyimage, imageinfo.path)
-                image_info.getPreviewImage()
-                image_info.selectionInformation = self
-                
-                self.images.append(image_info)
+            imageinfo: ImageInformation = reconstruction.images[image_idx]
+            pyimage = sub_project.pycolmap.images[image_idx]
             
-            executor.submit(run)
+            # octree = o3d.geometry.Octree(max_depth=8)
+            # tree = octree.convert_from_point_cloud(sub_project.reconstruction.get_dense())
+            # o3d.visualization.draw_geometries([octree])
+            # print(tree)
+            
+            image_info = Image(self, imageinfo, pyimage, imageinfo.path)
+            image_info.getPreviewImage()
+            
+            self.images.append(image_info)
         
-        executor.shutdown(wait=True)
-    
     def selectPoint(self, *points):
         self.selected_points.clear()
         
         for point in points:
-            if not (point.point3D_id in self.points):
+            if not (point.id in self.points):
                 return
             
-            self.selected_points[point.point3D_id] = point
+            self.selected_points[point.id] = point
     
     def addPoint(self, point: Point, evaluate = True):
-        if point.point3D_id in self.points:
+        if point.id in self.points:
             return
         
         point.selectionInformation = self
         
         if evaluate:
-            point3D_id = point.point3D_id
-            point3D = point.point3D
+            position = point.position
             
             for image in self.images:
-                pyimage = image.pyimage
+                uv, _ = image.toUV(position)
+                position_in_image = image.toXYZFromDepthMap(uv)
                 
-                if not pyimage.has_point3D(point3D_id):
+                if glm.distance(position, position_in_image) > 0.01:
                     continue
                 
-                camera_id = pyimage.camera_id
-                pycolmap_camera = self.sub_project.pycolmap.cameras[camera_id]
-                
-                x, y = pycolmap_camera.world_to_image(pyimage.project(point3D.xyz))
-                point.add2DPoint(image, [x, y])
+                point.add2DPoint(image, [uv.x, uv.y])
                 
         else:
             for image, _ in point.points.items():
                 image.points.append(point)
         
-        self.points[point.point3D_id] = point
+        self.points[point.id] = point
     
     def removePoint(self, point: Point):
-        del self.points[point.point3D_id]
+        del self.points[point.id]
         
         for image in point.points.keys():
             image.points.remove(point)

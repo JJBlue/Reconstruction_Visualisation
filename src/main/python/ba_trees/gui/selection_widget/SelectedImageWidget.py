@@ -1,5 +1,7 @@
-from PyQt6.QtCore import pyqtSignal, Qt
+import glm
+
 from sklearn.neighbors import KDTree
+from PyQt6.QtCore import pyqtSignal, Qt
 
 from ba_trees.gui.selection_widget import Point
 from ba_trees.gui.selection_widget.SelectedImagePreviewWidget import SelectedImagePreviewWidget
@@ -19,46 +21,28 @@ class SelectedImageWidget(SelectedImagePreviewWidget):
         self.imageinfo = imageinfo
         self.setImage(self.imageinfo.getImage())
     
-    def __getNearestPoint(self, event):
+    def keyReleaseEvent(self, event):
+        key = event.key()
+        
+        if key == Qt.Key.Key_Delete or key == Qt.Key.Key_Backspace:
+            for point in self.selectioninfo.selected_points.values():
+                self.removePointSignal.emit(point)
+                self.repaintImage()
+    
+    def __getXYZ(self, event):
         if self.image == None:
-            return None, None
+            return None
         
         pos = event.pos()
-        x = (self.horizontalScrollBar().value() + pos.x()) / self.scale_factor
-        y = (self.verticalScrollBar().value() + pos.y()) / self.scale_factor
+        x = int((self.horizontalScrollBar().value() + pos.x()) / self.scale_factor)
+        y = int((self.verticalScrollBar().value() + pos.y()) / self.scale_factor)
         
-        sub_project = self.selectioninfo.sub_project
-        pycolmap_image = sub_project.pycolmap.images[self.imageinfo.imageinfo.id]
-        camera_id = pycolmap_image.camera_id
-        pycolmap_camera = sub_project.pycolmap.cameras[camera_id]
+        uv = glm.vec2(x, y)
+        depth = self.imageinfo.getDepth(uv)
+        if depth <= 0:
+            return None
         
-        points = []
-        points3D_id = []
-        points_3D = []
-        
-        for point3D_id, point3D in sub_project.pycolmap.points3D.items():
-            if not pycolmap_image.has_point3D(point3D_id):
-                continue
-            
-            points.append(pycolmap_camera.world_to_image(pycolmap_image.project(point3D.xyz)))
-            points3D_id.append(point3D_id)
-            points_3D.append(point3D)
-        
-        tree = KDTree(points, leaf_size=2)
-        _, point3d_id_nearest = tree.query([[x, y]], k=1)
-        point3d_id_nearest = point3d_id_nearest[0][0]
-        
-        point3D_id = points3D_id[point3d_id_nearest]
-        point3D = points_3D[point3d_id_nearest]
-        x, y = pycolmap_camera.world_to_image(pycolmap_image.project(point3D.xyz))
-        
-        if x < 0 or x > self.image.width():
-            return None, None
-        
-        if y < 0 or y > self.image.height():
-            return None, None
-        
-        return point3D_id, point3D
+        return self.imageinfo.toXYZ(uv, depth)
     
     def __getNearestPointFromSelections(self, event):
         if self.image == None:
@@ -79,29 +63,20 @@ class SelectedImageWidget(SelectedImagePreviewWidget):
             points.append(point)
         
         tree = KDTree(points_xy, leaf_size=2)
-        _, point3d_id_nearest = tree.query([[x, y]], k=1)
-        point3d_id_nearest = point3d_id_nearest[0][0]
+        _, point_id_nearest = tree.query([[x, y]], k=1)
+        point_id_nearest = point_id_nearest[0][0]
         
-        point = points[point3d_id_nearest]
+        point = points[point_id_nearest]
         
         return point
     
-    def keyReleaseEvent(self, event):
-        key = event.key()
-        
-        if key == Qt.Key.Key_Delete or key == Qt.Key.Key_Backspace:
-            for point in self.selectioninfo.selected_points.values():
-                self.removePointSignal.emit(point)
-        
-        self.repaintImage()
-    
     def mouseDoubleClickEvent(self, event):
-        point3D_id, point3D = self.__getNearestPoint(event)
+        xyz = self.__getXYZ(event)
         
-        if point3D_id == None or point3D == None:
+        if xyz == None:
             return
         
-        point = Point(point3D_id, point3D)
+        point = Point(xyz)
         point.selectionInformation = self.selectioninfo
         self.addPointSignal.emit(point)
         
