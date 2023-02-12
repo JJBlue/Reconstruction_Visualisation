@@ -70,27 +70,11 @@ class RenderWidgetTest(QOpenGLWidget):
             extrinsics = image.extrinsics
             intrinsics = image.intrinsics.K
             
-            
             #print(image.name)
             #print(image.extrinsics)
             #print()
             #print(image.intrinsics.K)
             #print()
-            
-            # Extrinsic parameters
-            R, t = extrinsics[:3, :3], extrinsics[:3, 3]
-            
-            # intrinsic points
-            fx, fy, S, cx, cy = intrinsics[0, 0], intrinsics[1, 1], intrinsics[0, 1], intrinsics[0, 2], intrinsics[1, 2]
-        
-            # Same as mat_intrinsics_inverse
-            intrinsics_inverse = glm.mat4x4()
-            intrinsics_inverse[0, 0] = 1.0 / fx
-            intrinsics_inverse[1, 0] = -S / (fx * fy)
-            intrinsics_inverse[2, 0] = (S * cy - cx * fy) / (fx * fy)
-            intrinsics_inverse[1, 1] = 1.0 / fy
-            intrinsics_inverse[2, 1] = -cy / fy
-            intrinsics_inverse[2, 2] = 1
             
             
             mat_extrinsics = glm.mat4x4(1.0)
@@ -98,7 +82,7 @@ class RenderWidgetTest(QOpenGLWidget):
             for array_row in subproject.pycolmap.images[image.id].projection_matrix(): # TODO to extrinsics
                 column = 0
                 for value in array_row:
-                    mat_extrinsics[column][row] = value # TODO swap
+                    mat_extrinsics[column][row] = value
                     column += 1
                 row += 1
             
@@ -110,10 +94,7 @@ class RenderWidgetTest(QOpenGLWidget):
                     mat_intrinsics[column][row] = value
                     column += 1
                 row += 1
-            
-            
-            #mat_intrinsics = mat_intrinsics / max_norm
-            
+
             
             mat_extrinsics_inverse = glm.inverse(mat_extrinsics)
             data["mat_extrinsics_inverse"] = mat_extrinsics_inverse
@@ -122,16 +103,6 @@ class RenderWidgetTest(QOpenGLWidget):
             data["mat_intrinsics_inverse"] = mat_intrinsics_inverse
             
             mat_intrinsics = glm.mat4x3(mat_intrinsics)
-            
-            print()
-            print(extrinsics)
-            print()
-            print(subproject.pycolmap.images[image.id].projection_matrix())
-            print()
-            print(mat_extrinsics)
-            print()
-            print(mat_intrinsics)
-            print()
             
             
             #print(mat_extrinsics)
@@ -143,37 +114,27 @@ class RenderWidgetTest(QOpenGLWidget):
             #print(mat_intrinsics_inverse)
             #print()
             
-            #R, t = extrinsics[:3, :3], extrinsics[:3, 3]
-            
-            # -0.20903162 0.69027902 0.59727322
-            # ~ 464 311
-            
-            
-            ##vec = glm.vec4(-0.20903162, 0.69027902, 0.59727322, 1.0)
-            #vec = glm.vec4(-2.02027431, -0.76609883,  0.96236055, 1.0)
-            #print(f"Vec:\t\t{vec}")
-            #camera_vec = mat_extrinsics @ vec
-            #print(f"Camera Vec:\t{camera_vec}")
-            #mat_intrinsics = glm.mat4x4(mat_intrinsics)
-            #image_plane = mat_intrinsics @ camera_vec
-            #print(f"Image:\t\t{image_plane}")
+            vec = glm.vec4(-2.02027431, -0.76609883,  0.96236055, 1.0)
+            print(f"Vec:\t\t{vec}")
+            camera_vec = mat_extrinsics @ vec
+            print(f"Camera Vec:\t{camera_vec}")
+            image_plane = mat_intrinsics @ camera_vec
+            print(f"Image:\t\t{image_plane}")
+            depth = image_plane.z
+            image_uv = glm.vec2(image_plane.xy) / depth
             #image_uv = (1.0/vec.z) * image_plane
-            ##image_uv = image_uv / image_uv.z
+            #image_uv = image_uv / image_uv.z
             #image_uv = glm.vec4(image_uv.x, image_uv.y, 1.0, 1.0/vec.z)
-            #print(f"UV:\t\t{image_uv}")
-            #print()
-            #
-            #
-            ##camera_vec = mat_intrinsics_inverse @ image_plane
-            ##print(f"org1:\t\t{camera_vec}")
-            ##vec = mat_extrinsics_inverse @ glm.vec4(camera_vec.xyz, 1.0)
-            #
-            #mat_intrinsics_inverse = glm.mat4x4(mat_intrinsics_inverse)
-            #vec = (1.0/image_uv.w) * mat_intrinsics_inverse @ image_uv
-            #print(f"org:\t\t{vec}")
-            #exit(0)
+            print(f"UV:\t\t{image_uv}")
+            print()
             
-            # https://www.imatest.com/support/docs/pre-5-2/geometric-calibration-deprecated/projective-camera/
+            #vec = mat_extrinsics_inverse @ mat_intrinsics_inverse @ glm.vec3(image_uv.xy, depth)
+            vec = depth * mat_extrinsics_inverse @ glm.mat4x4(mat_intrinsics_inverse) @ glm.vec4(image_uv.xy, 1.0, 1.0/depth)
+            print(f"org:\t\t{vec}")
+            print()
+        
+        #exit(0)
+        # https://www.imatest.com/support/docs/pre-5-2/geometric-calibration-deprecated/projective-camera/
     
     ##########################
     ### Mouse and Keyboard ###
