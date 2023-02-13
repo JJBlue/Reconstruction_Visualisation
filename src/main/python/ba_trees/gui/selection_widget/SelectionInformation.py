@@ -106,6 +106,8 @@ class Image:
         depth = image_plane.z
         image_uv = glm.vec2(image_plane.xy) / depth
         
+        image_uv = glm.vec2(round(image_uv.x), round(image_uv.y))
+        
         return image_uv, depth
     
     def toXYZ(self, uv: glm.vec2, depth) -> glm.vec3:
@@ -118,6 +120,9 @@ class Image:
         return self.toXYZ(uv, self.getDepth(uv))
     
     def getDepth(self, uv: glm.vec2) -> float:
+        if uv.x < 0 or uv.y < 0 or uv.x >= self.getWidth() or uv.y >= self.getHeight():
+            return 0
+        
         return self.depth_map[round(uv.y)][round(uv.x)]
 
 class SelectionInformation:

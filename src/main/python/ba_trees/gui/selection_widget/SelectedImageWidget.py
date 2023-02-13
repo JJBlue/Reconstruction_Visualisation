@@ -15,8 +15,14 @@ class SelectedImageWidget(SelectedImagePreviewWidget):
     
     def __init__(self, *args):
         super().__init__(*args)
+        
+        self.tree_nearest_points_xy = None # TODO for more efficiency safe data in SelectionInformation.Image (self.imageinfo)
+        self.tree_nearest_point = None # TODO for more efficiency safe data in SelectionInformation.Image (self.imageinfo)
     
     def setImage2(self, imageinfo: Image):
+        self.tree_nearest_points_xy = None
+        self.tree_nearest_point = None
+        
         self.selectioninfo = imageinfo.selectionInformation
         self.imageinfo = imageinfo
         self.setImage(self.imageinfo.getImage())
@@ -43,6 +49,39 @@ class SelectedImageWidget(SelectedImagePreviewWidget):
             return None
         
         return self.imageinfo.toXYZ(uv, depth)
+    
+    def __getNearestPoint(self, event):
+        xyz = self.__getXYZ(event)
+        
+        if xyz != None:
+            return xyz
+        
+        pos = event.pos()
+        x = int((self.horizontalScrollBar().value() + pos.x()) / self.scale_factor)
+        y = int((self.verticalScrollBar().value() + pos.y()) / self.scale_factor)
+        
+        if self.tree_nearest_point == None:
+            self.tree_nearest_points_xy = []
+            
+            for u in range(self.imageinfo.getWidth()):
+                for v in range(self.imageinfo.getHeight()):
+                    uv = glm.vec2(u, v)
+                    depth = self.imageinfo.getDepth(uv)
+                    
+                    if depth <= 0:
+                        continue
+                    
+                    self.tree_nearest_points_xy.append([u, v])
+            
+            self.tree_nearest_point = KDTree(self.tree_nearest_points_xy, leaf_size=2)
+        
+        
+        _, point_id_nearest = self.tree_nearest_point.query([[x, y]], k=1)
+        point_id_nearest = point_id_nearest[0][0]
+        
+        points_xy = self.tree_nearest_points_xy[point_id_nearest]
+        
+        return self.imageinfo.toXYZFromDepthMap(glm.vec2(points_xy))
     
     def __getNearestPointFromSelections(self, event):
         if self.image == None:
@@ -71,7 +110,7 @@ class SelectedImageWidget(SelectedImagePreviewWidget):
         return point
     
     def mouseDoubleClickEvent(self, event):
-        xyz = self.__getXYZ(event)
+        xyz = self.__getNearestPoint(event)
         
         if xyz == None:
             return
