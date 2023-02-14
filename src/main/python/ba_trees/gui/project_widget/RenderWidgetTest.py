@@ -17,6 +17,7 @@ from render.data.PrimitiveTypes import PrimitiveType, Primitves
 from render.opengl import OpenGLMesh, OpenGLProgramm, OpenGLCamera, OpenGLBufferGroup, OpenGLShader
 from render.render import Model
 from render.render.Shader import ShaderGroup
+from PIL import Image
 
 
 class RenderWidgetTest(QOpenGLWidget):
@@ -40,7 +41,7 @@ class RenderWidgetTest(QOpenGLWidget):
         self.camera_speed: float = 0.1
         self.camera_enable_movement_speed: bool = True
         
-        self.project = ColmapProject(Path("J:/Codes/git/BA_Trees/config/workspace/bunny"))
+        self.project = ColmapProject(Path("J:/Codes/git/BA_Trees/config/workspace/reconstruction"))
         self.project.open()
         self.project.load()
         
@@ -58,11 +59,26 @@ class RenderWidgetTest(QOpenGLWidget):
             self.images.append(data)
             data["image"] = image
             
-            color = image.getData(1.0)
+            #depth_map = self.image.depth_image_photometric
+            depth_map = image.depth_image_geometric;
+            
+            with Image.open(image.path) as img:
+                width, height = img.size
+                
+                data["width"] = width
+                data["height"] = height
+                
+                if len(depth_map) != height or len(depth_map[0]) != width:
+                    print(f"Resize Org: {(width, height)} New: {(len(depth_map[0]), len(depth_map))}")
+                    img = img.resize((len(depth_map[0]), len(depth_map)))
+                
+                color = np.asarray(img).astype(np.uint8)
+            
+            #color = image.getData(1.0)
             data["color"] = color
             
-            #depth = self.image.depth_image_photometric
-            depth = image.depth_image_geometric
+            
+            depth = depth_map
             data["depth"] = depth
             
             extrinsics = image.extrinsics
@@ -251,10 +267,13 @@ class RenderWidgetTest(QOpenGLWidget):
             color = data["color"]
             image = data["image"]
             
+            width = data["width"]
+            height = data["height"]
+            
             lists = []
             for u in range(len(depth)):
                 for v in range(len(depth[0])):
-                    lists.append([v, u])
+                    lists.append([v * (width / len(depth[0])), u * (height / len(depth))])
             
             data_uv = GeometryData(2, np.asarray(lists).flatten().astype(np.float32), PrimitiveType.FLOAT)
             data_depth = GeometryData(1, depth.flatten().astype(np.float32), PrimitiveType.FLOAT)
