@@ -1,5 +1,6 @@
 import glm
 import uuid
+import math
 
 from pathlib import Path
 
@@ -12,6 +13,7 @@ class Point:
     def __init__(self, position: glm.vec3):
         self.selectionInformation = None
         self.id = uuid.uuid4() # TODO: Should be unique
+        print(self.id)
         self.position: glm.vec3 = position
         self.points: dict = {} # Image: [uv1, uv2]
     
@@ -116,14 +118,70 @@ class Image:
         
         return glm.vec3(depth * self.mat_extrinsics_inverse @ glm.mat4x4(self.mat_intrinsics_inverse) @ glm.vec4(uv.xy, 1.0, 1.0/depth))
     
+    def toXYZFromImageUVDepthMap(self, uv: glm.vec2) -> glm.vec3:
+        return self.toXYZ(uv, self.getDepthFromImageUV(uv))
+   
     def toXYZFromDepthMap(self, uv: glm.vec2) -> glm.vec3:
         return self.toXYZ(uv, self.getDepth(uv))
     
-    def getDepth(self, uv: glm.vec2) -> float:
-        if uv.x < 0 or uv.y < 0 or uv.x >= self.getWidth() or uv.y >= self.getHeight():
+    def getDepthFromImageUV(self, uv: glm.vec2) -> float:
+        x = round(uv.x)
+        y = round(uv.y)
+        
+        if x < 0 or y < 0 or y >= len(self.depth_map) or x >= len(self.depth_map[0]):
             return 0
         
-        return self.depth_map[round(uv.y)][round(uv.x)]
+        return self.depth_map[y][x]
+    
+    # Values are approximated 
+    def getDepth(self, uv: glm.vec2) -> float:
+        width_depth = len(self.depth_map[0])
+        height_depth = len(self.depth_map)
+        
+        uv_image = self.imageUVToDepthUV(uv)
+        x_up = math.ceil(uv_image.x)
+        x_down = math.ceil(uv_image.x)
+        
+        if (x_up < 0 or x_up >= width_depth) and (x_down < 0 or x_down >= width_depth):
+            return 0
+        elif (x_up < 0 or x_up >= width_depth):
+            x_up = -1
+        elif (x_down < 0 or x_down >= width_depth):
+            x_down = -1
+        
+        y_up = math.floor(uv_image.y)
+        y_down = math.floor(uv_image.y)
+        
+        if (y_up < 0 or y_up >= height_depth) and (y_down < 0 or y_down >= height_depth):
+            return 0
+        elif (y_up < 0 or y_up >= height_depth):
+            y_up = -1
+        elif (y_down < 0 or y_down >= height_depth):
+            y_down = -1
+        
+        count = 0
+        depth = 0
+        
+        if x_down != -1 and y_down != -1:
+            count += 1
+            depth += self.depth_map[y_down][x_down]
+        elif x_down != -1 and y_up != -1:
+            count += 1
+            depth += self.depth_map[y_up][x_down]
+        elif x_up != -1 and y_down != -1:
+            count += 1
+            depth += self.depth_map[y_down][x_up]
+        elif x_up != -1 and y_up != -1:
+            count += 1
+            depth += self.depth_map[y_up][x_up]
+        
+        return depth / count
+    
+    def imageUVToDepthUV(self, uv: glm.vec2):
+        return glm.vec2(uv.x / (self.getWidth() / len(self.depth_map[0])), uv.y / (self.getHeight() / len(self.depth_map)))
+    
+    def depthUVToImageUV(self, uv: glm.vec2):
+        return glm.vec2(uv.x * (self.getWidth() / len(self.depth_map[0])), uv.y * (self.getHeight() / len(self.depth_map)))
 
 class SelectionInformation:
     def __init__(self, sub_project):
@@ -171,7 +229,8 @@ class SelectionInformation:
                 uv, _ = image.toUV(position)
                 position_in_image = image.toXYZFromDepthMap(uv)
                 
-                if glm.distance(position, position_in_image) > 0.01:
+                distance = glm.distance(position, position_in_image)
+                if distance > 0.01 or math.isnan(distance):
                     continue
                 
                 point.add2DPoint(image, [uv.x, uv.y])

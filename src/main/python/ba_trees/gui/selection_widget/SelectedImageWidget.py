@@ -51,6 +51,9 @@ class SelectedImageWidget(SelectedImagePreviewWidget):
         return self.imageinfo.toXYZ(uv, depth)
     
     def __getNearestPoint(self, event):
+        if self.image == None:
+            return None
+        
         xyz = self.__getXYZ(event)
         
         if xyz != None:
