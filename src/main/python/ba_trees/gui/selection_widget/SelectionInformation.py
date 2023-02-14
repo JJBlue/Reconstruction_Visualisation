@@ -13,7 +13,6 @@ class Point:
     def __init__(self, position: glm.vec3):
         self.selectionInformation = None
         self.id = uuid.uuid4() # TODO: Should be unique
-        print(self.id)
         self.position: glm.vec3 = position
         self.points: dict = {} # Image: [uv1, uv2]
     
