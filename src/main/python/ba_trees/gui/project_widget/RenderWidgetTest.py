@@ -41,7 +41,7 @@ class RenderWidgetTest(QOpenGLWidget):
         self.camera_speed: float = 0.1
         self.camera_enable_movement_speed: bool = True
         
-        self.project = ColmapProject(Path("J:/Codes/git/BA_Trees/config/workspace/reconstruction"))
+        self.project = ColmapProject(Path("J:/Codes/git/BA_Trees/config/workspace/bunny"))
         self.project.open()
         self.project.load()
         

@@ -1,5 +1,4 @@
 from OpenGL.GL import *
-from PyQt6 import QtGui
 from PyQt6.QtCore import Qt, QPoint, pyqtSignal, QTimer
 from PyQt6.QtOpenGLWidgets import QOpenGLWidget
 
