@@ -158,14 +158,9 @@ class ImageView(QScrollArea):
     def repaintImageOverride(self, painter: QPainter):
         pass
     
-    def eventFilter(self, obj, event):
-        if event.type() == QEvent.Type.Wheel and self.disableScroll:
-            return True
-        return super().eventFilter(obj, event)
-    
     def wheelEvent(self, event):
         if self.disableScroll:
-            return
+            return super().wheelEvent(event)
         
         delta = event.angleDelta().y() / 2400.0
         pos = self.mapFromGlobal(QCursor.pos())
