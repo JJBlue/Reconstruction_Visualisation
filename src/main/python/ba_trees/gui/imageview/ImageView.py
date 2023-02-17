@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from PyQt6.QtCore import Qt, QSize, QEvent
+from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QImage, QPixmap, QPainter, QPalette, QCursor
 from PyQt6.QtWidgets import QScrollArea, QLabel, QSizePolicy
 
