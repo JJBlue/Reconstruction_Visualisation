@@ -229,7 +229,7 @@ class Ui_root(object):
         self.label.setText(_translate("root", "Point Size:"))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page_2), _translate("root", "Point Cloud"))
         self.label_2.setText(_translate("root", "Speed:"))
-        self.label_3.setText(_translate("root", "Fixed Position:"))
+        self.label_3.setText(_translate("root", "Not Fixed Position:"))
         self.label_4.setText(_translate("root", "FOV:"))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page_3), _translate("root", "Camera"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("root", "Render Settings"))
