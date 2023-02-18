@@ -139,7 +139,7 @@ class Ui_settings_tab(object):
         self.doubleSpinBox_9.valueChanged['double'].connect(self.root_setting_tab.setModelPositionScaleY)
         self.doubleSpinBox_10.valueChanged['double'].connect(self.root_setting_tab.setModelPositionScaleZ)
         self.root_setting_tab.modelPositionXChanged['double'].connect(self.doubleSpinBox_2.setValue)
-        self.root_setting_tab.modelPositionScaleYChanged['double'].connect(self.doubleSpinBox_3.setValue)
+        self.root_setting_tab.modelPositionYChanged['double'].connect(self.doubleSpinBox_3.setValue)
         self.root_setting_tab.modelPositionZChanged['double'].connect(self.doubleSpinBox_4.setValue)
         self.root_setting_tab.modelRotationPitchChanged['double'].connect(self.doubleSpinBox_5.setValue)
         self.root_setting_tab.modelRotationYawChanged['double'].connect(self.doubleSpinBox_6.setValue)

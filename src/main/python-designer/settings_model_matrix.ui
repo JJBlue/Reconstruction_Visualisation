@@ -330,8 +330,8 @@
    <slot>setModelPositionX(double)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>91</x>
-     <y>57</y>
+     <x>151</x>
+     <y>56</y>
     </hint>
     <hint type="destinationlabel">
      <x>46</x>
@@ -378,8 +378,8 @@
    <slot>setModelPositionPitch(double)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>94</x>
-     <y>167</y>
+     <x>154</x>
+     <y>166</y>
     </hint>
     <hint type="destinationlabel">
      <x>54</x>
@@ -426,8 +426,8 @@
    <slot>setModelPositionScaleX(double)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>92</x>
-     <y>277</y>
+     <x>152</x>
+     <y>276</y>
     </hint>
     <hint type="destinationlabel">
      <x>61</x>
@@ -485,7 +485,7 @@
   </connection>
   <connection>
    <sender>root_setting_tab</sender>
-   <signal>modelPositionScaleYChanged(double)</signal>
+   <signal>modelPositionYChanged(double)</signal>
    <receiver>doubleSpinBox_3</receiver>
    <slot>setValue(double)</slot>
    <hints>
@@ -606,8 +606,8 @@
      <y>248</y>
     </hint>
     <hint type="destinationlabel">
-     <x>417</x>
-     <y>336</y>
+     <x>477</x>
+     <y>332</y>
     </hint>
    </hints>
   </connection>
