@@ -89,6 +89,14 @@ class RenderWidget(QOpenGLWidget):
                 self.thread.camera.rightward(self.camera_speed)
                 self.repaintInBackground()
     
+    def keyReleaseEvent(self, event):
+        if self.thread.camera != None and self.camera_enable_movement_speed:
+            key = event.key()
+
+            if key == Qt.Key.Key_Space:
+                self.thread.snapshot = True
+                self.repaintInBackground()
+    
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
             self.mouse_pressed = True

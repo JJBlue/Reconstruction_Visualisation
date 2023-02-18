@@ -87,6 +87,8 @@ class BackgroundRenderWidget(QThread):
     def __init__(self, rw):
         super().__init__()
         
+        self.snapshot = False
+        
         self.rw = rw
         self.running = False
         self.width: int = 1080
@@ -698,8 +700,10 @@ class BackgroundRenderWidget(QThread):
         glFlush() # Start Rendering if it is not happend yet
         glFinish() # Wait for finished rendering
         
-        #self.saveImage(GL_COLOR_ATTACHMENT0, 0)
-        #self.saveImage(GL_COLOR_ATTACHMENT1, 1)
+        if self.snapshot == True:
+            self.snapshot = False
+            self.saveImage(GL_COLOR_ATTACHMENT0, 0)
+            self.saveImage(GL_COLOR_ATTACHMENT1, 1)
         
         # Send Signal for finishing
         self.rw.repaintSignal.emit(self.outputTexture)
@@ -721,10 +725,15 @@ class BackgroundRenderWidget(QThread):
                 for x in it:
                     x[...] = x % 255
             
+            for a1 in data:
+                for a2 in a1:
+                    if a2[0] != 0 or a2[1] != 0 or a2[2] != 0:
+                        a2[3] = 255
+            
             data = data.astype(np.ubyte)
         
         self.framebuffer.unbind()
         
         image = Image.frombytes("RGBA", (self.width, self.height), data)
         image = ImageOps.flip(image)
-        image.save(f"J:\\Codes\\git\\BA_Trees\\config\\test{index}.png", 'PNG')
+        image.save(f"J:\\Codes\\git\\BA_Trees\\config\\image{index}.png", 'PNG')
