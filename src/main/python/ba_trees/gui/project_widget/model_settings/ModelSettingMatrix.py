@@ -39,6 +39,9 @@ class ModelSettingMatrix(QWidget):
         self.modelRotationPitchChanged.emit(model_matrix.getPitch())
         self.modelRotationYawChanged.emit(model_matrix.getYaw())
         self.modelRotationRollChanged.emit(model_matrix.getRoll())
+        self.modelPositionScaleXChanged.emit(model_matrix.getScaleX())
+        self.modelPositionScaleYChanged.emit(model_matrix.getScaleY())
+        self.modelPositionScaleZChanged.emit(model_matrix.getScaleZ())
     
     def __getModelMatrixFromModel(self):
         return self.model_matrix

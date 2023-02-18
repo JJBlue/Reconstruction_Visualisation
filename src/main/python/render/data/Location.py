@@ -131,14 +131,23 @@ class ModelMatrix(Location):
         self.__scale: glm.vec3 = glm.fvec3(1.0)
         super().__init__(x, y, z, pitch, yaw, roll)
     
+    def getScaleX(self) -> float:
+        return self.__scale.x
+    
     def scaleX(self, x: float):
         self.__scale.x = x
         self.updateModel()
     
+    def getScaleY(self) -> float:
+        return self.__scale.y
+    
     def scaleY(self, y: float):
         self.__scale.y = y
         self.updateModel()
-        
+    
+    def getScaleZ(self) -> float:
+        return self.__scale.z
+    
     def scaleZ(self, z: float):
         self.__scale.z = z
         self.updateModel()
