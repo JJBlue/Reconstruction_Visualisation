@@ -1,15 +1,16 @@
-import glm
-import numpy as np
-
 from pathlib import Path
 
 from OpenGL.GL import *
+from PIL import Image, ImageOps
 from PyQt6.QtCore import Qt, QPoint
 from PyQt6.QtOpenGLWidgets import QOpenGLWidget
 from colmap_wrapper.visualization.visualization import draw_camera_viewport
+import glm
 
+from ba_trees.config.ConfigDirectories import ConfigDirectories
 from ba_trees.gui.background.opengl.OpenGLData import OpenGLData
 from ba_trees.workspace.colmap.ColmapProject import ColmapProject
+import numpy as np
 from render.data import Geometry
 from render.data.Geometry import GeometryData
 from render.data.GeometryO3D import GeometryO3DLineSet, GeometryO3DTriangleMesh
@@ -17,7 +18,6 @@ from render.data.PrimitiveTypes import PrimitiveType, Primitves
 from render.opengl import OpenGLMesh, OpenGLProgramm, OpenGLCamera, OpenGLBufferGroup, OpenGLShader
 from render.render import Model
 from render.render.Shader import ShaderGroup
-from PIL import Image
 
 
 class RenderWidgetTest(QOpenGLWidget):
@@ -59,8 +59,8 @@ class RenderWidgetTest(QOpenGLWidget):
             self.images.append(data)
             data["image"] = image
             
-            #depth_map = self.image.depth_image_photometric
-            depth_map = image.depth_image_geometric;
+            #depth_map = image.depth_image_photometric
+            depth_map = image.depth_image_geometric
             
             with Image.open(image.path) as img:
                 width, height = img.size
@@ -73,6 +73,10 @@ class RenderWidgetTest(QOpenGLWidget):
                     img = img.resize((len(depth_map[0]), len(depth_map)))
                 
                 color = np.asarray(img).astype(np.uint8)
+            
+            #self.saveImageGrayScale(depth_map, subproject.reconstruction.max_depth_scaler_photometric)
+            self.saveImageGrayScale(depth_map, subproject.reconstruction.max_depth_scaler)
+            
             
             #color = image.getData(1.0)
             data["color"] = color
@@ -145,6 +149,35 @@ class RenderWidgetTest(QOpenGLWidget):
         
         #exit(0)
         # https://www.imatest.com/support/docs/pre-5-2/geometric-calibration-deprecated/projective-camera/
+    
+    # image = depth_photo
+    # self.photogrammetry_software.max_depth_scaler_photometric
+    def saveImageGrayScale(self, depth_photo, max_depth_scaler):
+        import cv2
+        import copy
+        
+        image = copy.deepcopy(depth_photo)
+        
+        min_depth, max_depth = np.percentile(image, [5, 95])
+        image[image < min_depth] = min_depth
+        image[image > max_depth] = max_depth
+        image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+        image = (image / max_depth_scaler * 255).astype(np.uint8)
+        
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGBA)
+        image = Image.frombytes("RGBA", (len(image[0]), len(image)), image)
+        #image = ImageOps.flip(image)
+        
+        screenshot_folder = Path(ConfigDirectories.getConfigDirectories().getConfigFolder()).joinpath("screenshots")
+        screenshot_folder.mkdir(parents=True, exist_ok=True)
+        screenshot_file = None
+        i = 0
+        
+        while screenshot_file == None or screenshot_file.is_file():
+            screenshot_file = screenshot_folder.joinpath(f"image{i} - DepthMap.png")
+            i += 1
+        
+        image.save(f"{str(screenshot_file)}", 'PNG')
     
     ##########################
     ### Mouse and Keyboard ###
