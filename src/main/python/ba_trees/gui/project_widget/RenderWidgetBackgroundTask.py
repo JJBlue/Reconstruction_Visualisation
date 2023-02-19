@@ -1,12 +1,15 @@
+from pathlib import Path
 import queue
 import time
+import glm
+import numpy as np
 
 from OpenGL.GL import *
 from PIL import Image, ImageOps
 from PyQt6.QtCore import QThread, QWaitCondition, QMutex
 from PyQt6.QtGui import QOffscreenSurface, QOpenGLContext, QSurfaceFormat
-import glm
 
+from ba_trees.config.ConfigDirectories import ConfigDirectories
 from ba_trees.gui.background.qt.QtFunctions import QtFunctions
 from ba_trees.gui.image_pixel_widget import (PointInImageWidget, PointsInImageWidget)
 from ba_trees.gui.project_widget.model_settings.ModelSettingCamera import ModelSettingCameraWidget
@@ -14,7 +17,7 @@ from ba_trees.gui.project_widget.render_structure.RenderGuiSettings import Rende
 from ba_trees.gui.project_widget.render_structure.RenderObject import (RenderCollection, RenderModel, RenderMesh)
 from ba_trees.workspace import Project
 from ba_trees.workspace.colmap.ColmapOpenGL import ColmapProjectOpenGL
-import numpy as np
+
 from render.data import CoordinateSystem, Primitves, PrimitiveType
 from render.data.RenderBufferData import RenderBufferInternalFormat
 from render.data.TextureData import TextureInternalFormat, TextureFormat, TextureType, TextureData
@@ -736,4 +739,19 @@ class BackgroundRenderWidget(QThread):
         
         image = Image.frombytes("RGBA", (self.width, self.height), data)
         image = ImageOps.flip(image)
-        image.save(f"J:\\Codes\\git\\BA_Trees\\config\\image{index}.png", 'PNG')
+        
+        screenshot_folder = Path(ConfigDirectories.getConfigDirectories().getConfigFolder()).joinpath("screenshots")
+        screenshot_folder.mkdir(parents=True, exist_ok=True)
+        screenshot_file = None
+        i = 0
+        
+        while screenshot_folder.is_file() or screenshot_file == None:
+            if index == 0:
+                screenshot_file = screenshot_folder.joinpath(f"image{i}.png")
+            elif index > 0:
+                screenshot_file = screenshot_folder.joinpath(f"image{i} - RenderBuffer ({index}).png")
+            
+            i += 1
+        
+        image.save(f"{str(screenshot_file)}", 'PNG')
+        
