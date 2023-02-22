@@ -148,7 +148,8 @@ class RenderWidgetTest(QOpenGLWidget):
             print()
         
         #exit(0)
-        # https://www.imatest.com/support/docs/pre-5-2/geometric-calibration-deprecated/projective-camera/
+        # (https://www.imatest.com/support/docs/pre-5-2/geometric-calibration-deprecated/projective-camera/)
+        # https://medium.com/yodayoda/from-depth-map-to-point-cloud-7473721d3f
     
     # image = depth_photo
     # self.photogrammetry_software.max_depth_scaler_photometric
