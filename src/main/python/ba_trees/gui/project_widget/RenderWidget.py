@@ -1,5 +1,5 @@
 from OpenGL.GL import *
-from PyQt6.QtCore import Qt, QPoint, pyqtSignal, QTimer
+from PyQt6.QtCore import Qt, QPoint, pyqtSignal, QTimer, pyqtSlot
 from PyQt6.QtOpenGLWidgets import QOpenGLWidget
 
 from ba_trees.gui.project_widget import BackgroundRenderWidget
@@ -143,6 +143,7 @@ class RenderWidget(QOpenGLWidget):
     ### QT Designer Methods ###
     ###########################
     
+    @pyqtSlot(float)
     def setPointSize(self, size: float):
         if self.point_size != size:
             self.point_size = size
@@ -150,6 +151,7 @@ class RenderWidget(QOpenGLWidget):
             
             self.pointSizeChanged.emit(self.point_size)
     
+    @pyqtSlot(bool)
     def show_coordinate_system(self, value: bool):
         if self.setting_show_coordinate_system != value:
             self.setting_show_coordinate_system = value
@@ -157,16 +159,19 @@ class RenderWidget(QOpenGLWidget):
             
             self.showCoordinateSystemChanged.emit(self.setting_show_coordinate_system)
     
+    @pyqtSlot(float)
     def setCameraSpeed(self, value: float):
         if self.camera_speed != value:
             self.camera_speed = value
             self.cameraSpeedChanged.emit(self.camera_speed)
     
+    @pyqtSlot(bool)
     def enableMovementChanged(self, value: bool):
         if self.camera_enable_movement_speed != value:
             self.camera_enable_movement_speed = value
             self.cameraEnableMovementChanged.emit(self.camera_enable_movement_speed)
     
+    @pyqtSlot(float)
     def setCameraFOV(self, value: float):
         if self.thread.camera != None and self.thread.camera.fov != value:
             self.thread.camera.fov = value
