@@ -187,7 +187,7 @@ class ColmapSubProjectOpenGL:
             
             status_texture_child = StatusInformationChild()
             status_texture.add(status_texture_child)
-            def uploadTexture(texture = texture, repaintFunction = repaintFunction, status_texture_child = status_texture_child):
+            def uploadTexture(image = image, texture = texture, repaintFunction = repaintFunction, status_texture_child = status_texture_child):
                 status_texture_child.setStatus(Status.STARTED)
                 #from pathlib import Path
                 #from PIL import Image

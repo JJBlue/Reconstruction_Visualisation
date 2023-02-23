@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from OpenGL.GL import *
-from PIL import Image, ImageOps
+from PIL import Image
 from PyQt6.QtCore import Qt, QPoint
 from PyQt6.QtOpenGLWidgets import QOpenGLWidget
 from colmap_wrapper.visualization.visualization import draw_camera_viewport
