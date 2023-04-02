@@ -90,6 +90,31 @@ class PointsInImageImageWidget(QTableWidget):
         item = QLabel()
         
         def runLater(item=item, row=row):
+            # Version 2
+            import glm
+            intrinsics = sub_project.reconstruction.images[image.image_id].intrinsics.K
+            
+            mat_extrinsics = glm.mat4x4(1.0)
+            mat_row = 0
+            for array_row in image.projection_matrix():
+                column = 0
+                for value in array_row:
+                    mat_extrinsics[column][mat_row] = value
+                    column += 1
+                mat_row += 1
+            
+            mat_intrinsics = glm.mat3x3(1.0)
+            mat_row = 0
+            for array_row in intrinsics:
+                column = 0
+                for value in array_row:
+                    mat_intrinsics[column][mat_row] = value
+                    column += 1
+                mat_row += 1
+            
+            mat_intrinsics = glm.mat4x3(mat_intrinsics)
+            # Version 2 end
+            
             with Img.open(Path(sub_project.reconstruction._src_image_path, image.name)) as img:
                 width, height = img.size
                 draw = ImageDraw.Draw(img)
@@ -106,9 +131,19 @@ class PointsInImageImageWidget(QTableWidget):
                     if not image.has_point3D(point3D_id):
                         continue
                     
+                    # Version 1 (Sometimes broken, need PyColmap to work)
                     uv = camera.world_to_image(image.project(point3D.xyz))
-                    draw.arc([uv[0] - size, uv[1] - size, uv[0] + size, uv[1] + size], 0, 360, fill=128, width=thickness)
                     
+                    # Version 2
+                    image_plane = mat_intrinsics @ mat_extrinsics @ glm.vec4(point3D.xyz[0], point3D.xyz[1], point3D.xyz[2], 1.0)
+                    depth = image_plane.z
+                    image_uv = glm.vec2(image_plane.xy) / depth
+                    
+                    uv = glm.vec2(round(image_uv.x), round(image_uv.y))
+                    # Version 2 end
+                    
+                    draw.arc([uv[0] - size, uv[1] - size, uv[0] + size, uv[1] + size], 0, 360, fill=128, width=thickness)
+                
                 img2 = img.convert("RGBA")
                 data = img2.tobytes("raw", "BGRA")
                 qimg = QImage(data, img2.width, img2.height, QImage.Format.Format_ARGB32)

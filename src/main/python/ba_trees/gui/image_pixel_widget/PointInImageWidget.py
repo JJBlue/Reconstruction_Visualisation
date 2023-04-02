@@ -80,7 +80,40 @@ class PointInImageTableWidget(QTableWidget):
         self.setItem(row, 1, item)
         
         item = QLabel()
-        uv = camera.world_to_image(image.project(point.xyz))
+        
+        # Version 1 (Sometimes broken, need PyColmap to work)
+        #uv = camera.world_to_image(image.project(point.xyz))
+        
+        # Version 2
+        import glm
+        intrinsics = sub_project.reconstruction.images[image.image_id].intrinsics.K
+        
+        mat_extrinsics = glm.mat4x4(1.0)
+        mat_row = 0
+        for array_row in image.projection_matrix():
+            column = 0
+            for value in array_row:
+                mat_extrinsics[column][mat_row] = value
+                column += 1
+            mat_row += 1
+        
+        mat_intrinsics = glm.mat3x3(1.0)
+        mat_row = 0
+        for array_row in intrinsics:
+            column = 0
+            for value in array_row:
+                mat_intrinsics[column][mat_row] = value
+                column += 1
+            mat_row += 1
+        
+        mat_intrinsics = glm.mat4x3(mat_intrinsics)
+                        
+        image_plane = mat_intrinsics @ mat_extrinsics @ glm.vec4(point.xyz[0], point.xyz[1], point.xyz[2], 1.0)
+        depth = image_plane.z
+        image_uv = glm.vec2(image_plane.xy) / depth
+        
+        uv = glm.vec2(round(image_uv.x), round(image_uv.y))
+        # Version 2 end
         
         def runLater(item=item, row=row, uv=uv):
             with Img.open(Path(sub_project.reconstruction._src_image_path, image.name)) as img:
