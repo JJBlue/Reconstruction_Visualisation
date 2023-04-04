@@ -60,7 +60,8 @@ class OpenGLTexture(Texture):
         img_internal_format = OpenGLTexture.toOpenGLInternalFormat(self.image.getInternalFormat())
         img_type = OpenGLTexture.toOpenGLType(self.image.getType())
         
-        glTexImage2D(GL_TEXTURE_2D, 0, img_internal_format, self.image.getWidth(), self.image.getHeight(), 0, img_format, img_type, self.image.getData())
+        image_data = self.image.getData()
+        glTexImage2D(GL_TEXTURE_2D, 0, img_internal_format, self.image.getWidth(), self.image.getHeight(), 0, img_format, img_type, image_data)
         
         if self.image.getUseMipmap():
             glGenerateMipmap(GL_TEXTURE_2D)

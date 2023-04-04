@@ -208,7 +208,9 @@ class ColmapSubProjectOpenGL:
                 #img = Image.fromarray(image_data, "RGB")
                 
                 #texture.upload(TexturePILImage(img))
-                texture.upload(TextureFile(image.path))
+                texture_file = TextureFile(image.path)
+                texture_file.resize_max_size = [852, 480]
+                texture.upload(texture_file)
                 status_texture_child.setStatus(Status.FINISHED)
                 
                 if status_texture.isFinished():

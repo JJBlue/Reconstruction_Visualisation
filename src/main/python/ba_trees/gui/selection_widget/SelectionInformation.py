@@ -76,7 +76,7 @@ class Image:
                 self.width = width
                 self.height = height
                 
-                img.thumbnail([1920, 1080])
+                img.thumbnail([852, 480])
                 img2 = img.convert("RGBA")
                 data = img2.tobytes("raw", "BGRA")
                 self.preview = QImage(data, img2.width, img2.height, QImage.Format.Format_ARGB32)

@@ -18,6 +18,8 @@ class AbstractTexturePILImage(TextureData):
         self.poor_filtering = False
         
         self.converted_image = None
+        
+        self.resize_max_size = None
     
     def load(self):
         pass
@@ -85,11 +87,11 @@ class AbstractTexturePILImage(TextureData):
         self.load()
         return self.img_type
     
-    def getWidth(self, resize=0.3) -> int:
+    def getWidth(self, resize=1.0) -> int:
         self.load()
         return super().getWidth(resize)
     
-    def getHeight(self, resize=0.3) -> int:
+    def getHeight(self, resize=1.0) -> int:
         self.load()
         return super().getHeight(resize)
 
@@ -99,7 +101,13 @@ class AbstractTexturePILImage(TextureData):
         if self.converted_image:
             image = self.converted_image
         
-        image = image.resize((self.getWidth(resize), self.getHeight(resize)))
+        if resize != 1.0 and resize != None:
+            image = image.resize((self.getWidth(resize), self.getHeight(resize)))
+        
+        if self.resize_max_size != None:
+            image.thumbnail(self.resize_max_size)
+            self.width, self.height = image.size
+        
         array = np.asarray(image, dtype=self.dtype).flatten()
         return array
 
@@ -117,7 +125,7 @@ class TextureFile(AbstractTexturePILImage):
         with Image.open(self.file) as img:
             self._AbstractTexturePILImage__loadImage(img)
     
-    def getData(self, resize=0.3) -> np.ndarray:
+    def getData(self, resize=1.0) -> np.ndarray:
         with Image.open(self.file) as img:
             return self._AbstractTexturePILImage__getDataImage(resize, img)
         
