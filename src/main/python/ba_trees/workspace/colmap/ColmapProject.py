@@ -39,8 +39,6 @@ class ColmapProject(Project):
         
         self.reconstruction = COLMAP(
                                         project_path=self.folder.absolute(),
-                                        #load_depth=True,
-                                        #image_resize=0.3,
                                         output_status_function=self.__outputFunction
                                     )
         
@@ -81,7 +79,7 @@ class ColmapProject(Project):
         
         status_dict = self.__status[key_project]
         
-        if key in [LoadElement.IMAGE_INFO]: # LoadElement.DEPTH_IMAGE,
+        if key in [LoadElement.IMAGE_INFO]:
             if not event.isFinished():
                 self.__lock.acquire() # Maybe for each dict a seperate Lock?
                 if key in status_dict:
