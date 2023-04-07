@@ -8,6 +8,9 @@ from ba_trees.gui.selection_widget.SelectionInformation import Point, Image
 from ba_trees.gui.selection_widget.SelectionPointsInImageWidgetSetup import Ui_Form
 from ba_trees.gui.background.qt.QtFunctions import QtFunctions
 
+from concurrent.futures import ThreadPoolExecutor
+from multiprocessing import cpu_count
+
 
 class SelectionPointsInImageWidget(QWidget):
     def __init__(self):
@@ -32,10 +35,22 @@ class SelectionPointsInImageWidget(QWidget):
             
             selection = self.selections[0]
             self.imageviews.clear()
+            
+            
+            n_cores = cpu_count()
+            executor = ThreadPoolExecutor(max_workers=n_cores)
+            
             for image in selection.images:
-                def qtRun(image=image):
-                    self.__addImage(image)
-                QtFunctions.runLater(qtRun)
+                def importRun(image=image):
+                    image.getPreviewImage()
+                    
+                    def qtRun(image=image):
+                        self.__addImage(image)
+                    QtFunctions.runLater(qtRun)
+                
+                executor.submit(importRun)
+            
+            executor.shutdown(wait=True)
         
         thread = Thread(target=run)
         thread.start()

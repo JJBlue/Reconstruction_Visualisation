@@ -202,7 +202,6 @@ class SelectionInformation:
             # print(tree)
             
             image_info = Image(self, imageinfo, pyimage, imageinfo.path)
-            image_info.getPreviewImage()
             
             self.images.append(image_info)
         

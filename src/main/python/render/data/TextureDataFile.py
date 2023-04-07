@@ -130,8 +130,6 @@ class TextureFile(AbstractTexturePILImage):
             return self._AbstractTexturePILImage__getDataImage(resize, img)
         
         return None
-        #img = Image.open(self.file)
-        #return np.array(list(img.getdata()), self.dtype)
 
 class TexturePILImage(AbstractTexturePILImage):
     def __init__(self, image: Image):
