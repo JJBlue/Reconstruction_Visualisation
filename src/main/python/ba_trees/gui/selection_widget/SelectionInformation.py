@@ -8,6 +8,9 @@ from PIL import Image as Img
 from PyQt6.QtGui import QImage
 from colmap_wrapper.colmap.camera import ImageInformation
 
+from concurrent.futures import ThreadPoolExecutor
+from multiprocessing import cpu_count
+
 
 class Point:
     def __init__(self, position: glm.vec3):
@@ -127,15 +130,15 @@ class Image:
         x = round(uv.x)
         y = round(uv.y)
         
-        if x < 0 or y < 0 or y >= len(self.depth_map) or x >= len(self.depth_map[0]):
+        if x < 0 or y < 0 or y >= self.depth_map.height or x >= self.depth_map.width:
             return 0
         
-        return self.depth_map[y][x]
+        return self.depth_map.getDepth(uv=[y, x])
     
     # Values are approximated 
     def getDepth(self, uv: glm.vec2) -> float:
-        width_depth = len(self.depth_map[0])
-        height_depth = len(self.depth_map)
+        width_depth = self.depth_map.width
+        height_depth = self.depth_map.height
         
         uv_image = self.imageUVToDepthUV(uv)
         x_up = math.ceil(uv_image.x)
@@ -163,24 +166,24 @@ class Image:
         
         if x_down != -1 and y_down != -1:
             count += 1
-            depth += self.depth_map[y_down][x_down]
+            depth += self.depth_map.getDepth([y_down, x_down])
         elif x_down != -1 and y_up != -1:
             count += 1
-            depth += self.depth_map[y_up][x_down]
+            depth += self.depth_map.getDepth([y_up, x_down])
         elif x_up != -1 and y_down != -1:
             count += 1
-            depth += self.depth_map[y_down][x_up]
+            depth += self.depth_map.getDepth([y_down, x_up])
         elif x_up != -1 and y_up != -1:
             count += 1
-            depth += self.depth_map[y_up][x_up]
+            depth += self.depth_map.getDepth([y_up, x_up])
         
         return depth / count
     
     def imageUVToDepthUV(self, uv: glm.vec2):
-        return glm.vec2(uv.x / (self.getWidth() / len(self.depth_map[0])), uv.y / (self.getHeight() / len(self.depth_map)))
+        return glm.vec2(uv.x / (self.getWidth() / self.depth_map.width), uv.y / (self.getHeight() / self.depth_map.height))
     
     def depthUVToImageUV(self, uv: glm.vec2):
-        return glm.vec2(uv.x * (self.getWidth() / len(self.depth_map[0])), uv.y * (self.getHeight() / len(self.depth_map)))
+        return glm.vec2(uv.x * (self.getWidth() / self.depth_map.width), uv.y * (self.getHeight() / self.depth_map.height))
 
 class SelectionInformation:
     def __init__(self, sub_project):
@@ -223,16 +226,24 @@ class SelectionInformation:
         if evaluate:
             position = point.position
             
+            n_cores = cpu_count()
+            executor = ThreadPoolExecutor(max_workers=n_cores)
+            
             for image in self.images:
-                uv, _ = image.toUV(position)
-                position_in_image = image.toXYZFromDepthMap(uv)
+                def evaluate_image(image=image, position=position, point=point):
+                    uv, _ = image.toUV(position)
+                    position_in_image = image.toXYZFromDepthMap(uv)
+                    
+                    distance = glm.distance(position, position_in_image)
+                    if distance > 0.01 or math.isnan(distance):
+                        return
+                    
+                    point.add2DPoint(image, [uv.x, uv.y])
                 
-                distance = glm.distance(position, position_in_image)
-                if distance > 0.01 or math.isnan(distance):
-                    continue
-                
-                point.add2DPoint(image, [uv.x, uv.y])
-                
+                executor.submit(evaluate_image)
+            
+            executor.shutdown(wait=True)
+            
         else:
             for image, _ in point.points.items():
                 image.points.append(point)
