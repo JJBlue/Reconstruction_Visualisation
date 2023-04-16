@@ -367,7 +367,7 @@ class BackgroundRenderWidget(QThread):
                 render_mesh.shader_uniforms["project_id"] = project_id
                 render_mesh.shader_uniforms["sub_project_id"] = sub_project_id
                 render_mesh.shader_uniforms["object_id"] = 1
-                render_collection_project.childs.append(render_mesh)
+                render_collection_sp.childs.append(render_mesh)
                 
                 render_mesh: RenderModel = RenderModel()
                 render_mesh.name = "Dense Pointcloud"
@@ -377,7 +377,7 @@ class BackgroundRenderWidget(QThread):
                 render_mesh.shader_uniforms["project_id"] = project_id
                 render_mesh.shader_uniforms["sub_project_id"] = sub_project_id
                 render_mesh.shader_uniforms["object_id"] = 0
-                render_collection_project.childs.append(render_mesh)
+                render_collection_sp.childs.append(render_mesh)
                 
                 
                 render_collection_camera: RenderCollection = RenderCollection()
@@ -679,10 +679,12 @@ class BackgroundRenderWidget(QThread):
             self.camera.updateShaderUniform(shader)
             
             for m, render_objects in ms.items():
-                if isinstance(render_object, RenderModel):
+                if isinstance(render_objects[0], RenderModel):
                     m.bind(shader)
-                elif isinstance(render_object, RenderMesh):
+                elif isinstance(render_objects[0], RenderMesh):
                     m.bind()
+                else:
+                    print(f"Error 404: {type(render_objects[0])} - {render_objects[0].name}")
                 
                 for render_object in render_objects:
                     render_object.setShaderUniforms()
